@@ -1,0 +1,25 @@
+body,div  {
+    background-color: #ffdbef !important;
+}
+img {
+    width  : 100% !important;
+    height : auto !important;
+}
+
+#home_top,#home_hot,#home_watch,
+#board_content,#board_info,#board_pager_top,#board_page_bottom,#thread_list,
+#thread_content,#thread_info, #thread_pager_top,#thread_pager_bottom
+{
+    border: 0.1em solid rgb(153, 204, 0); 
+}
+
+.floor,.onethread {
+    border-bottom: 0.1em solid rgb(153, 204, 0); 
+    margin: 0.8em 0.2em 1.2em; 
+    text-indent: 0em; 
+    padding-bottom: 0.25em;
+}
+
+#board_title, #thread_title {
+    font-weight: bold;
+}

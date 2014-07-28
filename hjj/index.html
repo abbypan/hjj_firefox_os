@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>HJJ</title>
+<meta http-equiv="Content-Type" content="text/html; charset=gb2312"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+<script src="js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+
+<link type="text/css" rel="stylesheet" href="css/jquery.mobile-1.4.3.css" />
+<script src="js/jquery.mobile-1.4.3.min.js" type="text/javascript" charset="utf-8"></script>
+
+<script src="js/jquery.mobile.paramsHandler-1.4.2.js" type="text/javascript" charset="utf-8"></script>
+
+<link type="text/css" rel="stylesheet" href="css/app.css" />
+<script src="js/app.js" type="text/javascript" charset="utf-8"></script>
+</head>
+<body>
+
+<div data-role="page" id="home">
+
+    <div data-role="header" data-position="fixed">
+        <div data-role="navbar">  
+            <ul>
+                <!--<li><a href="#board_menu" data-rel="popup" data-role="button">版块列表</a></li>-->
+                <li><a href="#board_menu" data-role="button">版块列表</a></li>
+                <li><a href="#home" id="go_home" align="center">首页刷新</a></li>
+                <li><a href="#setting">设置x</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div data-role="content" id="home_content">
+        <div id="home_top">
+            <h1>置顶</h1>
+        </div>
+        <div id="home_hot"></div>
+        <div id="home_watch"></div>
+    </div>
+    <!-- /content -->
+
+    <div data-role="footer" data-position="fixed">
+        <div data-role="navbar">  
+            <ul>
+                <li><a href="#fav_board">版块收藏</a></li>
+                <li><a href="#fav_thread">贴子收藏</a></li>
+                <li><a href="#recent_history">最近访问</a></li>
+            </ul>
+        </div>
+    </div>
+
+</div>
+<!-- /page home -->
+
+<div id="board" data-role="page">
+
+    <div data-role="header" data-position="fixed">
+        <div data-role="navbar">  
+            <ul>
+                <!--<li><a href="#board_menu" data-rel="popup" data-role="button">版块列表</a></li>-->
+                <li><a href="#board_menu" data-role="button">版块列表</a></li>
+                <li><a href="#home" align="center">首页</a></li>
+                <li><a href="#new_post" data-rel="popup" data-position-to="window"  data-transition="pop">发贴</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div data-role="header">
+        <div data-role="navbar">  
+            <ul>
+                <li><a href="#sub_board" data-rel="popup" data-position-to="window" data-role="button">子版块</a></li>
+                <li><a href="#thread_type" data-rel="popup" data-role="button">分区</a></li>
+                <li><a href="#search">搜索x</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div data-role="content" id="board_content">
+        <div id="board_info">
+            <span id="board_title"></span>, 
+            <span id="board_id"></span>, 
+            <a id="toggle_fav_board" href="#">...</a> 
+        </div>
+
+        <div id="board_pager_top"></div>
+        <div id="thread_list"></div>
+        <div id="board_pager_bottom"></div>
+
+    </div>
+
+    <div data-role="footer" data-position="fixed">
+        <div data-role="navbar">  
+            <ul>
+                <li><a href="#fav_board">版块收藏</a></li>
+                <li><a href="#fav_thread">贴子收藏</a></li>
+                <li><a href="#recent_history">最近访问</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div id="board_other">
+        <div data-role="popup" id="sub_board">
+            <form action="javascript:sub_board_action();">
+                <input name="url" type="hidden">
+                <div data-role="fieldcontain">
+                    <fieldset data-role="controlgroup"> 
+                    </fieldset>
+                </div>
+                <input type="submit" value="选中">
+            </form>
+        </div>
+
+        <div data-role="popup" id="thread_type">
+            <ul data-role="listview">
+                <!--<li data-role="divider" data-theme="e">Choose an action</li>-->
+            </ul>
+        </div>
+
+
+
+        <div data-role="popup" id="new_post">
+            <iframe></iframe>
+            <!--<form enctype="multipart/form-data" method="post">-->
+            <!--<input type="hidden" value="→发布新贴子" name="msg">-->
+            <!--<p>名字：-->
+            <!--<input type="text" value="" name="username">-->
+            <!--<p>所属子论坛：-->
+            <!--<select id="subid" name="subid">-->
+            <!--<option value="0">闲聊</option>-->
+            <!--</select> </p> -->
+            <!--<p>主题：-->
+            <!--<input type="text" name="subject"> </p>-->
+            <!--<p>内容：-->
+            <!--<textarea cols="60" rows="15" name="body"></textarea>-->
+            <!--<input type="submit" value="提交 [ Ctrl+Enter ]" name="button1">-->
+            <!--</form>-->
+        </div>
+    </div>
+
+</div>
+
+<div id="showmsg" data-role="page">
+    <div data-role="header" data-position="fixed">
+        <div data-role="navbar">  
+            <ul>
+                <li><a href="#" id="thread_to_board">返回版块</a></li>
+                <li><a href="#home" align="center">首页</a></li>
+                <li><a href="#reply_thread"
+                    data-rel="popup"
+                    >回贴</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div data-role="header">
+        <div data-role="navbar">  
+            <ul>
+                <li><a href="#only_poster">只看楼主x</a></li>
+                <li><a href="#only_poster">字数过滤x</a></li>
+                <li><a href="#thread_dewater">高级脱水x</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div data-role="content" id="thread_content">
+
+        <div id="thread_info">
+            <span id="thread_title"></span><br>
+            <span id="thread_bid"></span>,
+            <span id="thread_tid"></span>,
+            <a id="toggle_fav_thread" href="#">...</a> 
+        </div>
+
+        <div id="thread_pager_top"></div>
+        <div id="thread_floor_list"></div>
+        <div id="thread_pager_bottom"></div>
+
+    </div>
+
+
+    <div data-role="footer" data-position="fixed">
+        <div data-role="navbar">  
+            <ul>
+                <li><a href="#fav_board">版块收藏</a></li>
+                <li><a href="#fav_thread">贴子收藏</a></li>
+                <li><a href="#recent_history">最近访问</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div id="thread_other">
+        <div data-role="popup" id="reply_thread">
+            <!--<form enctype="multipart/form-data" method="post" action="reply.php?board=21&id=96206">-->
+            <form enctype="multipart/form-data" method="post" action="reply.php?board=&id=">
+                <!--<input type="hidden" value="→发布新贴子" name="msg">-->
+                <p>名字：
+                <input type="text" name="username">
+                <p>内容：</p>
+                <textarea name="body"></textarea>
+                <input type="submit" value="回贴">
+            </form>
+        </div>
+    </div>
+</div>
+
+<div data-role="page" id="recent_history">
+    <a data-role="button" data-rel="back" href="#" data-icon="arrow-l">返回</a>
+    <ul data-role="listview">
+        <!--<li data-role="divider" data-theme="e">Choose an action</li>-->
+    </ul>
+    <a data-role="button" data-rel="back" href="#" data-icon="arrow-l">返回</a>
+</div>
+
+
+<div data-role="page" id="fav_thread">
+    <a data-role="button" data-rel="back" href="#" data-icon="arrow-l">返回</a>
+    <ul data-role="listview">
+        <!--<li data-role="divider" data-theme="e">Choose an action</li>-->
+    </ul>
+    <a data-role="button" data-rel="back" href="#" data-icon="arrow-l">返回</a>
+</div>
+
+<div data-role="page" id="fav_board">
+    <a data-role="button" data-rel="back" href="#" data-icon="arrow-l">返回</a>
+    <ul data-role="listview">
+        <!--<li data-role="divider" data-theme="e">Choose an action</li>-->
+    </ul>
+    <a data-role="button" data-rel="back" href="#" data-icon="arrow-l">返回</a>
+</div>
+
+<div data-role="page" id="board_menu">
+    <a data-role="button" data-rel="back" href="#" data-icon="arrow-l">返回</a>
+    <div data-role="collapsible-set" data-inset="false" data-filter="true" id="filter_board">
+        <div data-role="collapsible" zid="0"></div>
+        <div data-role="collapsible" zid="2"></div>
+        <div data-role="collapsible" zid="1"></div>
+        <div data-role="collapsible" zid="4"></div>
+        <div data-role="collapsible" zid="5"></div>
+        <div data-role="collapsible" zid="6"></div>
+    </div>
+    <a data-role="button" data-rel="back" href="#" data-icon="arrow-l">返回</a>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,20 @@
+{
+  "name": "HJJ",
+  "description": "红晋江 http://bbs.jjwxc.net 看贴",
+  "version": "0.1",
+  "launch_path": "/index.html#home",
+  "icons": {
+    "32": "/icons/hjj32.png",
+    "64": "/icons/hjj64.png",
+    "128": "/icons/hjj128.png"
+  },
+  "developer": {
+    "name": "Abby Pan",
+    "url": "http://abbypan.github.io"
+  },
+	"type": "privileged",
+    "csp" : "default-src *; script-src 'self'; object-src 'none'; style-src 'self' 'unsafe-inline'", 
+    "permissions": {
+        "systemXHR": { "description": "Required to make Ajax Calls over the Network" }
+    }
+}
