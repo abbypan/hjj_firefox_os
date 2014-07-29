@@ -1,5 +1,6 @@
-body,div  {
+body,div,table  {
     background-color: #ffdbef !important;
+    background-size: 100% auto !important;
 }
 img {
     width  : 100% !important;
@@ -7,8 +8,10 @@ img {
 }
 
 #home_top,#home_hot,#home_watch,
-#board_content,#board_info,#board_pager_top,#board_page_bottom,#thread_list,
-#thread_content,#thread_info, #thread_pager_top,#thread_pager_bottom
+#board_content,#board_info,#thread_list,
+#thread_content,#thread_info,
+#search_content,
+.pager
 {
     border: 0.1em solid rgb(153, 204, 0); 
 }
@@ -23,3 +26,10 @@ img {
 #board_title, #thread_title {
     font-weight: bold;
 }
+
+/* fixed闪屏 */
+/*.ui-page {*/
+    /*backface- visibility : hidden ;*/
+    /*-webkit-backface- visibility : hidden ; [> Chrome and Safari <]*/
+    /*-moz-backface- visibility : hidden ; [> Firefox <]*/
+/*}*/

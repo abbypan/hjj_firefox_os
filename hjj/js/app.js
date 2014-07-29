@@ -1,7 +1,40 @@
 var HJJ='http://bbs.jjwxc.net';
-// é¦–é¡µ {{{
-function home() {
+// {{ base
+function save_storage(key, v){
+    var s = JSON.stringify(v);
+    localStorage.setItem(key, s);
+}
 
+function read_storage(key, default_v) {
+    var xdata = localStorage.getItem(key);
+    var x = xdata ? JSON.parse(xdata) : 
+                    (default_v ? default_v : []);
+    return x;
+}
+
+function get_remember_key(x){
+    var u = x.url;
+    var k = x.key;
+    return (k==undefined)? u : k;
+}
+
+function check_remember_list(rem_list, d){
+    var key = get_remember_key(d);
+    for(var x in rem_list){
+        var rem_key = get_remember_key(rem_list[x]);
+        if(rem_key==key) return x;
+    }
+    return ;
+}
+
+var MAX_HISTORY_CNT = 100;
+var HISTORY= read_storage('history', []);
+var FAV_BOARD=read_storage('fav_board', []);
+var FAV_THREAD = read_storage('fav_thread', []);
+var INIT = 0;
+//}}
+// {{{
+function home() {
     var xhr = new XMLHttpRequest({mozSystem: true});
     xhr.open("GET", HJJ, true);
     xhr.overrideMimeType('text/plain; charset=gb2312');
@@ -12,7 +45,7 @@ function home() {
 
             var top_h = $(h).find('.cont01 div').eq(2).html();
             top_h = 
-                '<div class="headline"><strong>ç½®é¡¶</strong></div>' + 
+                '<div class="headline"><strong>ÖÃ¶¥</strong></div>' + 
                 top_h.replace(/height:130px;/g,'');
             $('#home_top').html( top_h );
 
@@ -31,7 +64,7 @@ function home() {
 }
 
 // }}}
-// äº¤æµåŒºç‰ˆå—åˆ—è¡¨ {{{
+//  {{{
 
 function board_menu(zone_li) {
     var id = zone_li.attr("zid");
@@ -46,152 +79,118 @@ function board_menu(zone_li) {
             var tm = xhr.responseText.match(/<font color=red size=\+1>([^<]+)<\/font>/);
             var t = tm[1].replace(/<[^>]+>/g,'');
             var s ='<h3>' + 
-                 t + '</h3><ul data-role="listview" data-inset="false">';
+                t + '</h3><ul data-role="listview" data-inset="false">';
 
             var m = xhr.responseText.match(/<center>[^<]+(<a href="board.php\?board=\d+&page=\d+">[^<]+<\/a>)[^<]+<\/center>/g);
             $.each(m, function(i, v)
-                   {
-                       var vm = v.replace(/center>/g, 'li>')
-.replace(/board.php/, '#board')
-;
-                       s+=vm;
-                   });
-                   s+="</ul>";
-    $('#board_menu').find('div[zid='+id+']').html(s);
-    //$("#board_menu").find('div[zid='+id+']').collapsible().trigger('create');
-    //$("#board_menu").find('div[zid='+id+']').parent().collapsibleset().trigger('create');
+                    {
+                        var vm = v.replace(/center>/g, 'li>')
+                .replace(/board.php/, '#board')
+                ;
+            s+=vm;
+                    });
+            s+="</ul>";
+            $('#board_menu').find('div[zid='+id+']').html(s);
         }
     }
     xhr.send();
 }
 
-function save_storage(key, x){
-    var s = JSON.stringify(x);
-    localStorage.setItem(key, s);
-}
-
-function read_storage(key) {
-    var xdata = localStorage.getItem(key);
-    var x = xdata ? JSON.parse(xdata) : {};
-    return x;
-}
 
 function fav_board() {
-    var x = read_storage('fav_board');
-    var s = '';
-//s+='<li data-role="divider" data-theme="e">Choose an action</li>';
-    for(k in x){
-        s += '<li><a href="#board?board=' + k + '&page=1">' +
-            x[k] + '</a></li>';
-    }
+    var s = format_remember_list(
+            {
+                "key" : 'fav_board', 
+        "data" : FAV_BOARD, 
+        "max_length" : 30,
+            }
+            );
 
     $('#fav_board').find('ul').html(s);
+    $('#fav_board').find('ul').trigger('create');
 }
 
 function fav_thread() {
-    var x = read_storage('fav_thread');
-    var s = '';
-    for(var b in x){
-        for(var t in x[b]){
-        s += '<li><a href="#showmsg?board=' + b + '&id='+ t + '&page=1">' +
-            x[b][t] + '</a></li>';
-        }
-    }
-
+    var s = format_remember_list(
+            {
+        "key" : 'fav_thread', 
+        "data" : FAV_THREAD, 
+        "max_length" : 1000,
+            }
+            );
 
     $('#fav_thread').find('ul').html(s);
     $('#fav_thread').find('ul').trigger('create');
 }
 
 function check_fav_board(){
-        var id = $('#board_id').text();
-        var title = $('#board_title').text();
-        var x = read_storage('fav_board');
-        if(x[id]){
-            $('#toggle_fav_board').html('å–æ¶ˆæ”¶è—');
-        }else{
-            $('#toggle_fav_board').html('æ”¶è—');
-        }
+    var x = check_remember_list(FAV_BOARD, {
+        "key" : $('#board_id').text()
+    });
+
+    if(x!=undefined){
+        $('#toggle_fav_board').html('È¡ÏûÊÕ²Ø');
+    }else{
+        $('#toggle_fav_board').html('ÊÕ²Ø');
+    }
 }
 
 function check_fav_thread(){
-        var bid = $('#thread_bid').text();
-        var tid = $('#thread_tid').text();
-        var title = $('#thread_title').text();
-        var x = read_storage('fav_thread');
-        if(x[bid] && x[bid][tid]){
-            $('#toggle_fav_thread').html('å–æ¶ˆæ”¶è—');
-        }else{
-            $('#toggle_fav_thread').html('æ”¶è—');
-        }
+    var bid = $('#thread_bid').text();
+    var tid = $('#thread_tid').text();
+
+    var x = check_remember_list(FAV_THREAD, {
+        "key" : bid+','+tid
+    });
+
+    if(x!=undefined){
+        $('#toggle_fav_thread').html('È¡ÏûÊÕ²Ø');
+    }else{
+        $('#toggle_fav_thread').html('ÊÕ²Ø');
+    }
 }
 
-function toggle_fav_board() {
-    $('#toggle_fav_board').click(function(){
-        var id = $('#board_id').text();
-        var title = $('#board_title').text();
-        var x = read_storage('fav_board');
-        if(x[id]){
-            delete(x[id]);
-            $('#toggle_fav_board').html('æ”¶è—');
-        }else{
-            x[id] = title;
-            $('#toggle_fav_board').html('å–æ¶ˆæ”¶è—');
-        }
-        save_storage('fav_board', x);
-        fav_board();
-    });
+
+function format_remember_list(para) {
+    var s = '';
+    var rem = {};
+    var update = [];
+
+    for(x in para["data"]){
+        var u = para["data"][x].url;
+        var k = para["data"][x].key;
+
+        var key = get_remember_key(para["data"][x]);
+        if(rem[key]!=undefined) continue;
+
+        if(update.length>para["max_length"]) break;
+
+        s += '<li><a href="' + u + '">' +
+            para["data"][x].title + '</a></li>';
+        rem[key]=1;
+        update.push(para["data"][x]);
+    }
+
+    para["data"] = update;
+    save_storage(para["key"], update);
+
+    return s;
 }
 
-function toggle_fav_thread() {
-    $('#toggle_fav_thread').click(function(){
-        var bid = $('#thread_bid').text();
-        var tid = $('#thread_tid').text();
-        var title = $('#thread_title').text();
-        var x = read_storage('fav_thread');
-        if(x[bid] && x[bid][tid]){
-            delete(x[bid][tid]);
-            $('#toggle_fav_thread').html('æ”¶è—');
-        }else{
-            if(! x[bid]) x[bid] = {};
-            x[bid][tid] = title;
-            $('#toggle_fav_thread').html('å–æ¶ˆæ”¶è—');
-        }
-        save_storage('fav_thread', x);
-        fav_thread();
-    });
+function recent_history() {
+    var s = format_remember_list(
+            {
+                "key" : 'history', 
+        "data" : HISTORY, 
+        "max_length" : MAX_HISTORY_CNT
+            }
+            );
+    $('#recent_history').find('ul').html(s);
+    $('#recent_history').find('ul').trigger('create');
 }
-
-function main(){
-    params_page();
-    home();
-    $('#go_home').click(function(){
-        home();
-    });
-
-    $('#board_menu').find("div").each(
-        function(){
-        board_menu($(this));
-    });
-
-    $("#filter_board").on( "filterablefilter", function( event, ui ) {
-        ui.items.each(function( index ) {
-            $(this).collapsible("option", "collapsed", $(this).hasClass("ui-screen-hidden")).removeClass("ui-screen-hidden");
-        });
-    });
-
-
-
-
-    fav_board();
-    toggle_fav_board();
-    fav_thread();
-    toggle_fav_thread();
-}
-
 // -- }}}
 
-// ç‰ˆå—å¸–å­åˆ—è¡¨ {{{
+// {{{
 
 function board_para_string(para, other){
     para.type = para.type || '';
@@ -228,7 +227,7 @@ function board_thread_info(tr) {
     };
     var s = '<div class="onethread">' + 
         info.tag+ ': <a href="'+ info.url + '">' + info.title + '</a><br>' + 
-        info.poster + '; çƒ­:' + info.hot + '; å›:' + info.reply + '; ' + info.time + '<br>'+
+        info.poster + '; ÈÈ:' + info.hot + '; »Ø:' + info.reply + '; ' + info.time + '<br>'+
         '</div>';
     return s;
 }
@@ -239,11 +238,11 @@ function sub_board_action(){
 
     var id_list = [];
     $("#sub_board").find("input[type='checkbox']")
-    .each(function(){
-        if($(this).prop("checked")){
-            id_list.push($(this).prop("value"));
-        }
-    });
+        .each(function(){
+            if($(this).prop("checked")){
+                id_list.push($(this).prop("value"));
+            }
+        });
 
     if(id_list.length>0){
         var id = id_list.join(',');
@@ -257,11 +256,14 @@ function sub_board_action(){
 function sub_board(para, html){
     var url = "#board?" + board_para_string(para, { page : 1 });
     $('#sub_board').find('input[name="url"]').attr("value", url);
-    var sm = html.match(/æœ¬ç‰ˆæ‰€å±å­è®ºå›ï½œ<\/font>([\s\S]*?)<\/span>/);
-    //var u = sm[1].replace(/(<input[^>]+>[^<]+)/g, "<li>$1</li>") ;
-    //$('#sub_board').find('fieldset').html("<ul>"+u+"</ul>");
+    var sm = html.match(/±¾°æËùÊô×ÓÂÛÌ³[^<]+<\/font>([\s\S]*?)<\/span>/);
     var u = sm[1];
     $('#sub_board').find('fieldset').html(u);
+
+    var options = u.replace(/<input.+?value=(\S+)[^>]+>([^<]+)/g, "<option value='$1'>$2</option>")
+        .replace(/<option/, '<option selected="selected"')
+        ;
+    $('#new_thread_subid').append(options);
 }
 
 function board_pager(html){
@@ -278,68 +280,64 @@ function board_title(para, h){
     check_fav_board();
 }
 
-function new_post(para){
-    var u = HJJ + "/postbypolice.php?board="+ 
-    para.board + "&act=mainpage";
-    $('#new_post').find('iframe').attr("src", u);
-    //var u = "http://bbs.jjwxc.net/postbypolice.php?board=" + para.board;
-    //$('#new_post').find('form').attr("action", u);
+function new_thread(para){
+    var u = HJJ + "/postbypolice.php?board="+ para.board;
+    $('#new_thread').find('form').attr("action", u);
 }
 
 function thread_type(para){
     var s = 
-        '<li><a href="#board?' + board_para_string(para, { page : 1 }) + '">æ‰€æœ‰ç±»åˆ«</a></li>' +
+        '<li><a href="#board?' + board_para_string(para, { page : 1 }) + '">ËùÓĞÀà±ğ</a></li>' +
         '<li><a href="#board?' + board_para_string(para, { page : 1 , 
-                                                   type : 'wonderful'
-    }) + '">åŠ ç²¾</a></li>' +
-        '<li><a href="#board?' + 
-        board_para_string(para, { page : 1 , 
-                          type : 'red'
-    }) 
-    + '">å¥—çº¢</a></li>' +
-        '<li><a href="' + 
-        board_para_string(para, { page : 1 , 
-                          type : 'star'
-    }) 
+        type : 'wonderful'
+}) + '">¼Ó¾«</a></li>' +
+'<li><a href="#board?' + 
+board_para_string(para, { page : 1 , 
+    type : 'red'
+}) 
++ '">Ì×ºì</a></li>' +
+'<li><a href="' + 
+board_para_string(para, { page : 1 , 
+    type : 'star'
+}) 
 
-    + '">åŠ â˜†</a></li>' 
-    ;
-    $('#thread_type').find('ul').html(s);
-    //$('#thread_type').find('ul').listview('refresh');
++ '">¼Ó¡î</a></li>' 
+;
+$('#thread_type').find('ul').html(s);
 }
 
 function board(para) {
     thread_type(para);
+    new_thread(para);
 
     var url = HJJ + "/board.php?" + board_para_string(para);
 
     var thread_info = '';
     var xhr = new XMLHttpRequest({mozSystem: true});
-    xhr.open("GET", url
-        , true);
+    xhr.open("GET", url , true);
     xhr.overrideMimeType('text/html; charset=gb2312'); 
 
     xhr.onreadystatechange = function() {
         if (xhr.readyState == 4) {
             var h = jQuery.parseHTML(xhr.responseText);
             $(h).find('tr[valign="middle"][bgcolor="#FFE7F7"]')
-            .each(function(){
-                thread_info += board_thread_info($(this));
-            });
+                .each(function(){
+                    thread_info += board_thread_info($(this));
+                });
 
             $('#thread_list').html(thread_info);
 
             board_title(para, h);
 
             if(! para.page || para.page==1){
-                $('#recent_history').find('ul').prepend('<li><a href="#board?' + board_para_string(para) + 
-                        '">' + $('#board_title').text() +
-                        '</a></li>');
+                HISTORY.unshift({
+                    url : "#board?" + board_para_string(para), 
+                    title : $('#board_title').text()
+                });
             }
 
             board_pager(xhr.responseText);
             sub_board(para, xhr.responseText);
-            new_post(para);
         }
     }
     xhr.send();
@@ -347,28 +345,33 @@ function board(para) {
 
 // -- }}}
 
-// å¸–å­ {{{
+//  {{{
 function extract_floor_info(info) {
-    var c = info.html();
+    var c = info.html()
+        .replace(/<(table|tr|td|font)[^>]*>/ig, "<$1>")
+        .replace(/<\/?marquee[^>]*>/ig, "")
+        .replace(/<style[^>]*>[\s\S]*?<\/style>/ig, "")
+        ;
     var w = info.text().length;
     var meta = info.parents("tr:eq(1)").next().text();
-    var m = meta.match(/â„–(\d+).+?â˜†â˜†â˜†(.*?)äº([\d\s:-]+)ç•™è¨€â˜†â˜†â˜†/);
+
+    var m = meta.match(/¡í(\d+).+?¡î¡î¡î(.*?)ÓÚ([\d\s:-]+)ÁôÑÔ¡î¡î¡î/);
     return {
         content: c,
             word_num: w,
             id: parseInt(m[1]),
-            poster: m[2] || 'æ— åæ°',
+            poster: m[2] || ' ',
             time: m[3]
     };
 }
 
-function add_floor_content(dst, f) {
+function format_floor_content(f) {
     var html = '<div class="floor" id="floor' + f.id + '">' +
         '<div class="flcontent">' + f.content + '</div>' +
-        '<div class="chapter">â„–' + f.id + '<span class="star">â˜†</span>' + f.poster + '<span class="star">â˜†</span>' + f.time + '<span class="star">â˜†</span></div>' +
+        '<div class="chapter">¡í' + f.id + '<span class="star">¡î</span>' + f.poster + '<span class="star">¡î</span>' + f.time + '<span class="star">¡î</span></div>' +
+
         '</div>';
-    $floor = $(html);
-    $(dst).append($floor);
+    return html;
 }
 
 function showmsg_para_string(para, other){
@@ -403,86 +406,265 @@ function showmsg(para){
     xhr.onreadystatechange = function() {
         if (xhr.readyState == 4) {
 
-    $('#thread_to_board').attr('href', "#board?board=" + para.board + '&page=1');
+            $('#thread_to_board').attr('href', "#board?board=" + para.board + '&page=1');
 
 
-    h = $.parseHTML(xhr.responseText);
+            h = $.parseHTML(xhr.responseText);
 
 
-    var tm = xhr.responseText.match(/<title>(.+?)<\/title>/);
-    var title_h = tm[1].replace(/ â€”â€” æ™‹æ±Ÿæ–‡å­¦åŸç½‘å‹äº¤æµåŒº/,'');
-    $('#thread_title').html( title_h );
-    $('#reply_thread').find('form').attr('action', 
-            HJJ + "/reply.php?board="+ para.board + '&id=' + para.id);
-    check_fav_thread();
+            var tm = xhr.responseText.match(/<title>(.+?)<\/title>/);
+            var title_h = tm[1].replace(/ ¡ª¡ª ½ú½­ÎÄÑ§³ÇÍøÓÑ½»Á÷Çø/,'');
+            $('#thread_title').html( title_h );
+            $('#reply_thread').find('form').attr('action', HJJ + "/reply.php?board="+ para.board + '&id=' + para.id);
+            check_fav_thread();
 
-    if(para.page==undefined || para.page==0){
-        $('#recent_history').find('ul').prepend('<li><a href="#showmsg?' + showmsg_para_string(para) +
-                '">' + title_h +
-                '</a></li>');
-    }
+            if(para.page==undefined || para.page==0){
+                HISTORY.unshift({
+                    url : "#showmsg?" + showmsg_para_string(para), 
+                    title : title_h
+                });
+            }
 
-    var pm = xhr.responseText.match(/\>(å…±\d+é¡µ:.+?)<\/div>/);
-    if(pm){
-        var page_h = pm[1].replace(/href=(.+?)>/g, "href=\"#showmsg$1\">");
-        $('#thread_pager_top').html( page_h );
-        $('#thread_pager_bottom').html( page_h );
-    }
+            var pm = xhr.responseText.match(/\>(¹²\d+Ò³:.+?)<\/div>/);
+            if(pm){
+                var page_h = pm[1].replace(/href=(.+?)>/g, "href=\"#showmsg$1\">");
+                $('#thread_pager_top').html( page_h );
+                $('#thread_pager_bottom').html( page_h );
+            }
 
-    var floors_info = new Array();
-    $(h).find('td[class="read"]').each(function() {
-        var bot = $(this);
-        var f_i = extract_floor_info(bot);
-        floors_info.push(f_i);
-    });
+            var floors_info = new Array();
+            $(h).find('td[class="read"]').each(function() {
+                var bot = $(this);
+                var f_i =  extract_floor_info(bot);
+                var html = format_floor_content(f_i);
+                floors_info.push(html);
+            }).promise().done(function(){
+                $('#thread_floor_list').html(floors_info.join("\n"));
 
-    for (var i in floors_info) {
-        var f = floors_info[i];
-        add_floor_content('#thread_floor_list', f);
-    }
+                $('#thread_floor_list').find('a').each(function(){
+                    var href = $(this).attr('href');
+                    if(! href.match(/http:\/\/bbs.jjwxc.net\/showmsg.php\?/)) return;
+                    href = href.replace(/http:\/\/bbs.jjwxc.net\/showmsg.php\?/g, '#showmsg?')
+                    $(this).attr('href', href);
+                $(this).removeAttr('target');
+                $(this).removeAttr('rel');
+                });
+            });
 
-    $('#thread_floor_list').find('a').each(function(){
-        var href = $(this).attr('href');
-        if(! href.match(/http:\/\/bbs.jjwxc.net\/showmsg.php\?/)) return;
-        href = href.replace(/http:\/\/bbs.jjwxc.net\/showmsg.php\?/g, '#showmsg?')
-        $(this).attr('href', href);
-        $(this).removeAttr('target');
-        $(this).removeAttr('rel');
-    });
-    }
+        }
     }
     xhr.send();
     $("html, body").animate({ scrollTop: 0 }, "slow");
 
 }
+
 // -- }}}
-// åˆå§‹åŒ– {{{
+// {{{
 function params_page(){
 
     $.mobile.paramsHandler.addPage(
-        "board",                      
-        ["board", "page"],       
-        ["type", "subid"],                     
-        function (para) {
-            board(para);
-        }
-    );
+            "board",                      
+            ["board", "page"],       
+            ["type", "subid"],                     
+            function (para) {
+                board(para);
+            }
+            );
 
     $.mobile.paramsHandler.addPage(
-        "showmsg",                      
-        ["board", "id"],       
-        ["page", "boardpagemsg"],                     
-        function (para) {
-            showmsg(para);
-        }
-    );
+            "showmsg",                      
+            ["board", "id"],       
+            ["page", "boardpagemsg", "keyword"],                     
+            function (para) {
+                showmsg(para);
+            }
+            );
+
+    $.mobile.paramsHandler.addPage(
+            "search",                      
+            ["board", "keyword"],       
+            ["topic", "page", "act"],                     
+            function (para) {
+                search(para);
+            }
+            );
 
     $.mobile.paramsHandler.init();
 }
 // -- }}}
-// é…ç½®é¡¹å¢å¼º {{
-// }}
-// {{ åˆå§‹åŒ–
-   $(document).bind('pageinit',function(e ){
-main(); });
+// {{{
+function search_para_string(para, other){
+    other = other || {};
+
+    var x = {};
+    for(k in para){
+        x[k]=para[k];
+    }
+    for(k in other){
+        x[k] = other[k];
+    }
+
+    x.act = x.act || 'search';
+    x.topic = x.topic!=undefined ? x.topic : 3;
+    x.page = x.page || 1;
+
+    s = [];
+    for(var k in x){
+        s.push(k + '=' + x[k]);
+    }
+    return s.join('&');
+}
+
+function search_thread_info(tr) {
+    var info =  {
+        id : tr.children('td').eq(0).text(),
+        title : tr.find('a').eq(0).text(),
+        url : tr.find('a').eq(0).attr('href').replace(/showmsg.php/, '#showmsg').replace(/&keyword=[^&]+/, ''),
+        poster : tr.children('td').eq(2).text(),
+        time : tr.children('td').eq(3).text(),
+        reply : tr.children('td').eq(5).text(),
+        hot : tr.children('td').eq(6).text()
+    };
+    var s = '<div class="onethread">[' + 
+        info.id+ '] <a href="'+ info.url + '">' + info.title + '</a><br>' + 
+        info.poster + '; ÈÈ:' + info.hot + '; »Ø:' + info.reply + '; ' + info.time + '<br>'+
+        '</div>';
+    return s;
+}
+function search(para){
+    var xhr = new XMLHttpRequest({mozSystem: true});
+    var u = HJJ+'/search.php?' + search_para_string(para); 
+    xhr.open("GET", u, true);
+    xhr.overrideMimeType('text/plain; charset=gb2312');
+
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState == 4) {
+
+
+            var tm = xhr.responseText.match(/²éÑ¯µ½µÄĞÅÏ¢([\s\S]+?)<\/td>/);
+            var title_h = tm[1];
+            $('#search_info').html( title_h );
+
+            var h = $.parseHTML(xhr.responseText);
+            var pager = $(h).find('td[valign="bottom"]').eq(0);
+            if(pager){
+                var page_h = pager.html().replace(/\/search.php/g, "#search").replace(/\<a\=\"\"/g,'');
+                $('#search_pager_top').html( page_h );
+                $('#search_pager_bottom').html( page_h );
+            }
+
+            $('#search_thread_list').html('');
+            var ts = '';
+            $(h).find('tr[align="left"]').each(function() {
+                var bot = $(this);
+                var f_i = search_thread_info(bot);
+                ts+=f_i;
+            }).promise().done(function(){
+                $('#search_thread_list').html(ts);
+            });
+        }
+    }
+    xhr.send();
+    //$("html, body").animate({ scrollTop: 0 }, "slow");
+
+}
+
+function search_thread_action(){
+    var x = {};
+    x["board"] = $("#board_id").text();
+    x["keyword"] =$("#search_form").find("input[name='keyword']").val(); 
+    x["topic"] =$("#search_type").val(); 
+
+    HISTORY.unshift({
+        url : "#search?" + search_para_string(x), 
+        title : 'search: ' + x.keyword
+    });
+
+    var url = '#search?board=' + x["board"] + '&keyword=' + x["keyword"] + '&topic=' + x["topic"];
+    $("#search_banner").html('²é: ' + x["board"] + ',' + x["topic"] + ',' + x["keyword"]);
+    //$.mobile.navigate( url );
+    $.mobile.changePage( url );
+}
+// }}}
+// {{ 
+function main(){
+    fav_board();
+
+    $('#toggle_fav_board').click(function(){
+        var id = $('#board_id').text();
+        var x = check_remember_list(FAV_BOARD, { key : id });
+        if(x!=undefined){
+            delete(FAV_BOARD[x]);
+            $('#toggle_fav_board').html('ÊÕ²Ø');
+        }else{
+            FAV_BOARD.unshift({ 
+                key : id, 
+                url: '#board?page=1&board=' + id, 
+                title : $('#board_title').text()
+            });
+
+            $('#toggle_fav_board').html('È¡ÏûÊÕ²Ø');
+        }
+        save_storage('fav_board', FAV_BOARD);
+        fav_board();
+    });
+
+    fav_thread();
+    $('#toggle_fav_thread').click(function(){
+        var bid = $('#thread_bid').text();
+        var tid = $('#thread_tid').text();
+        var title = $('#thread_title').text();
+
+        var x = check_remember_list(FAV_THREAD, {
+            "key" : bid+','+tid
+        });
+
+        if(x!=undefined){
+            delete(FAV_THREAD[x]);
+            $('#toggle_fav_thread').html('ÊÕ²Ø');
+        }else{
+            FAV_THREAD.unshift({
+                "key" : bid+','+tid, 
+                "title" : title, 
+                "url" : '#showmsg?board=' + bid + '&id=' + tid
+            });
+            $('#toggle_fav_thread').html('È¡ÏûÊÕ²Ø');
+        }
+        save_storage('fav_thread', FAV_THREAD);
+        fav_thread();
+    });
+
+    $.mobile.defaultPageTransition = 'none';
+    params_page();
+
+    $('#recent_history').click(function(){
+        recent_history();
+    });
+    recent_history();
+
+    home();
+    $('#go_home').click(function(){ home(); });
+
+    $('#board_menu').find("div").each(
+            function(){
+                board_menu($(this));
+            });
+
+    $("#filter_board").on( "filterablefilter", function( event, ui ) {
+        ui.items.each(function( index ) {
+            $(this).collapsible("option", "collapsed", $(this).hasClass("ui-screen-hidden")).removeClass("ui-screen-hidden");
+        });
+    });
+
+
+
+
+}
+//}}
+//{{
+$(document).bind('pageinit',function(e ){
+    if(INIT>0) return;
+    main(); 
+    INIT=1;
+});
 // }}
