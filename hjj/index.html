@@ -4,7 +4,8 @@
 <title>HJJ</title>
 <meta charset="gbk"/>
 <meta http-equiv="Content-Type" content="text/html; charset=gbk"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<!--<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">-->
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
 <script src="js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
 
@@ -12,10 +13,15 @@
 <script src="js/jquery.mobile-1.4.3.min.js" type="text/javascript" charset="utf-8"></script>
 
 <script src="js/jquery.mobile.paramsHandler-1.4.2.js" type="text/javascript" charset="utf-8"></script>
+<script src="js/jquery.elastic.source.js" type="text/javascript" charset="utf-8"></script>
 
 <link type="text/css" rel="stylesheet" href="css/app.css" 
 />
 <script src="js/app.js" type="text/javascript" charset="gb2312"></script>
+
+<style>
+</style>
+
 </head>
 <body>
 
@@ -24,8 +30,8 @@
         <div data-role="navbar">  
             <ul>
                 <li><a data-rel="back" href="#">后退</a></li>
-                <li><a href="#board_menu">主页</a></li>
-                <li><a href="#setting">设置x</a></li>
+                <li><a href="#board_menu">版块列表</a></li>
+                <li><a href="#setting">设置</a></li>
             </ul>
         </div>
     </div>
@@ -66,7 +72,7 @@
                 <li><a href="#sub_board" data-rel="popup">子版块</a></li>
                 <li><a href="#thread_type" data-rel="popup">分区</a></li>
                 <li><a href="#search_form" data-rel="popup"
- data-position-to="window"
+                    data-position-to="window"
                     >搜索</a></li>
             </ul>
         </div>
@@ -83,7 +89,7 @@
         <div id="thread_list"></div>
         <div id="board_pager_bottom"></div>
 
-        <div data-role="popup" id="new_thread">
+        <div data-role="popup" id="new_thread"  class="popup_textarea">
             <form enctype="multipart/form-data" method="post" action="/postbypolice.php?board=" data-ajax="false" 
                 target="_newtab">
                 <input type="hidden" value="→发布新贴子" name="msg">
@@ -91,7 +97,7 @@
                 <select id="new_thread_subid" name="subid">
                 </select> 
                 <input type="text" name="subject" placeholder="主题">
-                <textarea placeholder="内容" name="body" rows="80"></textarea>
+                <textarea placeholder="内容" name="body" ></textarea>
                 <input type="submit" value="发贴">
             </form>
         </div>
@@ -141,7 +147,6 @@
 
     <div data-role="popup" id="thread_type">
         <ul data-role="listview">
-            <!--<li data-role="divider" data-theme="e">Choose an action</li>-->
         </ul>
     </div>
 </div>
@@ -153,7 +158,7 @@
                 <li><a data-rel="back" href="#">后退</a></li>
                 <li><a href="#" id="thread_to_board">返回版块</a></li>
                 <li><a href="#reply_thread" data-rel="popup"
- data-position-to="window"
+                    data-position-to="window" id="reply_thread_a"
                     >回贴</a></li>
             </ul>
         </div>
@@ -162,9 +167,9 @@
     <div data-role="header">
         <div data-role="navbar">  
             <ul>
-                <li><a href="#only_poster">只看楼主x</a></li>
-                <li><a href="#only_poster">字数过滤x</a></li>
-                <li><a href="#thread_dewater">高级脱水x</a></li>
+                <li><a href="#" id="only_poster">只看楼主</a></li>
+                <li><input data-role="none" type="text" name="word_num" value=50 id="min_word_num_input"></li>
+                <li><a href="#" id="min_word_num">字数过滤</a></li>
             </ul>
         </div>
     </div>
@@ -175,7 +180,9 @@
             <span id="thread_title"></span><br>
             <span id="thread_bid"></span>,
             <span id="thread_tid"></span>,
-            <a id="toggle_fav_thread" href="#">...</a> 
+            <a id="toggle_fav_thread" href="#">...</a>
+            &nbsp;&nbsp;
+            <a id="view_all_floor" href="#">全部显示</a>
         </div>
 
         <div id="thread_pager_top"></div>
@@ -195,11 +202,12 @@
         </div>
     </div>
 
-    <div data-role="popup" id="reply_thread">
+    <div data-role="popup" id="reply_thread" class="popup_textarea">
         <form enctype="multipart/form-data" method="post" action="reply.php?board=&id=" data-ajax="false" 
             target="_newtab">
             <input placeholder="名字" type="text" name="username">
-            <textarea placeholder="内容" name="body"></textarea>
+            <textarea placeholder="内容" name="body"
+                ></textarea>
             <input type="submit" value="回贴">
         </form>
     </div>
@@ -211,7 +219,6 @@
         <a data-rel="back" href="#">后退</a>
     </div>
     <ul data-role="listview">
-        <!--<li data-role="divider" data-theme="e">Choose an action</li>-->
     </ul>
     <div data-role="navbar">  
         <a data-rel="back" href="#">后退</a>
@@ -224,7 +231,6 @@
         <a data-rel="back" href="#">后退</a>
     </div>
     <ul data-role="listview">
-        <!--<li data-role="divider" data-theme="e">Choose an action</li>-->
     </ul>
     <div data-role="navbar">  
         <a data-rel="back" href="#">后退</a>
@@ -236,7 +242,6 @@
         <a data-rel="back" href="#">后退</a>
     </div>
     <ul data-role="listview">
-        <!--<li data-role="divider" data-theme="e">Choose an action</li>-->
     </ul>
     <div data-role="navbar">  
         <a data-rel="back" href="#">后退</a>
@@ -272,13 +277,38 @@
     </div>
 </div>
 
+<div id="setting" data-role="page">
+    <div data-role="header" data-position="fixed">
+        <div data-role="navbar">  
+            <ul>
+                <li><a data-rel="back" href="#">返回</a></li>
+            </ul>
+        </div>
+    </div>
+    <div data-role="content">
+    <div class="containing-element">
+        <label for="night"></label>
+        <select name="night" data-role="slider" id="night_bgcolor">
+            <option value="off">白天</option>
+            <option value="on">黑夜</option>
+        </select>
+    </div>
+    </div>
+    <div data-role="footer" data-position="fixed">
+        <div data-role="navbar">  
+            <ul>
+                <li><a data-rel="back" href="#">返回</a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+
 <div id="search" data-role="page" >
     <div data-role="header" data-position="fixed">
         <div data-role="navbar">  
             <ul>
                 <li><a data-rel="back" href="#">后退</a></li>
                 <li><a href="#board_menu" >版块列表</a></li>
-                <!--<li><a href="#new_post" data-rel="popup" data-position-to="window"  data-transition="pop">发贴</a></li>-->
             </ul>
         </div>
     </div>
@@ -301,6 +331,15 @@
             </ul>
         </div>
     </div>
+</div>
+
+<div id="night_css" style="display:none;">
+body,div,table  {
+    background-color: #000000;
+    color: #f0efd0;
+}
+a:link  { color: #71baa5; }
+a:hover {color: #FFE900 !important; background-color: #363037 !important;}
 </div>
 
 </body>

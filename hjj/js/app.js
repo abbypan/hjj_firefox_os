@@ -57,6 +57,8 @@ function home() {
                     /http:\/\/bbs.jjwxc.net\/showmsg.php/g, 
                     '#showmsg').replace(/target="_blank"/g,'');;
             $('#home_content').html(body_h);
+            
+
         }
     }
     xhr.send();
@@ -326,6 +328,7 @@ function board(para) {
                 });
 
             $('#thread_list').html(thread_info);
+            $('#new_thread').find('textarea').val('');
 
             board_title(para, h);
 
@@ -365,11 +368,41 @@ function extract_floor_info(info) {
     };
 }
 
+function min_word_num(){
+    var min = $('#min_word_num_input').val();
+    var i = 0;
+    $('.floor').each(function() {
+        var c = $(this).find('.flcontent').attr('word_num');
+        if(i>0 && c<min) $(this).hide();
+        i=1;
+    })
+    $('#view_all_floor').show();
+}
+
+function view_all_floor(){
+    $('.floor').each(function() {
+        $(this).show();
+    });
+    $('#view_all_floor').hide();
+}
+
+function only_poster(){
+    var poster = $('.floor').eq(0).find('.floor_poster').text();
+    $('.floor').each(function() {
+        var flposter = $(this).find('.floor_poster').text();
+        if(flposter!=poster) $(this).hide();
+    })
+    $('#view_all_floor').show();
+}
+
 function format_floor_content(f) {
     var html = '<div class="floor" id="floor' + f.id + '">' +
-        '<div class="flcontent">' + f.content + '</div>' +
-        '<div class="chapter">¡í' + f.id + '<span class="star">¡î</span>' + f.poster + '<span class="star">¡î</span>' + f.time + '<span class="star">¡î</span></div>' +
-
+        '<div class="flcontent" word_num="' + f.word_num + '">' + f.content + '</div>' +
+        '<span class="chapter">¡í' + f.id + '<span class="star">¡î</span><span class="floor_poster">' + f.poster + '</span><span class="star">¡î</span>' + f.time + '<span class="star">¡î</span></span>' +
+        '&nbsp;&nbsp;' +
+        '<a  class="reply_thread_floor" reply_type="cite" href="#">ÒýÓÃ</a>' + 
+        '&nbsp;&nbsp;' +
+        '<a  class="reply_thread_floor" reply_type="default" href="#">»Ø¸´</a>' + 
         '</div>';
     return html;
 }
@@ -449,6 +482,19 @@ function showmsg(para){
                 $(this).removeAttr('target');
                 $(this).removeAttr('rel');
                 });
+
+                $('.reply_thread_floor').click(function(){
+                    $('#reply_thread').find('textarea').val('');
+                    var reply_type = $(this).attr("reply_type");
+                    var c = $(this).parent().children('.chapter').text().replace(/\n/g, ' ');
+                    if(reply_type=="cite") 
+                    c = "" + 
+                    $(this).parent().children('.flcontent').text().replace(/(\s*\n)+/g, "\n").trim().substr(0, 100) + 
+                    "......\n\n" + c ;
+                    $('#reply_thread').find('textarea').val(c.trim()+"\n");
+                    $('#reply_thread_a').click();
+                });
+
             });
 
         }
@@ -645,6 +691,15 @@ function main(){
     home();
     $('#go_home').click(function(){ home(); });
 
+    
+    $('#only_poster').click(function(){ only_poster(); });
+
+    $('#min_word_num').click(function(){ min_word_num(); });
+    //$('#min_word_num_input').height($('#min_word_num_input').parent().height());
+
+    $('#view_all_floor').click(function(){ view_all_floor(); });
+    $('#view_all_floor').hide();
+
     $('#board_menu').find("div").each(
             function(){
                 board_menu($(this));
@@ -656,9 +711,15 @@ function main(){
         });
     });
 
+   $('textarea').elastic(); 
 
+   $("#night_bgcolor").on("change", function () {
+       var s= $(this).val()=='on' ?  $('#night_css').html() : ""; 
+       $('head').find('style').html(s);
 
-
+       var t = $(this).val()=='on' ? 'e' : 'a';
+       $.mobile.changeGlobalTheme(t);
+   });
 }
 //}}
 //{{
