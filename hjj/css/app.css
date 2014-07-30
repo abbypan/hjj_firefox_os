@@ -8,11 +8,10 @@ img {
     height : auto !important;
 }
 
-#home_top,#home_hot,#home_watch,
+.smallbox,.pager,
 #board_content,#board_info,#thread_list,
 #thread_content,#thread_info,
-#search_content,
-.pager
+#search_content
 {
     border: 0.1em solid rgb(153, 204, 0); 
 }

@@ -9,10 +9,12 @@ firefox market 地址：[HJJ](https://marketplace.firefox.com/app/hjj/)
 
 ![board.png](board.png)
 
-![search.png](search.png)
-
 ![showmsg.png](showmsg.png)
 
 ![night.png](night.png)
+
+![search.png](search.png)
+
+![reply_thread.png](reply_thread.png)
 
 ![board_menu.png](board_menu.png)
