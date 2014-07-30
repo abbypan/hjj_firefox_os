@@ -5,8 +5,14 @@ hjj_firefox_os
 
 firefox market 地址：[HJJ](https://marketplace.firefox.com/app/hjj/)
 
-![hjj_home.png](hjj_home.png)
+![home.png](home.png)
 
-![hjj_board.png](hjj_board.png)
+![board.png](board.png)
 
-![hjj_showmsg.png](hjj_showmsg.png)
+![search.png](search.png)
+
+![showmsg.png](showmsg.png)
+
+![night.png](night.png)
+
+![board_menu.png](board_menu.png)
