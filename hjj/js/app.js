@@ -32,8 +32,6 @@ var MAX_HISTORY_CNT = 100;
 var HISTORY= read_storage('history', []);
 var FAV_BOARD=read_storage('fav_board', []);
 var FAV_THREAD = read_storage('fav_thread', []);
-//var THREAD = read_storage('thread', []);
-var MAX_THREAD_CNT = 500;
 var INIT = 0;
 //}}
 // {{{
@@ -107,26 +105,21 @@ function board_menu(zone_li) {
 
 
 function fav_board() {
-    var s = format_remember_list(
-        {
+    var s = format_remember_list({
         "key" : 'fav_board', 
         "data" : FAV_BOARD, 
         "max_length" : 30,
-    }
-    );
-
+    });
     $('#fav_board').find('ul').html(s);
     $('#fav_board').find('ul').trigger('create');
 }
 
 function fav_thread() {
-    var s = format_remember_list(
-        {
+    var s = format_remember_list({
         "key" : 'fav_thread', 
         "data" : FAV_THREAD, 
         "max_length" : 1000,
-    }
-    );
+    });
 
     $('#fav_thread').find('ul').html(s);
     $('#fav_thread').find('ul').trigger('create');
@@ -297,22 +290,18 @@ function new_thread(para){
 
 function thread_type(para){
     var s = 
-        '<li><a href="#board?' + board_para_string(para, { page : 1 }) + '">所有类别</a></li>' +
-        '<li><a href="#board?' + board_para_string(para, { page : 1 , 
-                                                   type : 'wonderful'
-    }) + '">加精</a></li>' +
         '<li><a href="#board?' + 
-        board_para_string(para, { page : 1 , 
-                          type : 'red'
-    }) 
-    + '">套红</a></li>' +
+        board_para_string(para, { page : 1 }) + 
+        '">所有类别</a></li>' +
+        '<li><a href="#board?' + 
+        board_para_string(para, { page : 1 , type : 'wonderful' }) + 
+        '">加精</a></li>' +
+        '<li><a href="#board?' + 
+        board_para_string(para, { page : 1 , type : 'red' }) + 
+        '">套红</a></li>' +
         '<li><a href="' + 
-        board_para_string(para, { page : 1 , 
-                          type : 'star'
-    }) 
-
-    + '">加☆</a></li>' 
-    ;
+        board_para_string(para, { page : 1 , type : 'star' }) + 
+        '">加☆</a></li>' ;
     $('#thread_type').find('ul').html(s);
 }
 
@@ -375,32 +364,53 @@ function extract_floor_info(info) {
         time: m[3]
     };
 }
+function filter_floor(is_to_filter) {
+    $('#view_all_floor').show();
+    var i = 0;
+    $('.floor').each(function() {
+        if(i>0 && is_to_filter($(this))) $(this).hide(); 
+        i=1;
+    });
+    showmsg_click();
+}
+
+function view_img(){
+    var is_to_filter = function(f){
+        var c = f.find('.flcontent').eq(0).html();
+        return  c.match(/\<img /i) ? 0 : 1;
+    };
+
+    filter_floor(is_to_filter);
+}
 
 function min_word_num(){
     var min = $('#min_word_num_input').val();
-    var i = 0;
-    $('.floor').each(function() {
-        var c = $(this).find('.flcontent').attr('word_num');
-        if(i>0 && c<min) $(this).hide();
-        i=1;
-    })
-    $('#view_all_floor').show();
+
+    var is_to_filter = function(f){
+        var c = f.find('.flcontent').attr('word_num');
+        return  c<min;
+    };
+
+    filter_floor(is_to_filter);
 }
 
 function view_all_floor(){
+    $('#view_all_floor').hide();
+
     $('.floor').each(function() {
         $(this).show();
     });
-    $('#view_all_floor').hide();
+    showmsg_click();
 }
 
 function only_poster(){
     var poster = $('.floor').eq(0).find('.floor_poster').text();
-    $('.floor').each(function() {
-        var flposter = $(this).find('.floor_poster').text();
-        if(flposter!=poster) $(this).hide();
-    })
-    $('#view_all_floor').show();
+    var is_to_filter = function(f){
+        var flposter = f.find('.floor_poster').text();
+        return  flposter!=poster ;
+    };
+
+    filter_floor(is_to_filter);
 }
 
 function format_floor_content(f) {
@@ -413,6 +423,8 @@ function format_floor_content(f) {
         '<a  class="reply_thread_floor" reply_type="default" href="#">回复</a>' + 
         '&nbsp;&nbsp;' +
         '<a class="jump_to_top" href="#">顶部</a>' + 
+        '&nbsp;&nbsp;' +
+        '<a class="jump_to_bottom" href="#">底部</a>' + 
         '</div>';
     return html;
 }
@@ -462,6 +474,15 @@ function toggle_fav_thread(){
 function showmsg_click() {
     $('#thread_content').on('click', '.jump_to_top', function(){
         $.mobile.silentScroll(0);
+        return false;
+    });
+    $('#thread_content').on('click', '.jump_to_bottom', function(){
+        $(document).scrollTop($(document).height());
+        return false;
+    });
+    
+    $('#thread_content').on('click', '#view_img', function(){
+        view_img();
         return false;
     });
 
@@ -537,12 +558,6 @@ function showmsg_refresh(local_url, para) {
                 showmsg_click();
                 check_fav_thread();
                 lscache.set(local_url, $('#thread_content').html(), THREAD_HISTORY_MINUTE);
-                //THREAD.unshift({
-                    //url : local_url, 
-                    //html : $('#thread_content').html()
-                //});
-                //if(THREAD.length > MAX_THREAD_CNT) THREAD.length=MAX_THREAD_CNT;
-                //save_storage('thread', THREAD);
 
             });
 
