@@ -1,4 +1,5 @@
 var HJJ='http://bbs.jjwxc.net';
+var THREAD_HISTORY_MINUTE = 60*24*10;
 // {{ base
 function save_storage(key, v){
     var s = JSON.stringify(v);
@@ -31,7 +32,7 @@ var MAX_HISTORY_CNT = 100;
 var HISTORY= read_storage('history', []);
 var FAV_BOARD=read_storage('fav_board', []);
 var FAV_THREAD = read_storage('fav_thread', []);
-var THREAD = read_storage('thread', []);
+//var THREAD = read_storage('thread', []);
 var MAX_THREAD_CNT = 500;
 var INIT = 0;
 //}}
@@ -129,6 +130,7 @@ function fav_thread() {
 
     $('#fav_thread').find('ul').html(s);
     $('#fav_thread').find('ul').trigger('create');
+    showmsg_click();
 }
 
 function check_fav_board(){
@@ -485,10 +487,10 @@ function showmsg_click() {
 
 function showmsg_refresh(local_url, para) {
     var u = HJJ+'/showmsg.php?' + showmsg_para_string(para); 
-
+    $('#thread_refresh').attr('href', local_url + '&refresh=1');
 
     var xhr = new XMLHttpRequest({mozSystem: true});
-    xhr.open("GET", u, false);
+    xhr.open("GET", u, true);
     xhr.overrideMimeType('text/plain; charset=gb2312');
 
     xhr.onreadystatechange = function() {
@@ -532,19 +534,18 @@ function showmsg_refresh(local_url, para) {
                     $(this).removeAttr('rel');
                 });
 
-                $('#thread_refresh').attr('href', local_url + '&refresh=1');
-
-                THREAD.unshift({
-                    url : local_url, 
-                    html : $('#thread_content').html()
-                });
-                if(THREAD.length > MAX_THREAD_CNT) THREAD.length=MAX_THREAD_CNT;
-                save_storage('thread', THREAD);
+                showmsg_click();
+                check_fav_thread();
+                lscache.set(local_url, $('#thread_content').html(), THREAD_HISTORY_MINUTE);
+                //THREAD.unshift({
+                    //url : local_url, 
+                    //html : $('#thread_content').html()
+                //});
+                //if(THREAD.length > MAX_THREAD_CNT) THREAD.length=MAX_THREAD_CNT;
+                //save_storage('thread', THREAD);
 
             });
 
-            showmsg_click();
-            check_fav_thread();
 
         }
     }
@@ -562,13 +563,13 @@ function showmsg(para){
 
     var local_url = "#showmsg?" + showmsg_para_string(para); 
 
-    var x = check_remember_list(THREAD, { url : local_url });
-    if(x==undefined || para.refresh!=undefined){
-        showmsg_refresh(local_url, para);
-    }else{
-        $('#thread_content').html(THREAD[x]["html"]);
+    var x = lscache.get(local_url);
+    if(x && para.refresh==undefined){
+        $('#thread_content').html(x);
         showmsg_click();
         check_fav_thread();
+    }else{
+        showmsg_refresh(local_url, para);
     }
 
 }
