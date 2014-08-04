@@ -767,8 +767,8 @@ function search_thread_action(){
 }
 // }}}
 // {{ 
-function font_click(e){
-        $(".change_font_size").click(function(){
+function font_click(ce, e){
+        $(ce).click(function(){
             var thisEle = $(e).css("font-size"); 
             var textFontSize = parseFloat(thisEle , 10);
             var unit = thisEle.slice(-2); //获取单位
@@ -886,8 +886,7 @@ function main(){
     var font_size = lscache.get('font-size') || '112%';
     $("body").css( "font-size" , font_size );
     lscache.set('font-size', font_size);
-    font_click("body");
-
+    font_click(".change_font_size", "body");
 }
 
 
