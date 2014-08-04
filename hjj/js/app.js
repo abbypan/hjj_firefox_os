@@ -136,7 +136,6 @@ function check_fav_board(){
     }else{
         $('#toggle_fav_board').html('收藏');
     }
-    board_click();
 }
 
 function check_fav_thread(){
@@ -152,7 +151,6 @@ function check_fav_thread(){
     }else{
         $('#toggle_fav_thread').html('收藏');
     }
-    showmsg_click();
 }
 
 
@@ -287,6 +285,18 @@ function board_title(para, h){
 
 function new_thread(para){
     var u = HJJ + "/postbypolice.php?board="+ para.board;
+$('#new_thread').html(
+            '<form enctype="multipart/form-data" method="post"  \
+            action="/postbypolice.php?board=" data-ajax="false"  \
+                target="_newtab"> \
+                <input type="hidden" value="→发布新贴子" name="msg"> \
+                <input placeholder="名字" type="text" name="username">\
+                <select id="new_thread_subid" name="subid"> \
+                </select> \
+                <input type="text" name="subject" placeholder="主题"> \
+                <textarea rows=12 placeholder="内容" name="body" ></textarea> \
+                <input type="submit" value="发贴"> \
+            </form>');
     $('#new_thread').find('form').attr("action", u);
 }
 
@@ -469,27 +479,18 @@ function toggle_fav_thread(){
         });
         $('#toggle_fav_thread').html('取消收藏');
     }
-    fav_thread();
-    showmsg_click();
     save_storage('fav_thread', FAV_THREAD);
+    fav_thread();
 }
 
 function showmsg_click() {
-    $('#showmsg').on('click', 
-        '#only_poster', 
-        function(){ only_poster(); });
-
-    $('#showmsg').on('click', 
-        '#min_word_num', function(){ min_word_num(); });
-
-    $('#thread_content').on(
-        'click', '#view_all_floor', function(){ view_all_floor();});
-    //$('#view_all_floor').hide();
     $('#thread_content').on('click', '.jump_to_top', function(){
         $.mobile.silentScroll(0);
+        return false;
     });
     $('#thread_content').on('click', '.jump_to_bottom', function(){
         $(document).scrollTop($(document).height());
+        return false;
     });
     
     $('#thread_content').on('click', '#view_img', function(){
@@ -505,13 +506,21 @@ function showmsg_click() {
             $(this).parent().children('.flcontent').text().replace(/(\s*\n)+/g, "\n").trim().substr(0, 100) + 
         "......\n\n" + c ;
         $('#reply_thread').find('textarea').val(c.trim()+"\n");
+
+        showmsg_click();
         $('#reply_thread_a').click();
     });
 
     $('#thread_content').on('click', 
-    '#toggle_fav_thread', function(){
+        '#toggle_fav_thread', function(){
         toggle_fav_thread();
+        return false;
     });
+    
+    $('#thread_content').on('click', '#only_poster', function(){ only_poster(); return false; });
+    $('#thread_content').on('click', '#min_word_num',function(){ min_word_num(); return false; });
+    $('#thread_content').on('click', '#view_all_floor', function(){ view_all_floor();return false; });
+    //$('#view_all_floor').hide();
 }
 
 
@@ -540,11 +549,9 @@ function showmsg_refresh(local_url, para) {
             }
 
             var pm = xhr.responseText.match(/\>(共\d+页:.+?)<\/div>/);
-            if(pm){
-                var page_h = pm[1].replace(/href=(.+?)>/g, "href=\"#showmsg$1\">");
-                $('#thread_pager_top').html( page_h );
-                $('#thread_pager_bottom').html( page_h );
-            }
+            var page_h = pm ? pm[1].replace(/href=(.+?)>/g, "href=\"#showmsg$1\">").replace(/<\/a>/g, '</a>&nbsp;') : '';
+            $('#thread_pager_top').html( page_h );
+            $('#thread_pager_bottom').html( page_h );
 
             var floors_info = new Array();
             $(h).find('td[class="read"]').each(function() {
@@ -564,8 +571,8 @@ function showmsg_refresh(local_url, para) {
                     $(this).removeAttr('rel');
                 });
 
-                showmsg_click();
                 check_fav_thread();
+                showmsg_click();
                 lscache.set(local_url, $('#thread_content').html(), THREAD_HISTORY_MINUTE);
 
             });
@@ -578,14 +585,47 @@ function showmsg_refresh(local_url, para) {
 
 
 function showmsg(para){
+    var local_url = "#showmsg?" + showmsg_para_string(para); 
+    var remote_url = HJJ + '/showmsg.php?' + showmsg_para_string(para);
+    $('#thread_info').html(
+            '<a href="' + remote_url + '" id="thread_title"></a><br> \
+             <span id="thread_bid"></span>, \
+            <span id="thread_tid"></span>, &nbsp; \
+            <a id="toggle_fav_thread" href="#">...</a> \
+            &nbsp; \
+            <a id="thread_refresh" href="#">刷新</a> '
+    );
+
     $('#thread_bid').html(para.board);
     $('#thread_tid').html(para.id);
+
+    $('#reply_thread').html(
+        '<form enctype="multipart/form-data" method="post" action="reply.php?board=&id=" data-ajax="false" \
+            target="_newtab"> \
+            <input placeholder="名字" type="text" name="username"> <br> \
+            <textarea rows=12 placeholder="内容" name="body"></textarea> <br> \
+            <input type="submit" value="回贴"> \
+        </form>'
+    );
+
     $('#reply_thread').find('form').attr('action', HJJ + "/reply.php?board="+ para.board + '&id=' + para.id);
+
     $('#thread_to_board').attr('href', "#board?board=" + para.board + '&page=1');
+    
+    $('#thread_action').html(
+            '<input data-role="none" type="text" name="word_num" value=50 id="min_word_num_input"> \
+            <a href="#" id="min_word_num">字数过滤</a> \
+            &nbsp; \
+            <a href="#" id="only_poster">只看楼主</a> \
+            &nbsp; \
+            <a href="#" id="view_img">看图</a> \
+            &nbsp; \
+            <a id="view_all_floor" href="#">全部显示</a> \
+            <br><br>'
+    );
 
     $('#thread_floor_list').html('');
 
-    var local_url = "#showmsg?" + showmsg_para_string(para); 
 
     var x = lscache.get(local_url);
     if(x && para.refresh==undefined){
@@ -727,7 +767,69 @@ function search_thread_action(){
 }
 // }}}
 // {{ 
-function board_click() {
+function font_click(e){
+        $(".change_font_size").click(function(){
+            var thisEle = $(e).css("font-size"); 
+            var textFontSize = parseFloat(thisEle , 10);
+            var unit = thisEle.slice(-2); //获取单位
+            var cName = $(this).attr("type");
+            if(cName == "bigger"){
+                    textFontSize += 2;
+            }else if(cName == "smaller"){
+                    textFontSize -= 2;
+            }
+            var sz = textFontSize + unit;
+            $(e).css( "font-size" , sz );
+
+            lscache.set('font-size', sz);
+        });
+}
+
+function setting_init(){
+$('#setting_content').html(
+        '<div class="containing-element"> \
+        <div id="color_d"> \
+            <label for="night"></label> \
+            <select name="night" data-role="slider" id="night_bgcolor"> \
+                <option value="off">白天</option> \
+                <option value="on">黑夜</option> \
+            </select> \
+            </div> \
+            <div id="font_size_d"> \
+            字号： \
+            <a class="change_font_size" type="bigger">放大</a> \
+            &nbsp; \
+            <a class="change_font_size" type="smaller">缩小</a> \
+            </div> \
+        </div>');
+}
+function search_init(){
+    $('#search_form').html(
+        '<form action="javascript:search_thread_action();"> \
+            <div> \
+                <input type="text" name="keyword" value="" /> \
+                <div data-role="fieldcontain"> \
+                    <select name="topic" id="search_type"> \
+                        <option value="3">贴子主题</option> \
+                        <option value="1">主题贴内容</option> \
+                        <option value="4">主题贴发贴人</option> \
+                        <option value="2">跟贴内容</option> \
+                        <option value="5">跟贴发贴人</option> \
+                    </select> \
+                </div> \
+                <button type="submit">查询</button> \
+            </div> \
+        </form>'
+    );
+}
+
+
+function main(){
+    search_init();
+    setting_init();
+
+    fav_board();
+
     $('#board').on('click', 
     '#toggle_fav_board', function(){
         var id = $('#board_id').text();
@@ -747,22 +849,18 @@ function board_click() {
         save_storage('fav_board', FAV_BOARD);
         fav_board();
     });
-}
 
-function main(){
-    fav_board();
     fav_thread();
-    home();
 
     $.mobile.defaultPageTransition = 'none';
     params_page();
 
-    board_click();
-
-    $('#recent_history').on('click', '#recent_history', function(){
+    $('#recent_history').click(function(){
         recent_history();
     });
     recent_history();
+
+    home();
 
     $('#board_menu').find("div").each(
         function(){
@@ -784,7 +882,15 @@ function main(){
         var t = $(this).val()=='on' ? 'e' : 'a';
         $.mobile.changeGlobalTheme(t);
     });
+
+    var font_size = lscache.get('font-size') || '112%';
+    $("body").css( "font-size" , font_size );
+    lscache.set('font-size', font_size);
+    font_click("body");
+
 }
+
+
 //}}
 //{{
 $(document).bind('pageinit',function(e ){
@@ -793,3 +899,5 @@ $(document).bind('pageinit',function(e ){
     INIT=1;
 });
 // }}
+
+

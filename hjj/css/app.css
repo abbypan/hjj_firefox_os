@@ -1,6 +1,7 @@
-body,div,table  {
+body,div,table,ul,li,input,textarea  {
     background-color: #ffdbef;
     background-size: 100%;
+    /*font-size: 118% ;*/
 }
 
 img {
@@ -27,19 +28,34 @@ img {
     font-weight: bold;
 }
 
-textarea {
-    overflow: auto; 
+.popup_textarea {
+    height: 80% !important;
+    width: 90% !important;
+    overflow: auto !important; 
+    /*position:fixed;*/
+    /*left: 20px;*/
+    /*right: 10px;*/
+    /*top:30px;*/
+    /*bottom: 30px;*/
 }
 
-.popup_textarea {
-    position:fixed;
-    top:20px;
-    left: 20px;
-    right: 20px;
+textarea {
+    /*width: 100% !important;*/
+    /*height: 80% !important;*/
+    /*-webkit-box-sizing: border-box; */
+    /*-moz-box-sizing: border-box;   */
+    /*box-sizing: border-box;       */
+}
+
+input {
+    width: 75% !important;
+    -webkit-box-sizing: border-box; 
+    -moz-box-sizing: border-box;   
+    box-sizing: border-box;       
 }
 
 #min_word_num_input {
-    width: 100%;
+    width: 10% !important;
     -webkit-box-sizing: border-box; 
     -moz-box-sizing: border-box;   
     box-sizing: border-box;       
