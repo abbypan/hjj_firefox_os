@@ -136,6 +136,7 @@ function check_fav_board(){
     }else{
         $('#toggle_fav_board').html('收藏');
     }
+    board_click();
 }
 
 function check_fav_thread(){
@@ -151,6 +152,7 @@ function check_fav_thread(){
     }else{
         $('#toggle_fav_thread').html('收藏');
     }
+    showmsg_click();
 }
 
 
@@ -365,7 +367,7 @@ function extract_floor_info(info) {
     };
 }
 function filter_floor(is_to_filter) {
-    $('#view_all_floor').show();
+    //$('#view_all_floor').show();
     var i = 0;
     $('.floor').each(function() {
         if(i>0 && is_to_filter($(this))) $(this).hide(); 
@@ -395,7 +397,7 @@ function min_word_num(){
 }
 
 function view_all_floor(){
-    $('#view_all_floor').hide();
+    //$('#view_all_floor').hide();
 
     $('.floor').each(function() {
         $(this).show();
@@ -467,23 +469,31 @@ function toggle_fav_thread(){
         });
         $('#toggle_fav_thread').html('取消收藏');
     }
-    save_storage('fav_thread', FAV_THREAD);
     fav_thread();
+    showmsg_click();
+    save_storage('fav_thread', FAV_THREAD);
 }
 
 function showmsg_click() {
+    $('#showmsg').on('click', 
+        '#only_poster', 
+        function(){ only_poster(); });
+
+    $('#showmsg').on('click', 
+        '#min_word_num', function(){ min_word_num(); });
+
+    $('#thread_content').on(
+        'click', '#view_all_floor', function(){ view_all_floor();});
+    //$('#view_all_floor').hide();
     $('#thread_content').on('click', '.jump_to_top', function(){
         $.mobile.silentScroll(0);
-        return false;
     });
     $('#thread_content').on('click', '.jump_to_bottom', function(){
         $(document).scrollTop($(document).height());
-        return false;
     });
     
     $('#thread_content').on('click', '#view_img', function(){
         view_img();
-        return false;
     });
 
     $('#thread_content').on('click', '.reply_thread_floor', function(){
@@ -496,12 +506,11 @@ function showmsg_click() {
         "......\n\n" + c ;
         $('#reply_thread').find('textarea').val(c.trim()+"\n");
         $('#reply_thread_a').click();
-        return false;
     });
 
-    $('#toggle_fav_thread').on('click', function(){
+    $('#thread_content').on('click', 
+    '#toggle_fav_thread', function(){
         toggle_fav_thread();
-        return false;
     });
 }
 
@@ -581,8 +590,8 @@ function showmsg(para){
     var x = lscache.get(local_url);
     if(x && para.refresh==undefined){
         $('#thread_content').html(x);
-        showmsg_click();
         check_fav_thread();
+        showmsg_click();
     }else{
         showmsg_refresh(local_url, para);
     }
@@ -718,10 +727,9 @@ function search_thread_action(){
 }
 // }}}
 // {{ 
-function main(){
-    fav_board();
-
-    $('#toggle_fav_board').click(function(){
+function board_click() {
+    $('#board').on('click', 
+    '#toggle_fav_board', function(){
         var id = $('#board_id').text();
         var x = check_remember_list(FAV_BOARD, { key : id });
         if(x!=undefined){
@@ -739,28 +747,22 @@ function main(){
         save_storage('fav_board', FAV_BOARD);
         fav_board();
     });
+}
 
+function main(){
+    fav_board();
     fav_thread();
+    home();
 
     $.mobile.defaultPageTransition = 'none';
     params_page();
 
-    $('#recent_history').on('click', function(){
+    board_click();
+
+    $('#recent_history').on('click', '#recent_history', function(){
         recent_history();
     });
     recent_history();
-
-    home();
-    $('#go_home').click(function(){ home(); return false; });
-
-
-    $('#only_poster').click(function(){ only_poster(); return false; });
-
-    $('#min_word_num').click(function(){ min_word_num(); return false; });
-    //$('#min_word_num_input').height($('#min_word_num_input').parent().height());
-
-    $('#view_all_floor').click(function(){ view_all_floor();return false; });
-    $('#view_all_floor').hide();
 
     $('#board_menu').find("div").each(
         function(){
