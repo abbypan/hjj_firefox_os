@@ -5,6 +5,8 @@ hjj_firefox_os
 
 firefox market 地址：[HJJ](https://marketplace.firefox.com/app/hjj/)
 
+phonegap 打包的 android apk 地址：[HJJ-phonegap](https://build.phonegap.com/apps/1033213/share)
+
 ![home.png](home.png)
 
 ![board.png](board.png)
