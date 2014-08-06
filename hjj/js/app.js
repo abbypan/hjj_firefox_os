@@ -123,7 +123,6 @@ function fav_thread() {
 
     $('#fav_thread').find('ul').html(s);
     $('#fav_thread').find('ul').trigger('create');
-    showmsg_click();
 }
 
 function check_fav_board(){
@@ -392,7 +391,6 @@ function filter_floor(is_to_filter) {
         if(i>0 && is_to_filter($(this))) $(this).hide(); 
         i=1;
     });
-    showmsg_click();
 }
 
 function view_img(){
@@ -421,7 +419,6 @@ function view_all_floor(){
     $('.floor').each(function() {
         $(this).show();
     });
-    showmsg_click();
 }
 
 function only_poster(){
@@ -510,16 +507,16 @@ function share_thread() {
 
 function showmsg_click() {
 
-    $('#thread_content').on('click', '.jump_to_top', function(){
+    $('#showmsg').on('click', '.jump_to_top', function(){
         $.mobile.silentScroll(0);
         return false;
     });
-    $('#thread_content').on('click', '.jump_to_bottom', function(){
+    $('#showmsg').on('click', '.jump_to_bottom', function(){
         $(document).scrollTop($(document).height());
         return false;
     });
 
-    $('#thread_content').on('click', '.jump_to_prev', function(){
+    $('#showmsg').on('click', '.jump_to_prev', function(){
         var fid = $(this).parent().attr('fid');
         var step = lscache.get('showmsg_subpage') || 50;
         var nid = parseInt(fid) - step;
@@ -532,7 +529,7 @@ function showmsg_click() {
         return false;
     });
 
-    $('#thread_content').on('click', '.jump_to_next', function(){
+    $('#showmsg').on('click', '.jump_to_next', function(){
         var fid = $(this).parent().attr('fid');
         var step = lscache.get('showmsg_subpage') || 50;
         var nid = parseInt(fid) + step;
@@ -545,11 +542,11 @@ function showmsg_click() {
         return false;
     });
     
-    $('#thread_content').on('click', '#view_img', function(){
+    $('#showmsg').on('click', '#view_img', function(){
         view_img();
     });
 
-    $('#thread_content').on('click', '.reply_thread_floor', function(){
+    $('#showmsg').on('click', '.reply_thread_floor', function(){
         $('#reply_thread').find('textarea').val('');
         var reply_type = $(this).attr("reply_type");
         var c = $(this).parent().children('.chapter').text().replace(/\n/g, ' ');
@@ -559,25 +556,24 @@ function showmsg_click() {
         "......\n\n" + c ;
         $('#reply_thread').find('textarea').val(c.trim()+"\n");
 
-        showmsg_click();
         $('#reply_thread_a').click();
     });
 
-    $('#thread_content').on('click', 
+    $('#showmsg').on('click', 
         '#toggle_fav_thread', function(){
         toggle_fav_thread();
         return false;
     });
 
-    $('#thread_content').on('click', 
+    $('#showmsg').on('click', 
         '#share_thread', function(){
         share_thread();
         return false;
     });
     
-    $('#thread_content').on('click', '#only_poster', function(){ only_poster(); return false; });
-    $('#thread_content').on('click', '#min_word_num',function(){ min_word_num(); return false; });
-    $('#thread_content').on('click', '#view_all_floor', function(){ view_all_floor();return false; });
+    $('#showmsg').on('click', '#only_poster', function(){ only_poster(); return false; });
+    $('#showmsg').on('click', '#min_word_num',function(){ min_word_num(); return false; });
+    $('#showmsg').on('click', '#view_all_floor', function(){ view_all_floor();return false; });
     //$('#view_all_floor').hide();
 }
 
@@ -630,7 +626,6 @@ function showmsg_refresh(local_url, para) {
                 });
 
                 check_fav_thread();
-                showmsg_click();
                 lscache.set(local_url, $('#thread_content').html(), THREAD_HISTORY_MINUTE);
 
             });
@@ -691,7 +686,6 @@ function showmsg(para){
     if(x && para.refresh==undefined){
         $('#thread_content').html(x);
         check_fav_thread();
-        showmsg_click();
     }else{
         showmsg_refresh(local_url, para);
     }
@@ -965,6 +959,8 @@ function main(){
     $("body").css( "font-size" , font_size );
     lscache.set('font-size', font_size);
     font_click(".change_font_size", "body");
+
+    showmsg_click();
 }
 
 
