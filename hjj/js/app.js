@@ -589,7 +589,7 @@ function showmsg_refresh(local_url, para) {
     xhr.onreadystatechange = function() {
         if (xhr.readyState == 4) {
 
-            h = $.parseHTML(xhr.responseText);
+            h = $.parseHTML(xhr.responseText.replace(/<font color='gray' size='-1'>本帖尚未审核,若发布24小时后仍未审核通过会被屏蔽<\/font><br\/>/g,''));
 
             var tm = xhr.responseText.match(/<title>(.+?)<\/title>/);
             var title_h = tm[1].replace(/ —— 晋江文学城网友交流区/,'');
@@ -675,8 +675,7 @@ function showmsg(para){
             &nbsp; \
             <a href="#" id="view_img">看图</a> \
             &nbsp; \
-            <a id="view_all_floor" href="#">全部显示</a> \
-            <br><br>'
+            <a id="view_all_floor" href="#">全部显示</a>'
     );
 
     $('#thread_floor_list').html('');
@@ -864,8 +863,9 @@ $('#setting_content').html(
             </div> \
         </div>');
 
-    var share_or_not = lscache.get('share_tz').match(/\S/) ? 'on' : 'off';
-    $('#share_d').find('option[value="'+share_or_not+'"]').attr('selected', 'selected');
+    var share_or_not = lscache.get('share_tz');
+    var share_flag = (share_or_not && share_or_not.match(/\S/)) ? 'on' : 'off';
+    $('#share_d').find('option[value="'+share_flag+'"]').attr('selected', 'selected');
 }
 
 function search_init(){
@@ -918,7 +918,6 @@ function main(){
     fav_thread();
 
     $.mobile.defaultPageTransition = 'none';
-    $.mobile.allowCrossDomainPages = true;
 
     params_page();
 
@@ -961,19 +960,21 @@ function main(){
     font_click(".change_font_size", "body");
 
     showmsg_click();
+    $.support.cors = true;  
+    $.mobile.allowCrossDomainPages = true;
 }
 
 
 //}}
 //{{
-$(document).bind("mobileinit", function() {  
-    $.support.cors = true;  
-});
-$(document).bind('pageinit',function(e ){
+//$(document).bind("mobileinit", function() {  
+    //$.support.cors = true;  
+    //$.mobile.allowCrossDomainPages = true;
+    ////$.mobile.phonegapNavigationEnabled = true;
+//});
+$(document).bind('pageinit',function(e){
     if(INIT>0) return;
     main(); 
     INIT=1;
 });
 // }}
-
-
