@@ -219,6 +219,15 @@ function board_para_string(para, other){
 }
 
 function board_thread_info(tr) {
+    var href_list = '';
+    var i = 0;
+    tr.find('a').each(function(){
+        if(i>0){
+            href_list += ' <a href="' + $(this).attr('href').replace(/showmsg.php/, '#showmsg') + '">' + $(this).text() + '</a>';
+        }
+        i=1;
+    });
+
     var info =  {
         tag : tr.children('td').eq(0).text(),
         title : tr.find('a').eq(0).text(),
@@ -229,7 +238,7 @@ function board_thread_info(tr) {
         hot : tr.children('td').eq(5).text()
     };
     var s = '<div class="onethread">' + 
-        info.tag+ ': <a href="'+ info.url + '">' + info.title + '</a><br>' + 
+        info.tag+ ': <a href="'+ info.url + '">' + info.title + '</a> '+ href_list +'<br>' + 
         info.poster + '; 热:' + info.hot + '; 回:' + info.reply + '; ' + info.time + '<br>'+
         '</div>';
     return s;
@@ -426,17 +435,21 @@ function only_poster(){
 }
 
 function format_floor_content(f) {
-    var html = '<div class="floor" id="floor' + f.id + '">' +
+    var html = '<div class="floor" id="floor' + f.id + '" fid="'+ f.id +'">' +
         '<div class="flcontent" word_num="' + f.word_num + '">' + f.content + '</div>' +
         '<span class="chapter">№' + f.id + '<span class="star">☆</span><span class="floor_poster">' + f.poster + '</span><span class="star">☆</span>' + f.time + '<span class="star">☆</span></span>' +
         '&nbsp;&nbsp;' +
-        '<a  class="reply_thread_floor" reply_type="cite" href="#">引用</a>' + 
+        '<a  class="reply_thread_floor" reply_type="cite" href="#">&raquo;</a>' + 
         '&nbsp;&nbsp;' +
-        '<a  class="reply_thread_floor" reply_type="default" href="#">回复</a>' + 
+        '<a  class="reply_thread_floor" reply_type="default" href="#">&gt;</a>' + 
         '&nbsp;&nbsp;' +
-        '<a class="jump_to_top" href="#">顶部</a>' + 
+        '<a class="jump_to_top" href="#">&uArr;</a>' + 
         '&nbsp;&nbsp;' +
-        '<a class="jump_to_bottom" href="#">底部</a>' + 
+        '<a class="jump_to_bottom" href="#">&dArr;</a>' + 
+        '&nbsp;&nbsp;' +
+        '<a class="jump_to_prev" href="#">&uarr;</a>' + 
+        '&nbsp;&nbsp;' +
+        '<a class="jump_to_next" href="#">&darr;</a>' + 
         '</div>';
     return html;
 }
@@ -496,12 +509,39 @@ function share_thread() {
 }
 
 function showmsg_click() {
+
     $('#thread_content').on('click', '.jump_to_top', function(){
         $.mobile.silentScroll(0);
         return false;
     });
     $('#thread_content').on('click', '.jump_to_bottom', function(){
         $(document).scrollTop($(document).height());
+        return false;
+    });
+
+    $('#thread_content').on('click', '.jump_to_prev', function(){
+        var fid = $(this).parent().attr('fid');
+        var step = lscache.get('showmsg_subpage') || 50;
+        var nid = parseInt(fid) - step;
+        var k = '#floor' + nid;
+        if($(k).length>0){
+            $.mobile.silentScroll($(k).offset().top);
+        }else{
+            $.mobile.silentScroll(0);
+        }
+        return false;
+    });
+
+    $('#thread_content').on('click', '.jump_to_next', function(){
+        var fid = $(this).parent().attr('fid');
+        var step = lscache.get('showmsg_subpage') || 50;
+        var nid = parseInt(fid) + step;
+        var k = '#floor' + nid;
+        if($(k).length>0){
+            $.mobile.silentScroll($(k).offset().top);
+        }else{
+            $(document).scrollTop($(document).height());
+        }
         return false;
     });
     
@@ -880,6 +920,8 @@ function main(){
     fav_thread();
 
     $.mobile.defaultPageTransition = 'none';
+    $.mobile.allowCrossDomainPages = true;
+
     params_page();
 
     $('#recent_history').click(function(){
@@ -924,6 +966,9 @@ function main(){
 
 //}}
 //{{
+$(document).bind("mobileinit", function() {  
+    $.support.cors = true;  
+});
 $(document).bind('pageinit',function(e ){
     if(INIT>0) return;
     main(); 
