@@ -848,28 +848,32 @@ function font_click(ce, e){
 function setting_init(){
 $('#setting_content').html(
         '<div class="containing-element"> \
-        <div id="color_d"> \
+        <div id="color_d" class="setting"> \
             <label for="night"></label> \
             <select name="night" data-role="slider" id="night_bgcolor"> \
                 <option value="off">白天</option> \
                 <option value="on">黑夜</option> \
             </select> \
             </div> \
-            <div id="font_size_d"> \
+            <div id="font_size_d" class="setting"> \
             字号： \
             <a class="change_font_size" type="bigger">放大</a> \
             &nbsp; \
             <a class="change_font_size" type="smaller">缩小</a> \
             </div> \
-        <div id="share_d"> \
-            <label for="share">分享</label> \
+        <div id="share_d" class="setting"> \
+            <label for="share">分享时是否 @hjjtz</label> \
             <select name="share" data-role="slider" id="share_tz"> \
-                <option value="on">带上 @hjjtz</option> \
-                <option value="off">不带 @hjjtz</option> \
+                <option value="on"> @ </option> \
+                <option value="off">不 @</option> \
             </select> \
             </div> \
         </div>');
+
+    var share_or_not = lscache.get('share_tz').match(/\S/) ? 'on' : 'off';
+    $('#share_d').find('option[value="'+share_or_not+'"]').attr('selected', 'selected');
 }
+
 function search_init(){
     $('#search_form').html(
         '<form action="javascript:search_thread_action();"> \
