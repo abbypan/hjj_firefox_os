@@ -483,6 +483,18 @@ function toggle_fav_thread(){
     fav_thread();
 }
 
+function share_thread() {
+    var share_wb = lscache.get('share_tz') || '@hjjtz';
+    var u = 'http://v.t.sina.com.cn/share/share.php';
+    var title = $('#thread_title').html();
+    var poster = $('.floor').eq(0).find('.floor_poster').text();
+    var url = encodeURIComponent($('#thread_title').attr('href'));
+
+    var st = encodeURIComponent(share_wb + ' {' + title + '} {' + poster + '} ');
+    var wu = u + '?title=' + st + '&url=' + url;
+    window.open(wu, '_blank');
+}
+
 function showmsg_click() {
     $('#thread_content').on('click', '.jump_to_top', function(){
         $.mobile.silentScroll(0);
@@ -514,6 +526,12 @@ function showmsg_click() {
     $('#thread_content').on('click', 
         '#toggle_fav_thread', function(){
         toggle_fav_thread();
+        return false;
+    });
+
+    $('#thread_content').on('click', 
+        '#share_thread', function(){
+        share_thread();
         return false;
     });
     
@@ -592,6 +610,8 @@ function showmsg(para){
              <span id="thread_bid"></span>, \
             <span id="thread_tid"></span>, &nbsp; \
             <a id="toggle_fav_thread" href="#">...</a> \
+            &nbsp; \
+            <a id="share_thread" href="#">分享</a> \
             &nbsp; \
             <a id="thread_refresh" href="#">刷新</a> '
     );
@@ -801,6 +821,13 @@ $('#setting_content').html(
             &nbsp; \
             <a class="change_font_size" type="smaller">缩小</a> \
             </div> \
+        <div id="share_d"> \
+            <label for="share">分享</label> \
+            <select name="share" data-role="slider" id="share_tz"> \
+                <option value="on">带上 @hjjtz</option> \
+                <option value="off">不带 @hjjtz</option> \
+            </select> \
+            </div> \
         </div>');
 }
 function search_init(){
@@ -874,6 +901,11 @@ function main(){
     });
 
     $('textarea').elastic(); 
+
+    $("#share_tz").on("change", function () {
+        var s= $(this).val()=='on' ?  '@hjjtz' : ' '; 
+        lscache.set('share_tz', s);
+    });
 
     $("#night_bgcolor").on("change", function () {
         var s= $(this).val()=='on' ?  $('#night_css').html() : ""; 
