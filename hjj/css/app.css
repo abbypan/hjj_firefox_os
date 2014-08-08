@@ -1,7 +1,12 @@
 body,div,table,ul,li,input,textarea  {
-    background-color: #ffdbef;
+    background-color: #ffe7f7;
     background-size: 100%;
     word-wrap: break-word;      
+}
+
+.star {
+    color: #d4db8e;
+    font-weight: bold;
 }
 
 img {
@@ -49,7 +54,14 @@ input,select {
 }
 
 #min_word_num_input {
-    width: 10% !important;
+    width: 15% !important;
+    -webkit-box-sizing: border-box; 
+    -moz-box-sizing: border-box;   
+    box-sizing: border-box;       
+}
+
+#floor_keyword_input {
+    width: 30% !important;
     -webkit-box-sizing: border-box; 
     -moz-box-sizing: border-box;   
     box-sizing: border-box;       

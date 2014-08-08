@@ -102,6 +102,8 @@ var FAV_THREAD = read_storage('fav_thread', []);
 //}}
 // {{{ home
 function home() {
+    $('#manual_jump').find('input').eq(0).val('');
+
     var xhr;
     if(window.XMLHttpRequest){
         xhr = new XMLHttpRequest({mozSystem: true}) || new XMLHttpRequest();
@@ -412,6 +414,8 @@ function board(para) {
     thread_type(para);
     new_thread(para);
 
+    $('#manual_jump').find('input').eq(0).val(para.board);
+
     var url = HJJ + "/board.php?" + board_para_string(para);
 
     var thread_info = '';
@@ -477,6 +481,28 @@ function view_img(){
     var is_to_filter = function(f){
         var c = f.find('.flcontent').eq(0).html();
         return  c.match(/\<img /i) ? 0 : 1;
+    };
+
+    filter_floor(is_to_filter);
+}
+
+function floor_keyword(){
+    var k = $('#floor_keyword_input').val();
+
+    var is_to_filter = function(f){
+        var c = f.find('.flcontent').text().match(k);
+        return  c ? false : true;
+    };
+
+    filter_floor(is_to_filter);
+}
+
+function floor_filter(){
+    var k = $('#floor_keyword_input').val();
+
+    var is_to_filter = function(f){
+        var c = f.find('.flcontent').text().match(k);
+        return  c ? true : false;
     };
 
     filter_floor(is_to_filter);
@@ -619,6 +645,8 @@ function showmsg_click() {
     
     $('#showmsg').on('click', '#only_poster', function(){ only_poster(); return false; });
     $('#showmsg').on('click', '#min_word_num',function(){ min_word_num(); return false; });
+    $('#showmsg').on('click', '#floor_keyword',function(){ floor_keyword(); return false; });
+    $('#showmsg').on('click', '#floor_filter',function(){ floor_filter(); return false; });
     $('#showmsg').on('click', '#view_all_floor', function(){ view_all_floor();return false; });
 }
 
@@ -689,6 +717,8 @@ function showmsg_refresh(local_url, para) {
 function showmsg(para){
     var local_url = "#showmsg?" + showmsg_para_string(para); 
     var remote_url = HJJ + '/showmsg.php?' + showmsg_para_string(para);
+    $('#manual_jump').find('input').eq(0).val(para.board);
+
     $('#thread_info').html(
             '<a target="_blank" href="' + remote_url + '" id="thread_title"></a><br> \
              <span id="thread_bid"></span>, \
@@ -722,8 +752,13 @@ function showmsg(para){
     
     $('#thread_action').html(
             '<input data-role="none" type="text" name="word_num" value=50 id="min_word_num_input"> \
-            <a href="#" id="min_word_num">字数过滤</a> \
+            <a href="#" id="min_word_num">字数</a>\
             &nbsp; \
+            <input data-role="none" type="text" name="floor_keyword" id="floor_keyword_input" placeholder="关键字"> \
+            <a href="#" id="floor_keyword">抽取</a> \
+            &nbsp; \
+            <a href="#" id="floor_filter">过滤</a> \
+            <br>\
             <a href="#" id="only_poster">只看楼主</a> \
             &nbsp; \
             <a href="#" id="view_img">看图</a> \
@@ -975,6 +1010,15 @@ function params_page(){
     $.mobile.paramsHandler.init();
 }
 function main(){
+    $.support.cors = true;  
+    jQuery.support.cors = true;  
+    $.mobile.allowCrossDomainPages = true;
+    $.mobile.phonegapNavigationEnabled = true;
+    $.mobile.ajaxEnabled = true;
+
+    $.mobile.defaultPageTransition = 'none';
+    $.mobile.buttonMarkup.hoverDelay = "false";
+
     $('textarea').elastic(); 
     $(document).bind('swiperight', function () {
         window.history.back();
@@ -1003,17 +1047,6 @@ function main(){
     }); //版块
     showmsg_click(); //贴子
 }
-
-$(document).bind("mobileinit", function() {  
-    $.support.cors = true;  
-    jQuery.support.cors = true;  
-    $.mobile.allowCrossDomainPages = true;
-    $.mobile.phonegapNavigationEnabled = true;
-    $.mobile.ajaxEnabled = true;
-
-    $.mobile.defaultPageTransition = 'none';
-    $.mobile.buttonMarkup.hoverDelay = "false";
-});
 
 $(document).bind('pageinit',function(e){
     if(INIT>0) return;
