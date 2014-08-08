@@ -384,6 +384,7 @@ $('#new_thread').html(
                 <select id="new_thread_subid" name="subid"> \
                 </select> \
                 <input type="text" name="subject" placeholder="主题"> \
+                <a href="#" class="textarea_format">自动贴图/链接</a> \
                 <textarea rows=12 placeholder="内容" name="body" ></textarea> \
                 <input type="submit" value="发贴"> \
             </form>');
@@ -535,6 +536,15 @@ function only_poster(){
     filter_floor(is_to_filter);
 }
 
+function reverse_floor(){
+    var s = [];
+    $('.floor').each(function(){
+        s.push($(this).prop('outerHTML'));
+    });
+    var c = s.reverse().join("\n");
+    $('#thread_floor_list').html(c);
+}
+
 function format_floor_content(f) {
     var html = '<div class="floor" id="floor' + f.id + '" fid="'+ f.id +'">' +
         '<div class="flcontent" word_num="' + f.word_num + '">' + f.content + '</div>' +
@@ -648,6 +658,7 @@ function showmsg_click() {
     $('#showmsg').on('click', '#floor_keyword',function(){ floor_keyword(); return false; });
     $('#showmsg').on('click', '#floor_filter',function(){ floor_filter(); return false; });
     $('#showmsg').on('click', '#view_all_floor', function(){ view_all_floor();return false; });
+    $('#showmsg').on('click', '#reverse_floor', function(){ reverse_floor();return false; });
 }
 
 function showmsg_refresh(local_url, para) {
@@ -737,6 +748,7 @@ function showmsg(para){
     $('#reply_thread').html(
         '<form enctype="multipart/form-data" method="post" action="reply.php?board=&id=" data-ajax="false" target="_newtab"> \
             <input placeholder="名字" type="text" name="username" value="' + username + '">\
+            <a href="#" class="textarea_format">自动贴图/链接</a> \
             <textarea rows=12 placeholder="内容" name="body"></textarea> <br> \
             <input type="submit" value="回贴"> \
         </form>'
@@ -762,6 +774,8 @@ function showmsg(para){
             <a href="#" id="only_poster">只看楼主</a> \
             &nbsp; \
             <a href="#" id="view_img">看图</a> \
+            &nbsp; \
+            <a href="#" id="reverse_floor">倒序</a> \
             &nbsp; \
             <a id="view_all_floor" href="#">全部显示</a>'
     );
@@ -1040,11 +1054,22 @@ function main(){
     fav_thread(); //收藏贴子
 
     recent_history(); //近期访问
+
+    //版块
     $('#recent_history').click(function(){ recent_history(); });
 
     $('#board').on('click', '#toggle_fav_board', function(){
         toggle_fav_board();
-    }); //版块
+    }); 
+
+    $('body').on('click', '.textarea_format', function(){
+        var area = $(this).parent().find('textarea').eq(0);
+        var f = area.val()
+        .replace(/\b(http:\/\/.*?\.(jpg|gif|png|jpeg))\b/ig , "<img src='$1' />\n")
+        .replace(/\b(http:\/\/[^\s'"]+)\s/ig , "<a href='$1'>$1</a>\n");
+        area.val(f);
+    });
+
     showmsg_click(); //贴子
 }
 
