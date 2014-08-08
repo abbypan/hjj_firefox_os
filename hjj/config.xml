@@ -42,5 +42,6 @@
     <!--<gap:plugin name="org.apache.cordova.splashscreen" />-->
     <!--<gap:plugin name="org.apache.cordova.vibration" />-->
     <icon src="icons/hjj64.png" />
+    <access origin="http://bbs.jjwxc.net" />
     <access origin="*" />
 </widget>

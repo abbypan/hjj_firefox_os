@@ -1,25 +1,22 @@
 <!DOCTYPE html>
 <html>
-    <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=gb2312" />
-    <meta name="format-detection" content="telephone=no" />
-    <!--<meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />-->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=2.0, user-scalable=yes" />  
-    <script type="text/javascript" src="phonegap.js"></script>
-    <script type="text/javascript">
-        app.initialize();
-    </script>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=gb2312" />
+<meta name="format-detection" content="telephone=no" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=2.0, user-scalable=yes" />  
+
 <title>HJJ</title>
+
 <script src="js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
-
-<link type="text/css" rel="stylesheet" href="css/jquery.mobile-1.4.3.css" />
 <script src="js/jquery.mobile-1.4.3.min.js" type="text/javascript" charset="utf-8"></script>
-
+<script type="text/javascript" src="cordova.js"></script>
 <script src="js/jquery.mobile.paramsHandler-1.4.2.js" type="text/javascript" charset="utf-8"></script>
 <script src="js/jquery.elastic.source.js" type="text/javascript" charset="utf-8"></script>
-<script src="js/lscache.js" type="text/javascript" charset="gb2312"></script>
-<link type="text/css" rel="stylesheet" href="css/app.css" />
+<script src="js/lscache.min.js" type="text/javascript" charset="gb2312"></script>
 <script src="js/app.js" type="text/javascript" charset="GB2312"></script>
+
+<link type="text/css" rel="stylesheet" href="css/jquery.mobile-1.4.3.css" />
+<link type="text/css" rel="stylesheet" href="css/app.css" />
 
 <style>
 </style>
@@ -31,7 +28,7 @@
     <div data-role="header" data-position="fixed">
         <div data-role="navbar">  
             <ul>
-                <li><a data-rel="back" data-icon="arrow-l" href="#"></a></li>
+                <li><a href="#manual_jump" data-icon="alert"></a></li>
                 <li><a href="#board_menu" data-icon="grid"></a></li>
                 <li><a href="#setting" data-icon="gear"></a></li>
             </ul>
@@ -66,7 +63,7 @@
     <div data-role="header" data-position="fixed">
         <div data-role="navbar">  
             <ul>
-                <li><a data-icon="arrow-l" data-rel="back" href="#"></a></li>
+                <li><a href="#manual_jump" data-icon="alert"></a></li>
                 <li><a data-icon="grid" href="#board_menu"></a></li>
                 <li><a href="#new_thread" data-icon="plus" data-rel="popup" data-position-to="window"></a></li>
             </ul>
@@ -136,7 +133,7 @@
     <div data-role="header" data-position="fixed">
         <div data-role="navbar">  
             <ul>
-                <li><a data-rel="back" data-icon="arrow-l" href="#"></a></li>
+                <li><a href="#manual_jump" data-icon="alert"></a></li>
                 <li><a href="#" data-icon="arrow-u" id="thread_to_board"></a></li>
                 <li><a href="#reply_thread" data-rel="popup"
                     id="reply_thread_a"
@@ -292,6 +289,17 @@
                 <li><a data-icon="back" href="#recent_history"></a></li>
             </ul>
         </div>
+    </div>
+</div>
+
+<div id="manual_jump" data-role="page">
+    <div data-role="navbar">  
+        <a data-rel="back" data-icon="arrow-l" href="#"></a>
+    </div>
+    <div data-role="content" id="manual_jump_content">
+    </div>
+    <div data-role="navbar">  
+        <a data-rel="back" data-icon="arrow-l" href="#"></a>
     </div>
 </div>
 

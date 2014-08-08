@@ -1,7 +1,7 @@
 body,div,table,ul,li,input,textarea  {
     background-color: #ffdbef;
     background-size: 100%;
-    /*font-size: 118% ;*/
+    word-wrap: break-word;      
 }
 
 img {
@@ -32,23 +32,17 @@ img {
     height: 80% !important;
     width: 90% !important;
     overflow: auto !important; 
-    /*position:fixed;*/
-    /*left: 20px;*/
-    /*right: 10px;*/
-    /*top:30px;*/
-    /*bottom: 30px;*/
 }
 
 textarea {
-    /*width: 100% !important;*/
-    /*height: 80% !important;*/
-    /*-webkit-box-sizing: border-box; */
-    /*-moz-box-sizing: border-box;   */
-    /*box-sizing: border-box;       */
+    width: 100% !important;
+    -webkit-box-sizing: border-box; 
+    -moz-box-sizing: border-box;   
+    box-sizing: border-box;       
 }
 
-input {
-    width: 75% !important;
+input,select {
+    width: 100% !important;
     -webkit-box-sizing: border-box; 
     -moz-box-sizing: border-box;   
     box-sizing: border-box;       
