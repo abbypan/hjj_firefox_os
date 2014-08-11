@@ -1,5 +1,8 @@
 var HJJ='http://bbs.jjwxc.net';
 var THREAD_HISTORY_MINUTE = 60*24*10;
+var THREAD_FLOOR_MINUTE =  60*24*7;
+var RECENT_THREAD_SECOND = 3*24*60*60;
+var BOARD_MENU_MINUTE = 5*24*60;
 var MAX_HISTORY_CNT = 200;
 var HISTORY_CNT = lscache.get('history_cnt') || -1;
 var JUMP_FLOOR_CNT = 50;
@@ -7,59 +10,10 @@ var INIT = 0;
 var DEFAULT_USERNAME = '==';
 var LOADIMG = lscache.get('loadimg') || 'on';
 // {{ base
-function save_storage(key, v){
-    var s = JSON.stringify(v);
-    //lscache.set(key, s);
-    window.localStorage.setItem(key, s);
-}
-
-function read_storage(key, default_v) {
-    //var xdata = lscache.get(key);
-    var xdata = window.localStorage.getItem(key);
-    var x = xdata ? JSON.parse(xdata) : 
-        (default_v ? default_v : []);
-    return x;
-}
-
-function get_remember_key(x){
+function get_rem_key(x){
     var u = x.url;
     var k = x.key;
     return (k==undefined)? u : k;
-}
-
-function check_remember_list(rem_list, d){
-    var key = get_remember_key(d);
-    for(var x in rem_list){
-        var rem_key = get_remember_key(rem_list[x]);
-        if(rem_key==key) return x;
-    }
-    return ;
-}
-
-function format_remember_list(para) {
-    var s = '';
-    var rem = {};
-    var update = [];
-
-    for(x in para["data"]){
-        var u = para["data"][x].url;
-        var k = para["data"][x].key;
-
-        var key = get_remember_key(para["data"][x]);
-        if(rem[key]!=undefined) continue;
-
-        if(update.length>para["max_length"]) break;
-
-        s += '<li><a href="' + u + '">' +
-            para["data"][x].title + '</a></li>';
-        rem[key]=1;
-        update.push(para["data"][x]);
-    }
-
-    para["data"] = update;
-    save_storage(para["key"], update);
-
-    return s;
 }
 
 function merge_hash(para, other){
@@ -97,13 +51,19 @@ function format_para_string(x, klist){
     return ss;
 }
 
-var FAV_BOARD=read_storage('fav_board', []);
-var FAV_THREAD = read_storage('fav_thread', []);
+function format_cache_key(head, data, keylist){
+    var s = [ head ];
+    for(var i in keylist){
+        var k = keylist[i];
+        s.push(data[k]);
+    }
+    return s.join(",");
+}
 //}}
 // {{{ home
 function home() {
     var rem = lscache.get('home');
-    if(rem) $('#home_content').html();
+    if(rem) $('#home_content').html(rem);
 
     $('#manual_jump').find('input').eq(0).val('');
 
@@ -151,6 +111,7 @@ function home() {
 // }}}
 //  {{{ board_menu
 function board_menu_zone(zone_li) {
+
     var id = zone_li.attr("zid");
     if(id==undefined) return;
 
@@ -175,16 +136,22 @@ function board_menu_zone(zone_li) {
                    });
                    s+="</ul>";
                    $('#board_menu').find('div[zid='+id+']').html(s);
+                   lscache.set('board_menu', $('#board_menu_content').html(), BOARD_MENU_MINUTE);
         }
     }
     xhr.send();
 }
 
 function board_menu(){
-    $('#board_menu').find("div").each(
-        function(){
-        board_menu_zone($(this));
-    });
+    var rem = lscache.get('board_menu');
+    if(rem){
+        $('#board_menu_content').html(rem);
+    }else{
+        $('#board_menu').find("div").each(
+                function(){
+                    board_menu_zone($(this));
+                });
+    }
 
     $("#filter_board").on( "filterablefilter", function( event, ui ) {
         ui.items.each(function( index ) {
@@ -195,91 +162,153 @@ function board_menu(){
 // }}}
 // {{ fav_board
 function fav_board() {
-    var s = format_remember_list({
-        "key" : 'fav_board', 
-        "data" : FAV_BOARD, 
-        "max_length" : 30,
-    });
+    var s= '';
+    var cnt = lscache.get('board_save_cnt') || 0;
+    if(cnt>0){
+        var x = [];
+        for(var i=1;i<=cnt;i++){
+            var d = lscache.get( 'board_save_' + i);
+            if(d) x.push(d);
+        }
+        s += format_url_title(x);
+    }
     $('#fav_board').find('ul').html(s);
     $('#fav_board').find('ul').trigger('create');
 }
 
 function check_fav_board(){
-    var x = check_remember_list(FAV_BOARD, {
-        "key" : $('#board_id').text()
-    });
-
-    var v = x!=undefined ? '取消收藏' : '收藏';
-    $('#toggle_fav_board').html(v);
+    var info = get_board_info();
+    var k = format_cache_key('board_save', info, ["board"]);
+    if(lscache.get(k)){
+        $('#board_save').html('取消收藏');
+        $('#board_save').attr('action', 'remove');
+    }else{
+        $('#board_save').html('收藏');
+        $('#board_save').attr('action', 'save');
+    }
 }
 
-function toggle_fav_board(){
-        var id = $('#board_id').text();
-        var x = check_remember_list(FAV_BOARD, { key : id });
-        if(x!=undefined){
-            delete(FAV_BOARD[x]);
-            $('#toggle_fav_board').html('收藏');
-        }else{
-            FAV_BOARD.unshift({ 
-                key : id, 
-                url: '#board?page=1&board=' + id, 
-                title : $('#board_title').text()
-            });
+function get_board_info(){
+    var x = {
+        title : $('#board_title').html(),
+        board : $('#board_id').html()
+    };
+    x["local_url"] = "#board?" + board_para_string(x, { page : 1 });
+    return x;
+}
 
-            $('#toggle_fav_board').html('取消收藏');
-        }
-        save_storage('fav_board', FAV_BOARD);
-        fav_board();
+function board_save(){
+    var info = get_board_info();
+    var k = format_cache_key('board_save', info, ["board"]);
+    var save_i = lscache.get(k);
+    var board_save_cnt = lscache.get('board_save_cnt') || 0;
+
+    var act = $('#board_save').attr('action');
+    if(act && act=='remove'){
+            $('#board_save').html('收藏');
+            $('#board_save').attr('action', 'save');
+            if(save_i && board_save_cnt!=save_i){
+                var m = lscache.get('board_save_' + board_save_cnt);
+                lscache.set('board_save_' + save_i, m);
+                lscache.set(m, save_i);
+            }
+            lscache.remove(k);
+            lscache.set('board_save_cnt', board_save_cnt-1);
+            lscache.remove('board_save_' + board_save_cnt);
+    }else{
+        $('#board_save').html('取消收藏');
+        $('#board_save').attr('action', 'remove');
+        board_save_cnt++;
+        lscache.set(k, board_save_cnt);
+        lscache.set('board_save_cnt', board_save_cnt);
+        lscache.set('board_save_' + board_save_cnt, { title : info.title, url : info.local_url });
+    }
+    fav_board();
 }
 // }}
 // {{ fav_thread
 function fav_thread() {
-    var s = format_remember_list({
-        "key" : 'fav_thread', 
-        "data" : FAV_THREAD, 
-        "max_length" : 1000,
-    });
+    var s = '';
+    var klist = [ "save", "cache" ];
+    for(var i in klist){
+        var k = klist[i];
+        var cnt = lscache.get('thread_'+k+'_cnt') || 0;
+        if(cnt>0){
+            var x = [];
+            for(var i=1;i<=cnt;i++){
+                var d = lscache.get( k + '_' + i);
+                if(d) x.push(d);
+            }
+            s += format_url_title(x);
+        }
+    }
 
     $('#fav_thread').find('ul').html(s);
     $('#fav_thread').find('ul').trigger('create');
 }
 
-function check_fav_thread(){
-    var bid = $('#thread_bid').text();
-    var tid = $('#thread_tid').text();
+function get_showmsg_info(){
+    var x = {
+     board : $('#thread_bid').text(),
+     id : $('#thread_tid').text(),
+     page : $('#thread_pid').text(),
+     title : $('#thread_title').text()
+    };
+    x["local_url"] = "#showmsg?" + showmsg_para_string(x); 
 
-    var x = check_remember_list(FAV_THREAD, {
-        "key" : bid+','+tid
-    });
+    return x;
+}
 
-    if(x!=undefined){
-        $('#toggle_fav_thread').html('取消收藏');
+function check_cache_thread(){
+    var info = get_showmsg_info();
+    var k = format_cache_key('thread_cache', info, ["board", "id"]);
+    if(lscache.get(k)){
+        $('#thread_cache').html('清空缓存');
+        $('#thread_cache').attr('action', 'clear');
     }else{
-        $('#toggle_fav_thread').html('收藏');
+        $('#thread_cache').html('缓存');
+        $('#thread_cache').attr('action', 'cache');
     }
 }
 
-function toggle_fav_thread(){
-    var bid = $('#thread_bid').text();
-    var tid = $('#thread_tid').text();
-    var title = $('#thread_title').text();
-
-    var x = check_remember_list(FAV_THREAD, {
-        "key" : bid+','+tid
-    });
-
-    if(x!=undefined){
-        delete(FAV_THREAD[x]);
-        $('#toggle_fav_thread').html('收藏');
+function check_save_thread(){
+    var info = get_showmsg_info();
+    var k = format_cache_key('thread_save', info, ["board", "id"]);
+    if(lscache.get(k)){
+        $('#thread_save').html('取消收藏');
+        $('#thread_save').attr('action', 'remove');
     }else{
-        FAV_THREAD.unshift({
-            "key" : bid+','+tid, 
-            "title" : title, 
-            "url" : '#showmsg?board=' + bid + '&id=' + tid
-        });
-        $('#toggle_fav_thread').html('取消收藏');
+        $('#thread_save').html('收藏');
+        $('#thread_save').attr('action', 'save');
     }
-    save_storage('fav_thread', FAV_THREAD);
+}
+
+function thread_save(){
+    var info = get_showmsg_info();
+    var k = format_cache_key('thread_save', info, ["board", "id"]);
+    var save_i = lscache.get(k);
+    var thread_save_cnt = lscache.get('thread_save_cnt') || 0;
+
+    var act = $('#thread_save').attr('action');
+    if(act && act=='remove'){
+            $('#thread_save').html('收藏');
+            $('#thread_save').attr('action', 'save');
+            if(save_i && thread_save_cnt!=save_i){
+                var m = lscache.get('save_' + thread_save_cnt);
+                lscache.set('save_' + save_i, m);
+                lscache.set(m, save_i);
+            }
+            lscache.remove(k);
+            lscache.set('thread_save_cnt', thread_save_cnt-1);
+            lscache.remove('save_' + thread_save_cnt);
+    }else{
+        $('#thread_save').html('取消收藏');
+        $('#thread_save').attr('action', 'remove');
+        thread_save_cnt++;
+        lscache.set(k, thread_save_cnt);
+        lscache.set('thread_save_cnt', thread_save_cnt);
+        lscache.set('save_' + thread_save_cnt, { title : info.title, url : info.local_url });
+    }
     fav_thread();
 }
 // }}
@@ -292,6 +321,15 @@ function add_history(x){
 
     lscache.set('history,' + HISTORY_CNT, x);
     lscache.set('history_cnt', HISTORY_CNT);
+}
+
+function format_url_title(update){
+    var s='';
+    for(var i in update){
+        var d = update[i];
+        s += '<li><a href="' + d["url"] + '">' + d["title"] + '</a></li>';
+    }
+    return s;
 }
 
 function format_cache_list(para) {
@@ -307,7 +345,7 @@ function format_cache_list(para) {
         var d = lscache.get(n);
         if(d==undefined) continue;
 
-        var key = get_remember_key(d);
+        var key = get_rem_key(d);
         var time = d["time"];
         if(rem[key]!=undefined && rem[key]["time"]>time) continue;
         rem[key]=d;
@@ -323,12 +361,7 @@ function format_cache_list(para) {
     }
     update.sort(sort_time);
 
-    var s='';
-    for(var i in update){
-        var d = update[i];
-        s += '<li><a href="' + d["url"] + '">' + d["title"] + '</a></li>';
-    }
-    return s;
+    return format_url_title(update);
 }
 
 function recent_history() {
@@ -347,6 +380,18 @@ function board_para_string(para, other){
     x.page = x.page || 1;
     return format_para_string(x, [ "board", "type", "page", "subid" ]);
 }
+
+//function is_recent_thread(t,max) {
+    //var d = new Date();
+    //var m = d.getTime() / 1000;
+
+    //var s = t.split(/[: -]+/g);
+    
+    //var td = new Date(s[0],s[1],s[2],s[3],s[4],s[5],0);
+    //ts = td.getTime() / 1000;
+    
+    //return ts > m ? 1 : 0;
+//}
 
 function board_thread_info(tr) {
     var href_list = '';
@@ -367,9 +412,15 @@ function board_thread_info(tr) {
         reply : tr.children('td').eq(4).text(),
         hot : tr.children('td').eq(5).text()
     };
+
+    //var is_recent = is_recent_thread(info.time, RECENT_THREAD_SECOND);
+    //var recent_img = is_recent==1 ? '<img class="smallgif" src="icons/new.gif" />' : '';
+
     var s = '<div class="onethread">' + 
-        info.tag+ ': <a href="'+ info.url + '">' + info.title + '</a> '+ href_list +'<br>' + 
-        info.poster + '; 热:' + info.hot + '; 回:' + info.reply + '; ' + info.time + '<br>'+
+        info.tag+ ': <a href="'+ info.url + '">' + info.title + '</a> '+ href_list +
+        '<br>' + 
+        info.poster + '; 热:' + info.hot + '; 回:' + info.reply + '; ' + info.time + 
+        '<br>'+
         '</div>';
     return s;
 }
@@ -423,9 +474,11 @@ function board_title(para, h){
 function new_thread(para){
     var username = lscache.get('username') || DEFAULT_USERNAME;
     var u = HJJ + "/postbypolice.php?board="+ para.board;
-$('#new_thread').html(
-            '<form enctype="multipart/form-data" method="post"  \
-            action="/postbypolice.php?board=" data-ajax="false"  \
+
+
+        $('#new_thread').html(
+                '<form enctype="multipart/form-data" method="post"  \
+                action="/postbypolice.php?board=" data-ajax="false"  \
                 target="_newtab"> \
                 <input type="hidden" value="→发布新贴子" name="msg"> \
                 <input placeholder="名字" type="text" name="username" value="' + username + '">\
@@ -435,7 +488,8 @@ $('#new_thread').html(
                 <a href="#" class="textarea_format">自动贴图/链接</a> \
                 <textarea rows=12 placeholder="内容" name="body" ></textarea> \
                 <input type="submit" value="发贴"> \
-            </form>');
+                </form>');
+
     $('#new_thread').find('input[name="username"]').on('change', function(){
         lscache.set('username', $(this).val());
     });
@@ -476,9 +530,9 @@ function board(para) {
         if (xhr.readyState == 4) {
             var h = jQuery.parseHTML(xhr.responseText);
             $(h).find('tr[valign="middle"][bgcolor="#FFE7F7"]')
-            .each(function(){
-                thread_info += board_thread_info($(this));
-            });
+                .each(function(){
+                    thread_info += board_thread_info($(this));
+                });
 
             $('#thread_list').html(thread_info);
             $('#new_thread').find('textarea').val('');
@@ -501,20 +555,20 @@ function board(para) {
 //  {{{ showmsg
 function extract_floor_info(info) {
     var c = info.html()
-    .replace(/<(table|tr|td|font)[^>]*>/ig, "<$1>")
-    .replace(/<\/?marquee[^>]*>/ig, "")
-    .replace(/<style[^>]*>[\s\S]*?<\/style>/ig, "")
-    ;
+        .replace(/<(table|tr|td|font)[^>]*>/ig, "<$1>")
+        .replace(/<\/?marquee[^>]*>/ig, "")
+        .replace(/<style[^>]*>[\s\S]*?<\/style>/ig, "")
+        ;
     var w = info.text().length;
     var meta = info.parents("tr:eq(1)").next().text();
 
     var m = meta.match(/№(\d+).+?☆☆☆(.*?)于([\d\s:-]+)留言☆☆☆/);
     return {
         content: c,
-        word_num: w,
-        id: parseInt(m[1]),
-        poster: m[2] || ' ',
-        time: m[3]
+            word_num: w,
+            id: parseInt(m[1]),
+            poster: m[2] || ' ',
+            time: m[3]
     };
 }
 function filter_floor(is_to_filter) {
@@ -605,9 +659,13 @@ function format_floor_content(f) {
         '&nbsp;&nbsp;&nbsp;' +
         '<a class="jump_to_bottom" href="#">&dArr;</a>' + 
         '&nbsp;&nbsp;&nbsp;' +
+        '<a href="#jump_floor" data-rel="popup" data-position-to="window" data-transition="pop">N</a>' + 
+        '&nbsp;&nbsp;&nbsp;' +
         '<a class="jump_to_prev" href="#">&uarr;</a>' + 
         '&nbsp;&nbsp;&nbsp;' +
         '<a class="jump_to_next" href="#">&darr;</a>' + 
+        '&nbsp;&nbsp;&nbsp;' +
+        '<a class="mark_floor" href="#">M</a>' + 
         '</div>';
     return html;
 }
@@ -630,28 +688,149 @@ function share_thread() {
     window.open(wu, '_blank');
 }
 
-function showmsg_click() {
+function showmsg_jump_floor(dst_f) {
+    if(dst_f==undefined) return;
+    var k = '#floor' + dst_f.toString();
+    if($(k).length>0){
+        $.mobile.silentScroll($(k).offset().top);
+        return 1;
+    }
+    return ;
+}
 
-    $('#showmsg').on('click', '.jump_to_top', function(){
-        $.mobile.silentScroll(0);
-        return false;
+function showmsg_jump_page(dst_f){
+    var page = parseInt((parseInt(dst_f)-1) / 300);
+    var now_page = parseInt($('#thread_pid').html());
+
+    if(now_page == page) {
+        showmsg_jump_floor(dst_f);
+        return;
+    }
+
+    var x = {
+        fid : dst_f.toString(), 
+        page : page.toString(),
+        board : $('#thread_bid').text(),
+        id : $('#thread_tid').text()
+    };
+    var u = '#showmsg?' + showmsg_para_string(x) + '&fid=' + dst_f;
+    $.mobile.changePage(u);
+}
+
+function showmsg_jump_page_popup(){
+    var dst_f = $('#dst_floor').val().toString();
+    $('#dst_floor').val('');
+    if(dst_f) showmsg_jump_page(dst_f);
+    $('#jump_floor').popup('close');
+}
+
+function showmsg_cache(para) {
+    var xhr = new XMLHttpRequest({mozSystem: true});
+
+    var u = HJJ+'/showmsg.php?' + showmsg_para_string(para); 
+    xhr.open("GET", u, true);
+    xhr.overrideMimeType('text/plain; charset=gb2312');
+
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState == 4) {
+            var res = extract_showmsg_content(xhr.responseText);
+
+            var local_url = "#showmsg?" + showmsg_para_string(para); 
+            lscache.set(local_url, res);
+
+            $('#thread_cache').html('已缓存'+para.page);
+
+            para.page  = para.page + 1;
+            if(para.page<para.page_num) {
+                showmsg_cache(para);
+            }else{
+                var k = format_cache_key('thread_cache', para, ["board", "id"]);
+                var cnt = lscache.get('thread_cache_cnt') || 0;
+                cnt++;
+                lscache.set(k, cnt);
+                lscache.set('thread_cache_cnt', cnt);
+
+                para.page = 0;
+                local_url = "#showmsg?" + showmsg_para_string(para); 
+                lscache.set('cache_' + cnt, { title : res.title, url : local_url });
+
+                $('#thread_cache').html('清空缓存');
+                $('#thread_cache').attr('action', 'clear');
+                fav_thread();
+            }
+        }
+    }
+    xhr.send();
+}
+
+
+function showmsg_click() {
+    $('#showmsg').on('click', '#thread_cache', function(){
+        var p = {};
+        p["board"] = $('#thread_bid').html();
+        p["id"] = $('#thread_tid').html();
+        var nm = $('#thread_pager_top').html().match(/共(\d+)页/);
+        p["page_num"] = nm ? nm[1] : 1;
+        p["page"] = 0;
+
+        var act = $('#thread_cache').attr('action');
+        if(act && act=='clear'){
+            for(var i=0; i<p["page_num"]; i++){
+                p.page = i;
+                var local_url = "#showmsg?" + showmsg_para_string(p); 
+                lscache.remove(local_url);
+                $('#thread_cache').html('已移除'+p.page);
+            }
+
+            var k = format_cache_key('thread_cache', p, ["board", "id"]);
+            var cache_i = lscache.get(k);
+            var thread_cache_cnt = lscache.get('thread_cache_cnt');
+            if(thread_cache_cnt!=cache_i){
+                var m = lscache.get('cache_' + thread_cache_cnt);
+                lscache.set('cache_' + cache_i, m);
+                lscache.set(m, cache_i);
+            }
+            lscache.remove(k);
+            lscache.set('thread_cache_cnt', thread_cache_cnt-1);
+            lscache.remove('cache_' + thread_cache_cnt);
+
+            if(thread_cache_cnt<0) lscache.set('thread_cache_cnt', 0);
+
+            $('#thread_cache').html('缓存');
+            $('#thread_cache').attr('action', 'cache');
+            fav_thread();
+        }else{
+            showmsg_cache(p);
+        }
     });
-    $('#showmsg').on('click', '.jump_to_bottom', function(){
-        $(document).scrollTop($(document).height());
-        return false;
+
+    $('#showmsg').on('click', '#thread_mark_floor', function(){ 
+        var info = get_showmsg_info();
+        var k = format_cache_key('thread_mark_floor', 
+            info, ["board", "id"]);
+        var fid = lscache.get(k);
+        if(fid) showmsg_jump_page(fid);
     });
+
+    $('#showmsg').on('click', '.mark_floor', function(){ 
+        var fid = $(this).parent().attr('fid');
+        var info = get_showmsg_info();
+        var k = format_cache_key('thread_mark_floor', 
+            info, ["board", "id"]);
+        lscache.set(k, fid, THREAD_FLOOR_MINUTE);
+    });
+
+
+
+    $('#showmsg').on('click', '.jump_to_top', function(){ $.mobile.silentScroll(0); });
+    $('#showmsg').on('click', '.jump_to_bottom', function(){ $(document).scrollTop($(document).height()); });
 
     $('#showmsg').on('click', '.jump_to_prev', function(){
         var fid = $(this).parent().attr('fid');
-        var step = lscache.get('showmsg_subpage') || JUMP_FLOOR_CNT;
+        var step = lscache.get('showmsg_jump_floor') || JUMP_FLOOR_CNT;
         var nid = parseInt(fid) - step;
-        var k = '#floor' + nid;
-        if($(k).length>0){
-            $.mobile.silentScroll($(k).offset().top);
-        }else{
-            $.mobile.silentScroll(0);
-        }
-        return false;
+        if(showmsg_jump_floor(nid)) return;
+        $.mobile.silentScroll(0);
     });
 
     $('#showmsg').on('click', '.jump_to_next', function(){
@@ -660,46 +839,29 @@ function showmsg_click() {
             fid = parseInt($(this).parent().next().attr('fid'));
         }
 
-        var step = lscache.get('showmsg_subpage') || 50;
+        var step = lscache.get('showmsg_jump_floor') || JUMP_FLOOR_CNT;
         var nid = fid + step;
-        var k = '#floor' + nid;
-        if($(k).length>0){
-            $.mobile.silentScroll($(k).offset().top);
-        }else{
-            $(document).scrollTop($(document).height());
-        }
-        return false;
+        if(showmsg_jump_floor(nid)) return;
+        $(document).scrollTop($(document).height());
     });
-    
-    $('#showmsg').on('click', '#view_img', function(){
-        view_img();
-    });
+
+    $('#showmsg').on('click', '#view_img', function(){ view_img(); });
 
     $('#showmsg').on('click', '.reply_thread_floor', function(){
         $('#reply_thread').find('textarea').val('');
         var reply_type = $(this).attr("reply_type");
         var c = $(this).parent().children('.chapter').text().replace(/\n/g, ' ');
         if(reply_type=="cite") 
-            c = "" + 
-            $(this).parent().children('.flcontent').text().replace(/(\s*\n)+/g, "\n").trim().substr(0, 100) + 
+        c = "" + 
+        $(this).parent().children('.flcontent').text().replace(/(\s*\n)+/g, "\n").trim().substr(0, 100) + 
         "......\n\n" + c ;
-        $('#reply_thread').find('textarea').val(c.trim()+"\n");
+    $('#reply_thread').find('textarea').val(c.trim()+"\n");
 
-        $('#reply_thread_a').click();
+    $('#reply_thread_a').click();
     });
 
-    $('#showmsg').on('click', 
-        '#toggle_fav_thread', function(){
-        toggle_fav_thread();
-        return false;
-    });
-
-    $('#showmsg').on('click', 
-        '#share_thread', function(){
-        share_thread();
-        return false;
-    });
-    
+    $('#showmsg').on('click', '#thread_save', function(){ thread_save(); });
+    $('#showmsg').on('click', '#share_thread', function(){ share_thread(); });
     $('#showmsg').on('click', '#only_poster', function(){ only_poster(); return false; });
     $('#showmsg').on('click', '#min_word_num',function(){ min_word_num(); return false; });
     $('#showmsg').on('click', '#floor_keyword',function(){ floor_keyword(); return false; });
@@ -708,97 +870,91 @@ function showmsg_click() {
     $('#showmsg').on('click', '#reverse_floor', function(){ reverse_floor();return false; });
 }
 
-function showmsg_refresh(local_url, para) {
-    var u = HJJ+'/showmsg.php?' + showmsg_para_string(para); 
-    $('#thread_refresh').attr('href', local_url + '&refresh=1');
+function extract_showmsg_content(d){
+    var res = {};
+    var tm = d.match(/<title>(.+?)<\/title>/);
+    res["title"]  = tm[1].replace(/ —— 晋江文学城网友交流区/,'');
 
+    var pm = d.match(/\>(共\d+页:.+?)<\/div>/);
+    res["pager"] = pm ? pm[1].replace(/href=(.+?)>/g, "href=\"#showmsg$1\">").replace(/<\/a>/g, '</a>&nbsp;') : '';
+
+    var h = $.parseHTML(d.replace(/<font color='gray' size='-1'>本帖尚未审核,若发布24小时后仍未审核通过会被屏蔽<\/font><br\/>/g,''));
+
+    var floors_info = new Array();
+    $(h).find('td[class="read"]').each(function() {
+        var bot = $(this);
+        var f_i =  extract_floor_info(bot);
+        var html = format_floor_content(f_i);
+        floors_info.push(html);
+    }).promise().done(function(){
+        var all_floor = floors_info.join("\n");
+        if(LOADIMG!="on"){ //不看图
+            all_floor = all_floor.replace(/<img [\s\S]*?>/ig, '');
+        }
+        res["floor_list"] = all_floor;
+    });
+
+    return res;
+}
+
+function showmsg_refresh(para) {
     var xhr = new XMLHttpRequest({mozSystem: true});
+
+    var u = HJJ+'/showmsg.php?' + showmsg_para_string(para); 
     xhr.open("GET", u, true);
     xhr.overrideMimeType('text/plain; charset=gb2312');
 
     xhr.onreadystatechange = function() {
         if (xhr.readyState == 4) {
+            var res = extract_showmsg_content(xhr.responseText);
+            showmsg_tail(para, res);
 
-            h = $.parseHTML(xhr.responseText.replace(/<font color='gray' size='-1'>本帖尚未审核,若发布24小时后仍未审核通过会被屏蔽<\/font><br\/>/g,''));
-
-            var tm = xhr.responseText.match(/<title>(.+?)<\/title>/);
-            var title_h = tm[1].replace(/ —— 晋江文学城网友交流区/,'');
-            $('#thread_title').html( title_h );
-
-            add_history({
-                url : local_url, 
-                title : title_h,
-                key : 'showmsg,' + para.board + ',' + para.id
-            });
-
-            var pm = xhr.responseText.match(/\>(共\d+页:.+?)<\/div>/);
-            var page_h = pm ? pm[1].replace(/href=(.+?)>/g, "href=\"#showmsg$1\">").replace(/<\/a>/g, '</a>&nbsp;') : '';
-            $('#thread_pager_top').html( page_h );
-            $('#thread_pager_bottom').html( page_h );
-
-            var floors_info = new Array();
-            $(h).find('td[class="read"]').each(function() {
-                var bot = $(this);
-                var f_i =  extract_floor_info(bot);
-                var html = format_floor_content(f_i);
-                floors_info.push(html);
-            }).promise().done(function(){
-                var all_floor = floors_info.join("\n");
-                if(LOADIMG!="on"){ //不看图
-                    all_floor = all_floor.replace(/<img [\s\S]*?>/ig, '');
-                }
-
-                $('#thread_floor_list').html(all_floor);
-
-                $('#thread_floor_list').find('a').each(function(){
-                    var href = $(this).attr('href');
-                    if(! href.match(/http:\/\/bbs.jjwxc.net\/showmsg.php\?/)) return;
-                    href = href.replace(/http:\/\/bbs.jjwxc.net\/showmsg.php\?/g, '#showmsg?')
-                    $(this).attr('href', href);
-                    $(this).removeAttr('target');
-                    $(this).removeAttr('rel');
-                });
-
-                check_fav_thread();
-                lscache.set(local_url, $('#thread_content').html(), THREAD_HISTORY_MINUTE);
-
-            });
-
-
+            var local_url = "#showmsg?" + showmsg_para_string(para); 
+            lscache.set(local_url, res, THREAD_FLOOR_MINUTE);
         }
     }
     xhr.send();
 }
 
+function showmsg_tail(para, res){
+    $('#thread_title').html( res["title"] );
+    $('#thread_pager_top').html( res["pager"] );
+    $('#thread_pager_bottom').html( res["pager"]);
+    $('#thread_floor_list').html(res["floor_list"]);
 
-function showmsg(para){
+    $('#thread_floor_list').find('a').each(function(){
+        var href = $(this).attr('href');
+        if(! href.match(/http:\/\/bbs.jjwxc.net\/showmsg.php\?/)) return;
+        href = href.replace(/http:\/\/bbs.jjwxc.net\/showmsg.php\?/g, '#showmsg?')
+        $(this).attr('href', href);
+    $(this).removeAttr('target');
+    $(this).removeAttr('rel');
+    });
+
+    check_save_thread();
+    check_cache_thread();
+
+
+    if(para.fid) showmsg_jump_floor(para.fid);
+
     var local_url = "#showmsg?" + showmsg_para_string(para); 
-    var remote_url = HJJ + '/showmsg.php?' + showmsg_para_string(para);
-    $('#manual_jump').find('input').eq(0).val(para.board);
+    add_history({
+        url : local_url, 
+        title : res["title"],
+        key : 'showmsg,' + para.board + ',' + para.id
+    });
+}
 
-    $('#thread_info').html(
-            '<a target="_blank" href="' + remote_url + '" id="thread_title"></a><br> \
-             <span id="thread_bid"></span>, \
-            <span id="thread_tid"></span>, &nbsp; \
-            <a id="toggle_fav_thread" href="#">...</a> \
-            &nbsp; \
-            <a id="share_thread" href="#">分享</a> \
-            &nbsp; \
-            <a id="thread_refresh" href="#">刷新</a> '
-    );
-
-    $('#thread_bid').html(para.board);
-    $('#thread_tid').html(para.id);
-
+function showmsg_header(para){
     var username = lscache.get('username') || DEFAULT_USERNAME;
     $('#reply_thread').html(
-        '<form enctype="multipart/form-data" method="post" action="reply.php?board=&id=" data-ajax="false" target="_newtab"> \
+            '<form enctype="multipart/form-data" method="post" action="reply.php?board=&id=" data-ajax="false" target="_newtab"> \
             <input placeholder="名字" type="text" name="username" value="' + username + '">\
             <a href="#" class="textarea_format">自动贴图/链接</a> \
             <textarea rows=12 placeholder="内容" name="body"></textarea> <br> \
             <input type="submit" value="回贴"> \
-        </form>'
-    );
+            </form>'
+            );
 
     $('#reply_thread').find('input[name="username"]').on('change', function(){
         lscache.set('username', $(this).val());
@@ -807,64 +963,90 @@ function showmsg(para){
     $('#reply_thread').find('form').attr('action', HJJ + "/reply.php?board="+ para.board + '&id=' + para.id);
 
     $('#thread_to_board').attr('href', "#board?board=" + para.board + '&page=1');
-    
+
+    $('#manual_jump').find('input').eq(0).val(para.board);
+
+    $('#jump_floor').html(
+            '<form action="javascript:showmsg_jump_page_popup();"> \
+            <input placeholder="楼层" type="text" id="dst_floor" name="dst_floor"> \
+            <input type="submit" value="跳转" > \
+            </form>');
+}
+
+function showmsg_banner(para){
+    var local_url = "#showmsg?" + showmsg_para_string(para); 
+    var u = HJJ+'/showmsg.php?' + showmsg_para_string(para); 
+    $('#thread_info').html(
+            '<a target="_blank" href="' + u + '" id="thread_title"></a><br> \
+            <span id="thread_bid"></span>, \
+            <span id="thread_tid"></span>, \
+            <span id="thread_pid"></span>, \
+            &nbsp; \
+            <a id="thread_cache" href="#">缓存</a> \
+            &nbsp; \
+            <a id="thread_save" href="#">...</a> \
+            &nbsp; \
+            <a id="share_thread" href="#">分享</a> \
+            &nbsp; \
+            <a id="thread_mark_floor" href="#">M</a> \
+            &nbsp; \
+            <a id="thread_refresh" href="#">刷新</a> '
+            );
+
+    $('#thread_bid').html(para.board);
+    $('#thread_tid').html(para.id);
+    $('#thread_pid').html(para.page || 0);
+
     $('#thread_action').html(
             '<input data-role="none" type="text" name="word_num" value=50 id="min_word_num_input"> \
             <a href="#" id="min_word_num">字数</a>\
-            &nbsp; \
-            <input data-role="none" type="text" name="floor_keyword" id="floor_keyword_input" placeholder="关键字"> \
+            &nbsp; <input data-role="none" type="text" name="floor_keyword" id="floor_keyword_input" placeholder="关键字"> \
             <a href="#" id="floor_keyword">抽取</a> \
-            &nbsp; \
-            <a href="#" id="floor_filter">过滤</a> \
+            &nbsp; <a href="#" id="floor_filter">过滤</a> \
             <br>\
-            <a href="#" id="only_poster">只看楼主</a> \
-            &nbsp; \
-            <a href="#" id="view_img">看图</a> \
-            &nbsp; \
-            <a href="#" id="reverse_floor">倒序</a> \
-            &nbsp; \
-            <a id="view_all_floor" href="#">全部显示</a>'
-    );
+            <a href="#" id="only_poster">楼主</a> \
+            &nbsp; <a href="#" id="view_img">看图</a> \
+            &nbsp; <a href="#" id="reverse_floor">倒序</a> \
+            &nbsp; <a id="view_all_floor" href="#">全部</a> \
+            '
+            );
 
-    $('#thread_floor_list').html('');
+    $('#thread_refresh').attr('href', local_url + '&refresh=1');
+}
 
+
+function showmsg(para){
+    var local_url = "#showmsg?" + showmsg_para_string(para); 
+    showmsg_header(para);
+    showmsg_banner(para);
 
     var x = lscache.get(local_url);
     if(x && para.refresh==undefined){
-        $('#thread_content').html(x);
-        check_fav_thread();
-
-        add_history({
-            url : local_url, 
-            title : $('#thread_title').html(),
-            key : 'showmsg,' + para.board + ',' + para.id
-        });
-
+        showmsg_tail(para, x);
     }else{
-        showmsg_refresh(local_url, para);
+        showmsg_refresh(para);
     }
-
 }
 // -- }}}
 // {{{ search
 function search_init(){
     $('#search_form').html(
-        '<form action="javascript:search_thread_action();"> \
-        <div> \
-        <input type="text" name="keyword" value="" /> \
-        <div data-role="fieldcontain"> \
-        <select name="topic" id="search_type"> \
-        <option value="3">贴子主题</option> \
-        <option value="1">主题贴内容</option> \
-        <option value="4">主题贴发贴人</option> \
-        <option value="2">跟贴内容</option> \
-        <option value="5">跟贴发贴人</option> \
-        </select> \
-        </div> \
-        <button type="submit">查询</button> \
-        </div> \
-        </form>'
-    );
+            '<form action="javascript:search_thread_action();"> \
+            <div> \
+            <input type="text" name="keyword" value="" /> \
+            <div data-role="fieldcontain"> \
+            <select name="topic" id="search_type"> \
+            <option value="3">贴子主题</option> \
+            <option value="1">主题贴内容</option> \
+            <option value="4">主题贴发贴人</option> \
+            <option value="2">跟贴内容</option> \
+            <option value="5">跟贴发贴人</option> \
+            </select> \
+            </div> \
+            <button type="submit">查询</button> \
+            </div> \
+            </form>'
+            );
 }
 
 function search_para_string(para, other){
@@ -974,114 +1156,125 @@ function font_click(ce, e){
 
 function setting_init(){
     $('#setting_content').html(
-        '<div class="containing-element"> \
-        <div id="color_d" class="setting"> \
-        <label for="night"></label> \
-        <select name="night" data-role="slider" id="night_bgcolor"> \
-        <option value="off">白天</option> \
-        <option value="on">黑夜</option> \
-        </select> \
-        </div> \
-        <div id="font_size_d" class="setting"> \
-        字号： \
-        <a class="change_font_size" type="bigger">放大</a> \
-        &nbsp; \
-        <a class="change_font_size" type="smaller">缩小</a> \
-        </div> \
-        <div id="loadimg_d" class="setting"> \
-        <label for="loadimg"></label> \
-        <select name="loadimg" data-role="slider" id="loadimg"> \
-        <option value="on">看图</option> \
-        <option value="off">不看图</option> \
-        </select> \
-        </div> \
-        <div id="share_d" class="setting"> \
-        <label for="share">分享时是否 @hjjtz</label> \
-        <select name="share" data-role="slider" id="share_tz"> \
-        <option value="on"> @ </option> \
-        <option value="off">不 @</option> \
-        </select> \
-        </div> \
-        </div>');
+            '<div class="containing-element"> \
+            <div id="color_d" class="setting"> \
+            <label for="night"></label> \
+            <select name="night" data-role="slider" id="night_bgcolor"> \
+            <option value="off">白天</option> \
+            <option value="on">黑夜</option> \
+            </select> \
+            </div> \
+            <div id="font_size_d" class="setting"> \
+            字号： \
+            <a class="change_font_size" type="bigger">放大</a> \
+            &nbsp; \
+            <a class="change_font_size" type="smaller">缩小</a> \
+            </div> \
+            <div id="loadimg_d" class="setting"> \
+            <label for="loadimg"></label> \
+            <select name="loadimg" data-role="slider" id="loadimg"> \
+            <option value="on">看图</option> \
+            <option value="off">不看图</option> \
+            </select> \
+            </div> \
+            <div id="showmsg_jump_floor_d" class="setting"> \
+            <label for="showmsg_jump_floor">每次跳转N楼</label> \
+            <input placeholder="50" type="text" name="showmsg_jump_floor" > \
+            </div> \
+            <div id="share_d" class="setting"> \
+            <label for="share">分享时是否 @hjjtz</label> \
+            <select name="share" data-role="slider" id="share_tz"> \
+            <option value="on"> @ </option> \
+            <option value="off">不 @</option> \
+            </select> \
+            </div> \
+            </div>');
 
-        var share_or_not = lscache.get('share_tz');
-        var share_flag = (share_or_not && share_or_not.match(/\S/)) ? 'on' : 'off';
-        $('#share_d').find('option[value="'+share_flag+'"]').attr('selected', 'selected');
+    var fcnt = lscache.get('showmsg_jump_floor') || JUMP_FLOOR_CNT;
+    lscache.set('showmsg_jump_floor', fcnt);
+    $('#setting').find('input[name="showmsg_jump_floor"]').val(fcnt);
+    $('#setting').find('input[name="showmsg_jump_floor"]').on('change', function(){
+        lscache.set('showmsg_jump_floor', $(this).val());
+    });
 
-        $("#share_tz").on("change", function () {
-            var s= $(this).val()=='on' ?  '@hjjtz' : ' '; 
-            lscache.set('share_tz', s);
-        });
+    var share_or_not = lscache.get('share_tz');
+    var share_flag = (share_or_not && share_or_not.match(/\S/)) ? 'on' : 'off';
+    $('#share_d').find('option[value="'+share_flag+'"]').attr('selected', 'selected');
 
-        $("#night_bgcolor").on("change", function () {
-            var s= $(this).val()=='on' ?  $('#night_css').html() : ""; 
-            $('head').find('style').html(s);
+    $("#share_tz").on("change", function () {
+        var s= $(this).val()=='on' ?  '@hjjtz' : ' '; 
+        lscache.set('share_tz', s);
+    });
 
-            var t = $(this).val()=='on' ? 'e' : 'a';
-            $.mobile.changeGlobalTheme(t);
-        });
+    $("#night_bgcolor").on("change", function () {
+        var s= $(this).val()=='on' ?  $('#night_css').html() : ""; 
+        $('head').find('style').html(s);
 
-        $('#loadimg').find('option[value="'+LOADIMG+'"]').attr('selected', 'selected');
-        $("#loadimg").on("change", function () {
-            LOADIMG = $(this).val();
-            lscache.set('loadimg', LOADIMG);
-        });
+        var t = $(this).val()=='on' ? 'e' : 'a';
+        $.mobile.changeGlobalTheme(t);
+    });
 
-        var font_size = lscache.get('font-size') || '112%';
-        $("body").css( "font-size" , font_size );
-        lscache.set('font-size', font_size);
-        font_click(".change_font_size", "body");
+    $('#loadimg').find('option[value="'+LOADIMG+'"]').attr('selected', 'selected');
+    $("#loadimg").on("change", function () {
+        LOADIMG = $(this).val();
+        lscache.set('loadimg', LOADIMG);
+    });
+
+    var font_size = lscache.get('font-size') || '112%';
+    $("body").css( "font-size" , font_size );
+    lscache.set('font-size', font_size);
+    font_click(".change_font_size", "body");
 }
 // }}
 // {{ manual_jump
 function manual_jump_init(){
     $('#manual_jump_content').html('<input placeholder="大院" type="text" name="board" > \
-                                   <input type="text" name="id" placeholder="门牌"> \
-                                   <input id="manual_jump_btn" type="submit" value="跳转">');
+            <input type="text" name="id" placeholder="门牌"> \
+            <input id="manual_jump_btn" type="submit" value="跳转">');
 
-                                   $('#manual_jump').on('click', '#manual_jump_btn', function(){
-                                       var bid = $('#manual_jump').find('input').eq(0).val();
-                                       $('#manual_jump').find('input').eq(0).val('');
-                                       var tid = $('#manual_jump').find('input').eq(1).val();
-                                       $('#manual_jump').find('input').eq(1).val('');
+    $('#manual_jump').on('click', '#manual_jump_btn', function(){
+        var bid = $('#manual_jump').find('input').eq(0).val();
+        $('#manual_jump').find('input').eq(0).val('');
+        var tid = $('#manual_jump').find('input').eq(1).val();
+        $('#manual_jump').find('input').eq(1).val('');
 
-                                       if(! bid) return;
-                                       var u = (tid && tid.match(/^\d+$/)) ? ("#showmsg?board=" + bid + '&id=' + tid)  : 
-                                           ("#board?board=" + bid + '&page=0');
+        if(! bid) return;
+        var u = (tid && tid.match(/^\d+$/)) ? ("#showmsg?board=" + bid + '&id=' + tid)  : 
+        ("#board?board=" + bid + '&page=0');
 
-                                       $.mobile.changePage(u);
-                                   });
+    $.mobile.changePage(u);
+    });
 }
 // }}
 // {{ main
 function params_page(){
 
     $.mobile.paramsHandler.addPage(
-        "board",                      
-        ["board", "page"],       
-        ["type", "subid"],                     
-        function (para) {
-            board(para);
-        }
-    );
+            "board",                      
+            ["board", "page"],       
+            ["type", "subid"],                     
+            function (para) {
+                board(para);
+            }
+            );
 
     $.mobile.paramsHandler.addPage(
-        "showmsg",                      
-        ["board", "id"],       
-        ["page", "boardpagemsg", "keyword", "refresh"],                     
-        function (para) {
-            showmsg(para);
-        }
-    );
+            "showmsg",                      
+            ["board", "id"],       
+            ["page", "boardpagemsg", "keyword", "refresh", "fid"],                     
+            function (para) {
+                showmsg(para);
+            }
+            );
 
     $.mobile.paramsHandler.addPage(
-        "search",                      
-        ["board", "keyword"],       
-        ["topic", "page", "act"],                     
-        function (para) {
-            search(para);
-        }
-    );
+            "search",                      
+            ["board", "keyword"],       
+            ["topic", "page", "act"],                     
+            function (para) {
+                search(para);
+            }
+            );
 
     $.mobile.paramsHandler.init();
 }
@@ -1120,16 +1313,14 @@ function main(){
     //版块
     $('#recent_history').click(function(){ recent_history(); });
 
-    $('#board').on('click', '#toggle_fav_board', function(){
-        toggle_fav_board();
-    }); 
+    $('#board').on('click', '#board_save', function(){ board_save(); }); 
 
     $('body').on('click', '.textarea_format', function(){
         var area = $(this).parent().find('textarea').eq(0);
         var f = area.val()
         .replace(/\b(http:\/\/.*?\.(jpg|gif|png|jpeg))\b/ig , "<img src='$1' />\n")
         .replace(/\b(http:\/\/[^\s'"]+)\s/ig , "<a href='$1'>$1</a>\n");
-        area.val(f);
+    area.val(f);
     });
 
     showmsg_click(); //贴子

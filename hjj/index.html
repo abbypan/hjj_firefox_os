@@ -87,7 +87,7 @@
         <div id="board_info">
             <span id="board_title"></span>, 
             <span id="board_id"></span>, 
-            <a id="toggle_fav_board" href="#">...</a> 
+            <a id="board_save" href="#">...</a> 
         </div>
 
         <div id="board_pager_top" class="pager"></div>
@@ -166,6 +166,9 @@
     </div>
 
     <div data-role="popup" id="reply_thread" class="popup_textarea">
+    </div>
+    
+    <div data-role="popup" id="jump_floor" class="popup_textarea">
     </div>
 </div>
 
@@ -293,19 +296,24 @@
     </div>
 </div>
 
-<!-- todo -->
-<!-- 快速跳转到某一楼 -->
-<!-- 记住爬到哪一楼 -->
-<!-- 传图片 -->
-<!-- 近3天的贴突出显示 -->
-<!-- 上跳下跳到空楼 -->
-<!-- 离线缓存指定帖子 -->
-<!-- 收藏帖子，收藏版块函数优化-->
-<!-- 收藏帖子 分类/标签/标签共享 -->
-<!-- 小头像？-->
-<!-- 新帖标题出现自己设置的关键词时进行提醒 -->
-<!-- 浏览器同步书签，阅读进度 -->
+<div id="night_css" style="display:none;">
+    body,div,table  {
+    background-color: #000000;
+    color: #f0efd0;
+    }
+    a:link  { color: #71baa5; }
+    a:hover {color: #FFE900 !important; background-color: #363037 !important;}
+</div>
 
+<!-- todo -->
+<!-- 近3天的贴突出显示 -->
+<!-- 收藏帖子 分类/标签/标签共享 -->
+<!-- 浏览器同步书签，阅读进度 -->
+<!-- 小头像？-->
+<!-- 传图片 -->
+<!-- 上跳下跳到空楼 -->
+<!-- 新帖标题出现自己设置的关键词时进行提醒 -->
+<!-- 收藏帖子，收藏版块函数优化-->
 <div id="say_history" data-role="page">
    <!--发言记录 查找-->
     <div data-role="navbar">  
@@ -318,14 +326,6 @@
     </div>
 </div>
 
-<div id="night_css" style="display:none;">
-    body,div,table  {
-    background-color: #000000;
-    color: #f0efd0;
-    }
-    a:link  { color: #71baa5; }
-    a:hover {color: #FFE900 !important; background-color: #363037 !important;}
-</div>
 
 </body>
 </html>

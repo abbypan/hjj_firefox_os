@@ -14,6 +14,11 @@ img {
     height : auto !important;
 }
 
+.smallgif {
+    width  : 28px !important;
+    height : 18px !important;
+}
+
 .smallbox,.pager,.setting,
 #board_content,#board_info,#thread_list,#thread_action,
 #thread_content,#thread_info,
@@ -61,8 +66,34 @@ input,select {
 }
 
 #floor_keyword_input {
-    width: 30% !important;
+    width: 28% !important;
     -webkit-box-sizing: border-box; 
     -moz-box-sizing: border-box;   
     box-sizing: border-box;       
 }
+
+a:visited {
+    color: #FF0000;
+}
+
+#new_thread_pic {
+    background: url(../icons/bbsbigimage.gif) no-repeat 0 0 !important;
+}
+.image1,.image2,.image6,.image7,.image8,.image9,.image10,.image12,.image13,.image14,.image15,.image16,.image17{
+    background: url(../icons/bbsbigimage.gif) no-repeat 0 0 !important;
+    display: inline-block;
+    border: 0;
+}
+.image1{width:34px;height:32px;background-position:0 0 !important; }
+.image2{width:36px;height:32px;background-position:-34px 0 !important; }
+.image6{width:44px;height:39px;background-position:-70px 0 !important; }
+.image7{width:39px;height:38px;background-position:-114px 0 !important; }
+.image8{width:42px;height:37px;background-position:0 -32px !important; }
+.image9{width:32px;height:32px;background-position:-42px -39px !important; }
+.image10{width:32px;height:32px;background-position:-74px -39px !important; }
+.image12{width:32px;height:32px;background-position:-106px -39px !important; }
+.image13{width:32px;height:32px;background-position:0 -69px !important; }
+.image14{width:32px;height:32px;background-position:-32px -71px !important; }
+.image15{width:32px;height:32px;background-position:-64px -71px !important; }
+.image16{width:32px;height:32px;background-position:-96px -71px !important; }
+.image17{width:32px;height:32px;background-position:-128px -71px !important; }
