@@ -1,4 +1,5 @@
 var HJJ='http://bbs.jjwxc.net';
+//var IMGUR_CLIENT_ID = lscache.get('imgur_client_id') || '4c649ea4735c42a';
 var RECENT_MSEC = 1000*60*60*24*3;
 var THREAD_HISTORY_MINUTE = 60*24*10;
 var THREAD_FLOOR_MINUTE =  60*24*7;
@@ -6,14 +7,25 @@ var RECENT_THREAD_SECOND = 3*24*60*60;
 var BOARD_MENU_MINUTE = 5*24*60;
 var MAX_HISTORY_CNT = 300;
 var HISTORY_CNT = lscache.get('history_cnt') || -1;
-var JUMP_FLOOR_CNT = 50;
+var JUMP_FLOOR_CNT = lscache.get('showmsg_jump_floor') || 50;
+var FILTER_THREAD_KEYWORD = lscache.get('filter_thread_keyword') || '';
+var FILTER_THREAD_KEYWORD_LIST;
 var INIT = 0;
 var DEFAULT_USERNAME = '==';
 
 var DEFAULT = {};
 DEFAULT["loadimg"] = lscache.get('loadimg') || 'on';
 DEFAULT["share_tz"] = lscache.get('share_tz') || 'on';
+PAGE_TYPE = '';
 // {{ base
+function is_key_match_list(k, list){
+    for(var i in list){
+        var m = list[i];
+        if(k.match(m)) return true;
+    }
+    return false;
+}
+
 function is_recent(dt){
     var t = dt.replace(/-/g,'/');
     var diff = new Date() - new Date(t);
@@ -70,6 +82,43 @@ function format_cache_key(head, data, keylist){
     return s.join(",");
 }
 //}}
+// {{ imgur
+//function upload_imgur (file) {
+    //xhttp = new XMLHttpRequest(),
+    //fd = new FormData();
+    //fd.append('image', file);
+    //xhttp.open('POST', 'https://api.imgur.com/3/image');
+    //xhttp.setRequestHeader('Authorization', 'Client-ID '+ IMGUR_CLIENT_ID); 
+    //alert(fd);
+    //xhttp.onreadystatechange = function () {
+        //if (xhttp.status === 200 && xhttp.readyState === 4) {
+            //var res = JSON.parse(xhttp.responseText), link, p, t;
+            //link = res.data.link;
+            //$('.upload_pic_status').html(link);
+            //alert(link);
+        //}
+    //};
+    //xhttp.send(fd);
+//}
+
+//function upload_init(){
+    //var fileinput = document.querySelector('.upload_pic_btn'),
+    //self = this;
+    //fileinput.addEventListener('change', function (e) {
+        //var files = e.target.files, file, p, t, i, len;
+        //for (i = 0, len = files.length; i < len; i += 1) {
+            //file = files[i];
+            //if (file.type.match(/image.*/)) {
+            //$('.upload_pic_status').html('upload...');
+            //upload_imgur(file);
+            //} else {
+                //$('.upload_pic_status').html('err...');
+            //}
+        //}
+    //}, false);
+//}
+
+// }}
 // {{{ home
 function home() {
     var rem = lscache.get('home');
@@ -77,18 +126,11 @@ function home() {
 
     $('#manual_jump').find('input').eq(0).val('');
 
-    var xhr;
-    if(window.XMLHttpRequest){
-        xhr = new XMLHttpRequest({mozSystem: true}) || new XMLHttpRequest();
-    }
+    var xhr = (XMLHttpRequest.noConflict ? new XMLHttpRequest.noConflict() : new XMLHttpRequest({mozSystem: true}));
 
-    try{
-        xhr.open("GET", HJJ, true);
-    }catch(e){
-        xhr._url = HJJ;
-    }
-
+    xhr.open("GET", HJJ, true);
     xhr.overrideMimeType('text/plain; charset=gb2312');
+    xhr.withCredentials = true;
 
     xhr.onreadystatechange = function() {
         if (xhr.readyState == 4) {
@@ -108,9 +150,12 @@ function home() {
             $('#home_qg').html( $(h).find('.cont04').eq(0).html());
             $('#home_cz').html( $(h).find('.cont05').eq(0).html());
 
-            var body_h = $('#home_content').html().replace(
-                    /http:\/\/bbs.jjwxc.net\/showmsg.php/g, 
-                    '#showmsg').replace(/target="_blank"/g,'');;
+            var body_h = $('#home_content').html()
+                .replace(/http:\/\/bbs.jjwxc.net\/showmsg.php/g, '#showmsg')
+                .replace(/target="_blank"/g,'')
+                .replace(/<\/?ul>/g, '')
+                .replace(/<\/li>/g, '<br />')
+                .replace(/<li>/g, '');
             $('#home_content').html(body_h);
             lscache.set('home', body_h);
         }
@@ -375,6 +420,13 @@ function board_para_string(para, other){
     return format_para_string(x, [ "board", "type", "page", "subid" ]);
 }
 
+function is_filter_thread(title) {
+    if(! FILTER_THREAD_KEYWORD) return false;
+    if(! FILTER_THREAD_KEYWORD_LIST) 
+        FILTER_THREAD_KEYWORD_LIST = FILTER_THREAD_KEYWORD.split(/,/);
+    return is_key_match_list(title, FILTER_THREAD_KEYWORD_LIST);
+}
+
 function board_thread_info(tr) {
     var href_list = '';
     var i = 0;
@@ -387,7 +439,7 @@ function board_thread_info(tr) {
 
     var info =  {
         tag : tr.children('td').eq(0).text(),
-        title : tr.find('a').eq(0).text(),
+        title : tr.find('a').eq(0).text().trim(),
         url : tr.find('a').eq(0).attr('href').replace(/showmsg.php/, '#showmsg'),
         poster : tr.children('td').eq(2).text(),
         time : tr.children('td').eq(3).text(),
@@ -403,7 +455,7 @@ function board_thread_info(tr) {
         info.poster + '; 热:' + info.hot + '; 回:' + info.reply + '; ' + info.time + 
         '<br>'+
         '</div>';
-    return s;
+    return is_filter_thread(info.title) ? null : s;
 }
 
 function sub_board_action(){
@@ -469,7 +521,12 @@ function new_thread(para){
             <a href="#" class="textarea_format">自动贴图/链接</a> \
             <textarea rows=12 placeholder="内容" name="body" ></textarea> \
             <input type="submit" value="发贴"> \
-            </form>');
+            </form> \
+            ');
+
+            //<input type="file" class="upload_pic_btn" value="上传"> \
+            //<div class="upload_pic_status">...</div> \
+    //upload_init();
 
     $('#new_thread').find('input[name="username"]').on('change', function(){
         lscache.set('username', $(this).val());
@@ -500,6 +557,7 @@ function board_save_title(info){
 }
 
 function board(para) {
+    PAGE_TYPE='board';
     thread_type(para);
     new_thread(para);
 
@@ -517,7 +575,8 @@ function board(para) {
             var h = jQuery.parseHTML(xhr.responseText);
             $(h).find('tr[valign="middle"][bgcolor="#FFE7F7"]')
                 .each(function(){
-                    thread_info += board_thread_info($(this));
+                    var ti = board_thread_info($(this));
+                    if(ti) thread_info += ti;
                 });
 
             $('#thread_list').html(thread_info);
@@ -580,7 +639,8 @@ function floor_keyword(){
 
     var is_to_filter = function(f){
         var c = f.find('.flcontent').text().match(k);
-        return  c ? false : true;
+        var p =  f.find('.floor_poster').text().match(k);
+        return  (c || p) ? false : true;
     };
 
     filter_floor(is_to_filter);
@@ -591,7 +651,8 @@ function floor_filter(){
 
     var is_to_filter = function(f){
         var c = f.find('.flcontent').text().match(k);
-        return  c ? true : false;
+        var p =  f.find('.floor_poster').text().match(k);
+        return  (c || p) ? true : false;
     };
 
     filter_floor(is_to_filter);
@@ -817,23 +878,25 @@ function thread_save_title(para, res){
         $('#showmsg').on('click', '.jump_to_bottom', function(){ $(document).scrollTop($(document).height()); });
 
         $('#showmsg').on('click', '.jump_to_prev', function(){
-            var fid = $(this).parent().attr('fid');
-            var step = lscache.get('showmsg_jump_floor') || JUMP_FLOOR_CNT;
-            var nid = parseInt(fid) - step;
-            if(showmsg_jump_floor(nid)) return;
-            $.mobile.silentScroll(0);
+            var x = $(this).parent().prevAll();
+            var i = parseInt(JUMP_FLOOR_CNT)-1;
+            if(x[i]) {
+                var pos = $(x[i]).offset().top;
+                $.mobile.silentScroll(pos);
+            }else{
+                $.mobile.silentScroll(0);
+            }
         });
 
         $('#showmsg').on('click', '.jump_to_next', function(){
-            var fid = parseInt($(this).parent().attr('fid'));
-            if(fid==0){
-                fid = parseInt($(this).parent().next().attr('fid'));
+            var x = $(this).parent().nextAll();
+            var i = parseInt(JUMP_FLOOR_CNT)-1;
+            if(x[i]) {
+                var pos = $(x[i]).offset().top;
+                $.mobile.silentScroll(pos);
+            }else{
+                $(document).scrollTop($(document).height());
             }
-
-            var step = lscache.get('showmsg_jump_floor') || JUMP_FLOOR_CNT;
-            var nid = fid + step;
-            if(showmsg_jump_floor(nid)) return;
-            $(document).scrollTop($(document).height());
         });
 
         $('#showmsg').on('click', '#view_img', function(){ view_img(); });
@@ -949,8 +1012,12 @@ function thread_save_title(para, res){
                 <a href="#" class="textarea_format">自动贴图/链接</a> \
                 <textarea rows=12 placeholder="内容" name="body"></textarea> <br> \
                 <input type="submit" value="回贴"> \
-                </form>'
-                );
+                </form> \
+                ');
+
+                //<input type="file" class="upload_pic_btn" value="上传"> \
+                //<div class="upload_pic_status">...</div> \
+                //upload_init();
 
         $('#reply_thread').find('input[name="username"]').on('change', function(){
             lscache.set('username', $(this).val());
@@ -967,6 +1034,8 @@ function thread_save_title(para, res){
                 <input placeholder="楼层" type="text" id="dst_floor" name="dst_floor"> \
                 <input type="submit" value="跳转" > \
                 </form>');
+
+
     }
 
     function showmsg_banner(para){
@@ -1012,6 +1081,7 @@ function thread_save_title(para, res){
 
 
     function showmsg(para){
+        PAGE_TYPE = 'showmsg';
         var local_url = "#showmsg?" + showmsg_para_string(para); 
         showmsg_header(para);
         showmsg_banner(para);
@@ -1180,13 +1250,29 @@ function setting_init(){
             <input placeholder="50" type="text" name="showmsg_jump_floor" > \
             </div>' + 
             slider_div_html('share_tz', '分享时是否 @hjjtz', '@', '不@') + 
-            '</div>');
+            '</div>' +
+            '<div id="filter_thread_keyword_d" class="setting"> \
+            <label for="filter_thread_keyword">贴子标题过滤</label> \
+            <input id="filter_thread_keyword" name="filter_thread_keyword" > \
+            </div>'  
+            );
 
-    var fcnt = lscache.get('showmsg_jump_floor') || JUMP_FLOOR_CNT;
-    lscache.set('showmsg_jump_floor', fcnt);
-    $('#setting').find('input[name="showmsg_jump_floor"]').val(fcnt);
+    $('#setting').find('input[name="showmsg_jump_floor"]').val(JUMP_FLOOR_CNT);
+
+    if(FILTER_THREAD_KEYWORD) $('#filter_thread_keyword').val(FILTER_THREAD_KEYWORD);
+    $('#filter_thread_keyword').tagsInput({
+        'height':'100px',
+        'width':'92%',
+        'onChange' : function(){
+            FILTER_THREAD_KEYWORD = $(this).val();
+            lscache.set('filter_thread_keyword', FILTER_THREAD_KEYWORD);
+        }
+    });
+
+    $('#setting').find('input[name="showmsg_jump_floor"]').val(JUMP_FLOOR_CNT);
     $('#setting').find('input[name="showmsg_jump_floor"]').on('change', function(){
-        lscache.set('showmsg_jump_floor', $(this).val());
+        JUMP_FLOOR_CNT = $(this).val();
+        lscache.set('showmsg_jump_floor', JUMP_FLOOR_CNT);
     });
 
 
@@ -1227,6 +1313,8 @@ function manual_jump_init(){
     $.mobile.changePage(u);
     });
 }
+
+
 // }}
 // {{ main
 function params_page(){
