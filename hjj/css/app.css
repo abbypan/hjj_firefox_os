@@ -4,6 +4,12 @@ body,div,table,ul,li,input,textarea  {
     word-wrap: break-word;      
 }
 
+[data-role=navbar] a { 
+    font-size: 1.3em !important; 
+    padding-top: 0.1em !important;
+    padding-bottom: 0.1em !important;
+}
+
 .star {
     color: #d4db8e;
     font-weight: bold;

@@ -30,9 +30,9 @@
     <div data-role="header" data-position="fixed">
         <div data-role="navbar">  
             <ul>
-                <li><a href="#manual_jump" data-icon="alert"></a></li>
-                <li><a href="#board_menu" data-icon="grid"></a></li>
-                <li><a href="#setting" data-icon="gear"></a></li>
+                <li><a href="#manual_jump">&#8623;</a></li>
+                <li><a href="#board_menu">&#8801;</a></li>
+                <li><a href="#setting" >&#10016;</a></li>
             </ul>
         </div>
     </div>
@@ -53,9 +53,9 @@
     <div data-role="footer" data-position="fixed">
         <div data-role="navbar">  
             <ul>
-                <li><a data-icon="star" href="#fav_board"></a></li>
-                <li><a data-icon="star" data-theme="b" href="#fav_thread"></a></li>
-                <li><a data-icon="back" href="#recent_history"></a></li>
+                <li><a href="#fav_board">&#9733;</a></li>
+                <li><a href="#fav_thread">&#9829;</a></li>
+                <li><a href="#recent_history">&#167;</a></li>
             </ul>
         </div>
     </div>
@@ -65,12 +65,11 @@
     <div data-role="header" data-position="fixed">
         <div data-role="navbar">  
             <ul>
-                <li><a href="#manual_jump" data-icon="alert"></a></li>
-                <li><a data-icon="grid" href="#board_menu"></a></li>
+                <li><a href="#manual_jump">&#8623;</a></li>
+                <li><a href="#board_menu">&#8801;</a></li>
                 <li><a href="#search_form" data-rel="popup"
                     data-position-to="window"
-                    data-icon="search"
-                    ></a></li>
+                    >&#1060;</a></li>
             </ul>
         </div>
     </div>
@@ -78,9 +77,9 @@
     <div data-role="header">
         <div data-role="navbar">  
             <ul>
-                <li><a data-icon="arrow-d" href="#sub_board" data-rel="popup"></a></li>
-                <li><a data-icon="arrow-r" href="#thread_type" data-rel="popup"></a></li>
-                <li><a href="#new_thread" data-icon="plus" data-rel="popup" data-position-to="window"></a></li>
+                <li><a href="#sub_board" data-rel="popup">&darr;</a></li>
+                <li><a href="#thread_type" data-rel="popup">&rarr;</a></li>
+                <li><a href="#new_thread" data-rel="popup" data-position-to="window">+</a></li>
             </ul>
         </div>
     </div>
@@ -89,7 +88,7 @@
         <div id="board_info">
             <span id="board_title"></span>, 
             <span id="board_id"></span>, 
-            <a id="board_save" href="#">...</a> 
+            <a id="board_save" href="#">.</a> 
         </div>
 
         <div id="board_pager_top" class="pager"></div>
@@ -103,9 +102,9 @@
     <div data-role="footer" data-position="fixed">
         <div data-role="navbar">  
             <ul>
-                <li><a data-icon="star" href="#fav_board"></a></li>
-                <li><a data-icon="star" data-theme="b" href="#fav_thread"></a></li>
-                <li><a data-icon="back" href="#recent_history"></a></li>
+                <li><a href="#fav_board">&#9733;</a></li>
+                <li><a href="#fav_thread">&#9829;</a></li>
+                <li><a href="#recent_history">&#167;</a></li>
             </ul>
         </div>
     </div>
@@ -135,12 +134,12 @@
     <div data-role="header" data-position="fixed">
         <div data-role="navbar">  
             <ul>
-                <li><a href="#manual_jump" data-icon="alert"></a></li>
-                <li><a href="#" data-icon="arrow-u" id="thread_to_board"></a></li>
+                <li><a href="#manual_jump" >&#8623;</a></li>
+                <li><a href="#" id="thread_to_board">&uarr;</a></li>
                 <li><a href="#reply_thread" data-rel="popup"
                     id="reply_thread_a"
                     data-position-to="window" 
-                    data-icon="forward"></a></li>
+                    >&#8626;</a></li>
             </ul>
         </div>
     </div>
@@ -160,9 +159,9 @@
     <div data-role="footer" data-position="fixed">
         <div data-role="navbar">  
             <ul>
-                <li><a data-icon="star" href="#fav_board"></a></li>
-                <li><a data-icon="star" data-theme="b" href="#fav_thread"></a></li>
-                <li><a data-icon="back" href="#recent_history"></a></li>
+                <li><a href="#fav_board">&#9733;</a></li>
+                <li><a href="#fav_thread">&#9829;</a></li>
+                <li><a href="#recent_history">&#167;</a></li>
             </ul>
         </div>
     </div>
@@ -180,12 +179,12 @@
 
 <div data-role="page" id="recent_history">
     <div data-role="navbar">  
-        <a data-rel="back" data-icon="arrow-l" href="#"></a>
+        <a data-rel="back" href="#">&larr;</a>
     </div>
     <ul data-role="listview" data-filter="true">
     </ul>
     <div data-role="navbar">  
-        <a data-rel="back" data-icon="arrow-l" href="#"></a>
+        <a data-rel="back" href="#">&larr;</a>
     </div>
 </div>
 
@@ -193,28 +192,28 @@
 <div data-role="page" id="fav_thread">
     <div data-role="navbar">  
             <ul>
-                <li><a data-rel="back" data-icon="arrow-l" href="#"></a></li>
-                <li><a class="refresh_fav_thread" data-icon="refresh" href="#"></a></li>
+                <li><a data-rel="back" href="#">&larr;</a></li>
+                <li><a class="refresh_fav_thread" href="#">&#8635;</a></li>
             </ul>
     </div>
     <ul data-role="listview" data-filter="true" id="fav_thread_ul">
     </ul>
     <div data-role="navbar">  
             <ul>
-                <li><a data-rel="back" data-icon="arrow-l" href="#"></a></li>
-                <li><a class="refresh_fav_thread" data-icon="refresh" href="#"></a></li>
+                <li><a data-rel="back" href="#">&larr;</a></li>
+                <li><a class="refresh_fav_thread" href="#">&#8635;</a></li>
             </ul>
     </div>
 </div>
 
 <div data-role="page" id="fav_board">
     <div data-role="navbar">  
-        <a data-rel="back" data-icon="arrow-l" href="#"></a>
+        <a data-rel="back" href="#">&larr;</a>
     </div>
     <ul data-role="listview" data-filter="true">
     </ul>
     <div data-role="navbar">  
-        <a data-rel="back" data-icon="arrow-l" href="#"></a>
+        <a data-rel="back" href="#">&larr;</a>
     </div>
 </div>
 
@@ -222,8 +221,8 @@
     <div data-role="header" data-position="fixed">
         <div data-role="navbar">  
             <ul>
-                <li><a data-rel="back" data-icon="arrow-l" href="#"></a></li>
-                <li><a data-icon="home" href="#home"></a></li>
+                <li><a data-rel="back" href="#">&larr;</a></li>
+                <li><a href="#home">&#955;</a></li>
             </ul>
         </div>
     </div>
@@ -240,8 +239,8 @@
     <div data-role="footer" data-position="fixed">
         <div data-role="navbar">  
             <ul>
-                <li><a data-rel="back" data-icon="arrow-l" href="#"></a></li>
-                <li><a data-icon="home" href="#home"></a></li>
+                <li><a data-rel="back" href="#">&larr;</a></li>
+                <li><a href="#home">&#955;</a></li>
             </ul>
         </div>
     </div>
@@ -251,7 +250,7 @@
     <div data-role="header" data-position="fixed">
         <div data-role="navbar">  
             <ul>
-                <li><a data-rel="back" data-icon="arrow-l" href="#"></a></li>
+                <li><a data-rel="back"  href="#">&larr;</a></li>
             </ul>
         </div>
     </div>
@@ -260,7 +259,7 @@
     <div data-role="footer" data-position="fixed">
         <div data-role="navbar">  
             <ul>
-                <li><a data-rel="back" data-icon="arrow-l" href="#"></a></li>
+                <li><a data-rel="back" href="#">&larr;</a></li>
             </ul>
         </div>
     </div>
@@ -270,8 +269,8 @@
     <div data-role="header" data-position="fixed">
         <div data-role="navbar">  
             <ul>
-                <li><a data-rel="back" data-icon="arrow-l" href="#"></a></li>
-                <li><a href="#board_menu" data-icon="grid"></a></li>
+                <li><a data-rel="back" href="#">&larr;</a></li>
+                <li><a href="#board_menu">&#8801;</a></li>
             </ul>
         </div>
     </div>
@@ -288,9 +287,9 @@
     <div data-role="footer" data-position="fixed">
         <div data-role="navbar">  
             <ul>
-                <li><a data-icon="star" href="#fav_board"></a></li>
-                <li><a data-icon="star" data-theme="b" href="#fav_thread"></a></li>
-                <li><a data-icon="back" href="#recent_history"></a></li>
+                <li><a href="#fav_board">&#9733;</a></li>
+                <li><a href="#fav_thread">&#9829;</a></li>
+                <li><a href="#recent_history">&#167;</a></li>
             </ul>
         </div>
     </div>
@@ -298,12 +297,12 @@
 
 <div id="manual_jump" data-role="page">
     <div data-role="navbar">  
-        <a data-rel="back" data-icon="arrow-l" href="#"></a>
+        <a data-rel="back" href="#">&larr;</a>
     </div>
     <div data-role="content" id="manual_jump_content">
     </div>
     <div data-role="navbar">  
-        <a data-rel="back" data-icon="arrow-l" href="#"></a>
+        <a data-rel="back" href="#">&larr;</a>
     </div>
 </div>
 
@@ -323,19 +322,7 @@
 <!-- 浏览器同步书签，阅读进度 -->
 <!-- 传图片 -->
 <!-- 小头像？-->
-
-<div id="say_history" data-role="page">
-   <!--发言记录 查找-->
-    <div data-role="navbar">  
-        <a data-rel="back" data-icon="arrow-l" href="#"></a>
-    </div>
-    <div data-role="content" id="say_history_content">
-    </div>
-    <div data-role="navbar">
-        <a data-rel="back" data-icon="arrow-l" href="#"></a>
-    </div>
-</div>
-
+<!--发言记录 查找-->
 
 </body>
 </html>

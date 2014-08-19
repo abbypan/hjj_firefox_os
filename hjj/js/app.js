@@ -269,7 +269,7 @@ function toggle_action(k, elem, cache_k, data){
 function check_fav_board(){
     var info = get_board_info();
     var k = format_cache_key('board_save', info, ["board"]);
-    toggle_action_html(k, '#board_save',  '&#9825;', '&hearts;');
+    toggle_action_html(k, '#board_save',  '&#9734;', '&#9733;');
 }
 
 function get_board_info(){
@@ -290,7 +290,7 @@ function board_save(){
         url : info.local_url,
         board: info.board 
     });
-    toggle_action_html(k, '#board_save',  '&#9825;', '&hearts;');
+    toggle_action_html(k, '#board_save',  '&#9734;', '&#9733;');
     fav_board();
 }
 // }}
@@ -339,7 +339,7 @@ function get_showmsg_info(){
 function check_cache_thread(){
     var info = get_showmsg_info();
     var k = format_cache_key('thread_cache', info, ["board", "id"]);
-    toggle_action_html(k, '#thread_cache', '&#9872;', '&#9873;');
+    toggle_action_html(k, '#thread_cache', '&#9831;', '&#9827;');
 }
 
 function check_save_thread(){
@@ -624,12 +624,14 @@ function extract_floor_info(info) {
             time: m[3]
     };
 }
-function filter_floor(is_to_filter) {
+function filter_floor(is_to_filter,msg) {
     var i = 0;
     $('.floor').each(function() {
         if(i>0 && is_to_filter($(this))) $(this).hide(); 
         i=1;
     });
+
+    if(msg) $('#thread_action_temp').html(msg);
 }
 
 function view_img(){
@@ -638,7 +640,7 @@ function view_img(){
         return  c.match(/\<img /i) ? 0 : 1;
     };
 
-    filter_floor(is_to_filter);
+    filter_floor(is_to_filter, '只看图');
 }
 
 function floor_keyword(){
@@ -650,7 +652,7 @@ function floor_keyword(){
         return  (c || p) ? false : true;
     };
 
-    filter_floor(is_to_filter);
+    filter_floor(is_to_filter, '抽取' + k);
 }
 
 function floor_filter(){
@@ -662,7 +664,7 @@ function floor_filter(){
         return  (c || p) ? true : false;
     };
 
-    filter_floor(is_to_filter);
+    filter_floor(is_to_filter, '过滤' + k);
 }
 
 function min_word_num(){
@@ -673,13 +675,14 @@ function min_word_num(){
         return  c<min;
     };
 
-    filter_floor(is_to_filter);
+    filter_floor(is_to_filter, '最少' + min + '字');
 }
 
 function view_all_floor(){
     $('.floor').each(function() {
         $(this).show();
     });
+    $('#thread_action_temp').html('');
 }
 
 function get_showmsg_poster(){
@@ -696,7 +699,7 @@ function only_poster(){
         return  flposter!=poster ;
     };
 
-    filter_floor(is_to_filter);
+    filter_floor(is_to_filter, '只看楼主');
 }
 
 function reverse_floor(){
@@ -715,7 +718,7 @@ function format_floor_content(f) {
         '&nbsp;' +
         '<a  class="reply_thread_floor" reply_type="cite" href="#">&raquo;</a>' + 
         '&nbsp;&nbsp;&nbsp;' +
-        '<a  class="reply_thread_floor" reply_type="default" href="#">&gt;</a>' + 
+        '<a  class="reply_thread_floor" reply_type="default" href="#">&rsaquo;</a>' + 
         '&nbsp;&nbsp;&nbsp;' +
         '<a class="jump_to_top" href="#">&uArr;</a>' + 
         '&nbsp;&nbsp;&nbsp;' +
@@ -825,7 +828,7 @@ function thread_save_title(para, res){
                         id : para.id
                     });
 
-                    toggle_action_html(k, '#thread_cache', '&#9872;', '&#9873;');
+                    toggle_action_html(k, '#thread_cache', '&#9831;', '&#9827;');
                     fav_thread();
                 }
             }
@@ -852,7 +855,7 @@ function thread_save_title(para, res){
 
             var k = format_cache_key('thread_cache', p, ["board", "id"]);
             toggle_action(k, '#thread_cache', 'thread_cache', {});
-            toggle_action_html(k, '#thread_cache', '&#9872;', '&#9873;');
+            toggle_action_html(k, '#thread_cache', '&#9831;', '&#9827;');
             fav_thread();
         }else{
             showmsg_cache(p);
@@ -1008,7 +1011,11 @@ function thread_save_title(para, res){
         check_cache_thread();
 
 
-        if(para.fid) showmsg_jump_floor(para.fid);
+        if(para.fid) {
+            showmsg_jump_floor(para.fid);
+        }else{
+            $.mobile.silentScroll(0);
+        }
 
         var local_url = "#showmsg?" + showmsg_para_string(para); 
         add_history({
@@ -1060,7 +1067,7 @@ function thread_save_title(para, res){
                 <a id="thread_save" href="#">.</a>&nbsp; \
                 <a id="share_thread" href="#">@</a>&nbsp; \
                 <a id="thread_mark_floor" href="#">&#9875;</a>&nbsp; \
-                <a id="thread_refresh" href="#">&#x21bb;</a> \
+                <a id="thread_refresh" href="#">&#8635;</a> \
                 <br /> \
                 标签：<span id="thread_tag_list"></span> \
                 <a href="#thread_tag_popup" data-rel="popup" data-position-to="window" data-transition="pop">编辑</a> \
@@ -1082,6 +1089,7 @@ function thread_save_title(para, res){
                 &nbsp; <a href="#" id="view_img">看图</a> \
                 &nbsp; <a href="#" id="reverse_floor">倒序</a> \
                 &nbsp; <a id="view_all_floor" href="#">全部</a> \
+                <span id="thread_action_temp"></span> \
                 '
                 );
 
