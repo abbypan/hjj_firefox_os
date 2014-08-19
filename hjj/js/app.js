@@ -1,22 +1,25 @@
 var HJJ='http://bbs.jjwxc.net';
-//var IMGUR_CLIENT_ID = lscache.get('imgur_client_id') || '4c649ea4735c42a';
-var RECENT_MSEC = 1000*60*60*24*3;
-var THREAD_HISTORY_MINUTE = 60*24*10;
-var THREAD_FLOOR_MINUTE =  60*24*7;
-var RECENT_THREAD_SECOND = 3*24*60*60;
-var BOARD_MENU_MINUTE = 5*24*60;
-var MAX_HISTORY_CNT = 300;
+var RECENT_HOT_THREAD_SEC = 1000*60*60*24*3; //最近x天热贴
+var THREAD_CACHE_MINUTE = 60*24*7; //默认缓存帖子x天
+var THREAD_MARK_MINUTE =  60*24*7;  //记住上回看到哪一楼x天
+var BOARD_MENU_MINUTE = 60*24*7; //版块列表缓存x天
+var MAX_HISTORY_CNT = 300; //历史记录最多x条
 var HISTORY_CNT = lscache.get('history_cnt') || -1;
-var JUMP_FLOOR_CNT = lscache.get('showmsg_jump_floor') || 50;
-var FILTER_THREAD_KEYWORD = lscache.get('filter_thread_keyword') || '';
 var FILTER_THREAD_KEYWORD_LIST;
 var INIT = 0;
-var DEFAULT_USERNAME = '==';
 
-var DEFAULT = {};
-DEFAULT["loadimg"] = lscache.get('loadimg') || 'on';
-DEFAULT["share_tz"] = lscache.get('share_tz') || 'on';
-PAGE_TYPE = '';
+//var IMGUR_CLIENT_ID = lscache.get('imgur_client_id') || '4c649ea4735c42a';
+var DEFAULT = {
+    username : '==',
+    filter_thread_keyword : '',
+    loadimg : 'on',
+    share_tz : 'on', 
+    showmsg_jump_floor : 50
+};
+for(var k in DEFAULT){
+    var v = lscache.get(k);
+    if(v) DEFAULT[k] = v;
+}
 // {{ base
 function is_key_match_list(k, list){
     for(var i in list){
@@ -29,7 +32,7 @@ function is_key_match_list(k, list){
 function is_recent(dt){
     var t = dt.replace(/-/g,'/');
     var diff = new Date() - new Date(t);
-    return diff<RECENT_MSEC ? 1 : 0;
+    return diff<RECENT_HOT_THREAD_SEC ? 1 : 0;
 }
 
 function get_rem_key(x){
@@ -79,7 +82,7 @@ function format_cache_key(head, data, keylist){
         var k = keylist[i];
         s.push(data[k]);
     }
-    return s.join(",");
+    return s.join("_");
 }
 //}}
 // {{ imgur
@@ -266,7 +269,7 @@ function toggle_action(k, elem, cache_k, data){
 function check_fav_board(){
     var info = get_board_info();
     var k = format_cache_key('board_save', info, ["board"]);
-    toggle_action_html(k, '#board_save', '收藏', '取消收藏');
+    toggle_action_html(k, '#board_save',  '&#9825;', '&hearts;');
 }
 
 function get_board_info(){
@@ -284,9 +287,10 @@ function board_save(){
 
     toggle_action(k, '#board_save', 'board_save', { 
         title : board_save_title(info), 
-        url : info.local_url 
+        url : info.local_url,
+        board: info.board 
     });
-    toggle_action_html(k, '#board_save', '收藏', '取消收藏');
+    toggle_action_html(k, '#board_save',  '&#9825;', '&hearts;');
     fav_board();
 }
 // }}
@@ -301,14 +305,19 @@ function fav_thread() {
             var x = [];
             for(var i=1;i<=cnt;i++){
                 var d = lscache.get( k + '_' + i);
-                if(d) x.push(d);
+                if(d) {
+                    var tag_key = format_cache_key('thread_tag', d, ["board", "id"]);
+                    var tag = lscache.get(tag_key);
+                    if(tag) d["title"] += '#' + tag + '#';
+                    x.push(d);
+                }
             }
             s += format_url_title(x);
         }
     }
 
-    $('#fav_thread').find('ul').html(s);
-    $('#fav_thread').find('ul').trigger('create');
+    $('#fav_thread').find('#fav_thread_ul').html(s);
+    $('#fav_thread').find('#fav_thread_ul').trigger('create');
 }
 
 function get_showmsg_info(){
@@ -330,13 +339,13 @@ function get_showmsg_info(){
 function check_cache_thread(){
     var info = get_showmsg_info();
     var k = format_cache_key('thread_cache', info, ["board", "id"]);
-    toggle_action_html(k, '#thread_cache', '缓存', '清空缓存');
+    toggle_action_html(k, '#thread_cache', '&#9872;', '&#9873;');
 }
 
 function check_save_thread(){
     var info = get_showmsg_info();
     var k = format_cache_key('thread_save', info, ["board", "id"]);
-    toggle_action_html(k, '#thread_save', '收藏', '取消收藏');
+    toggle_action_html(k, '#thread_save',  '&#9825;', '&hearts;');
 }
 
 function thread_save(){
@@ -345,9 +354,11 @@ function thread_save(){
 
     toggle_action(k, '#thread_save', 'thread_save', { 
         title : thread_save_title(info, info), 
-        url : info.local_url
+        url : info.local_url, 
+        board : info.board,
+        id : info.id
     });
-    toggle_action_html(k, '#thread_save', '收藏', '取消收藏');
+    toggle_action_html(k, '#thread_save',  '&#9825;', '&hearts;');
     fav_thread();
 }
 // }}
@@ -366,7 +377,7 @@ function format_url_title(update){
     var s='';
     for(var i in update){
         var d = update[i];
-        s += '<li><a href="' + d["url"] + '">' + d["title"] + '</a></li>';
+        s += '<li><a href="' + d["url"] + '">' + d["title"]  + '</a></li>';
     }
     return s;
 }
@@ -421,9 +432,9 @@ function board_para_string(para, other){
 }
 
 function is_filter_thread(title) {
-    if(! FILTER_THREAD_KEYWORD) return false;
+    if(! DEFAULT["filter_thread_keyword"]) return false;
     if(! FILTER_THREAD_KEYWORD_LIST) 
-        FILTER_THREAD_KEYWORD_LIST = FILTER_THREAD_KEYWORD.split(/,/);
+        FILTER_THREAD_KEYWORD_LIST = DEFAULT["filter_thread_keyword"].split(/,/);
     return is_key_match_list(title, FILTER_THREAD_KEYWORD_LIST);
 }
 
@@ -505,7 +516,6 @@ function board_title(para, h){
 }
 
 function new_thread(para){
-    var username = lscache.get('username') || DEFAULT_USERNAME;
     var u = HJJ + "/postbypolice.php?board="+ para.board;
 
 
@@ -514,7 +524,7 @@ function new_thread(para){
             action="/postbypolice.php?board=" data-ajax="false"  \
             target="_newtab"> \
             <input type="hidden" value="→发布新贴子" name="msg"> \
-            <input placeholder="名字" type="text" name="username" value="' + username + '">\
+            <input placeholder="名字" type="text" name="username" >\
             <select id="new_thread_subid" name="subid"> \
             </select> \
             <input type="text" name="subject" placeholder="主题"> \
@@ -527,10 +537,8 @@ function new_thread(para){
             //<input type="file" class="upload_pic_btn" value="上传"> \
             //<div class="upload_pic_status">...</div> \
     //upload_init();
+            input_init('#new_thread', 'username');
 
-    $('#new_thread').find('input[name="username"]').on('change', function(){
-        lscache.set('username', $(this).val());
-    });
     $('#new_thread').find('form').attr("action", u);
 }
 
@@ -557,7 +565,6 @@ function board_save_title(info){
 }
 
 function board(para) {
-    PAGE_TYPE='board';
     thread_type(para);
     new_thread(para);
 
@@ -714,13 +721,15 @@ function format_floor_content(f) {
         '&nbsp;&nbsp;&nbsp;' +
         '<a class="jump_to_bottom" href="#">&dArr;</a>' + 
         '&nbsp;&nbsp;&nbsp;' +
-        '<a href="#jump_floor" data-rel="popup" data-position-to="window" data-transition="pop">N</a>' + 
+        '<a href="#jump_floor" data-rel="popup" data-position-to="window" data-transition="pop">&#9735;</a>' + 
         '&nbsp;&nbsp;&nbsp;' +
         '<a class="jump_to_prev" href="#">&uarr;</a>' + 
         '&nbsp;&nbsp;&nbsp;' +
         '<a class="jump_to_next" href="#">&darr;</a>' + 
         '&nbsp;&nbsp;&nbsp;' +
-        '<a class="mark_floor" href="#">M</a>' + 
+        '<a class="mark_floor" href="#">&#9875;</a>' + 
+        '&nbsp;&nbsp;&nbsp;' +
+        '<span class="temp_floor"></span>' + 
         '</div>';
     return html;
 }
@@ -811,9 +820,12 @@ function thread_save_title(para, res){
 
                     toggle_action(k, '#thread_cache', 'thread_cache', {
                         title : thread_save_title(para, res),
-                        url : local_url });
+                        url : local_url,
+                        board : para.board,
+                        id : para.id
+                    });
 
-                    toggle_action_html(k, '#thread_cache', '缓存', '清空缓存');
+                    toggle_action_html(k, '#thread_cache', '&#9872;', '&#9873;');
                     fav_thread();
                 }
             }
@@ -840,7 +852,7 @@ function thread_save_title(para, res){
 
             var k = format_cache_key('thread_cache', p, ["board", "id"]);
             toggle_action(k, '#thread_cache', 'thread_cache', {});
-            toggle_action_html(k, '#thread_cache', '缓存', '清空缓存');
+            toggle_action_html(k, '#thread_cache', '&#9872;', '&#9873;');
             fav_thread();
         }else{
             showmsg_cache(p);
@@ -860,7 +872,7 @@ function thread_save_title(para, res){
         var info = get_showmsg_info();
         var k = format_cache_key('thread_mark_floor', 
                 info, ["board", "id"]);
-        lscache.set(k, fid, THREAD_FLOOR_MINUTE);
+        lscache.set(k, fid, THREAD_MARK_MINUTE);
     }
 
     function showmsg_click() {
@@ -871,7 +883,9 @@ function thread_save_title(para, res){
         });
 
         $('#showmsg').on('click', '.mark_floor', function(){ 
+            $('#showmsg').find('.temp_floor').html('');
             mark_floor($(this));
+            $(this).next().html('记住第' + $(this).parent().attr('fid') + '楼'); 
         });
 
         $('#showmsg').on('click', '.jump_to_top', function(){ $.mobile.silentScroll(0); });
@@ -879,7 +893,7 @@ function thread_save_title(para, res){
 
         $('#showmsg').on('click', '.jump_to_prev', function(){
             var x = $(this).parent().prevAll();
-            var i = parseInt(JUMP_FLOOR_CNT)-1;
+            var i = parseInt(DEFAULT["showmsg_jump_floor"])-1;
             if(x[i]) {
                 var pos = $(x[i]).offset().top;
                 $.mobile.silentScroll(pos);
@@ -890,7 +904,7 @@ function thread_save_title(para, res){
 
         $('#showmsg').on('click', '.jump_to_next', function(){
             var x = $(this).parent().nextAll();
-            var i = parseInt(JUMP_FLOOR_CNT)-1;
+            var i = parseInt(DEFAULT["showmsg_jump_floor"])-1;
             if(x[i]) {
                 var pos = $(x[i]).offset().top;
                 $.mobile.silentScroll(pos);
@@ -969,7 +983,7 @@ function thread_save_title(para, res){
                 showmsg_tail(para, res);
 
                 var local_url = "#showmsg?" + showmsg_para_string(para); 
-                lscache.set(local_url, res, THREAD_FLOOR_MINUTE);
+                lscache.set(local_url, res, THREAD_CACHE_MINUTE);
             }
         }
         xhr.send();
@@ -1005,10 +1019,9 @@ function thread_save_title(para, res){
     }
 
     function showmsg_header(para){
-        var username = lscache.get('username') || DEFAULT_USERNAME;
         $('#reply_thread').html(
                 '<form enctype="multipart/form-data" method="post" action="reply.php?board=&id=" data-ajax="false" target="_newtab"> \
-                <input placeholder="名字" type="text" name="username" value="' + username + '">\
+                <input placeholder="名字" type="text" name="username" >\
                 <a href="#" class="textarea_format">自动贴图/链接</a> \
                 <textarea rows=12 placeholder="内容" name="body"></textarea> <br> \
                 <input type="submit" value="回贴"> \
@@ -1019,9 +1032,7 @@ function thread_save_title(para, res){
                 //<div class="upload_pic_status">...</div> \
                 //upload_init();
 
-        $('#reply_thread').find('input[name="username"]').on('change', function(){
-            lscache.set('username', $(this).val());
-        });
+                input_init('#reply_thread', 'username');
 
         $('#reply_thread').find('form').attr('action', HJJ + "/reply.php?board="+ para.board + '&id=' + para.id);
 
@@ -1035,7 +1046,6 @@ function thread_save_title(para, res){
                 <input type="submit" value="跳转" > \
                 </form>');
 
-
     }
 
     function showmsg_banner(para){
@@ -1045,17 +1055,16 @@ function thread_save_title(para, res){
                 '<a target="_blank" href="' + u + '" id="thread_title"></a><br> \
                 <span id="thread_bid"></span>, \
                 <span id="thread_tid"></span>, \
-                <span id="thread_pid"></span>, \
-                &nbsp; \
-                <a id="thread_cache" href="#">缓存</a> \
-                &nbsp; \
-                <a id="thread_save" href="#">...</a> \
-                &nbsp; \
-                <a id="share_thread" href="#">分享</a> \
-                &nbsp; \
-                <a id="thread_mark_floor" href="#">M</a> \
-                &nbsp; \
-                <a id="thread_refresh" href="#">刷新</a> '
+                <span id="thread_pid"></span>&nbsp; \
+                <a id="thread_cache" href="#">.</a>&nbsp; \
+                <a id="thread_save" href="#">.</a>&nbsp; \
+                <a id="share_thread" href="#">@</a>&nbsp; \
+                <a id="thread_mark_floor" href="#">&#9875;</a>&nbsp; \
+                <a id="thread_refresh" href="#">&#x21bb;</a> \
+                <br /> \
+                标签：<span id="thread_tag_list"></span> \
+                <a href="#thread_tag_popup" data-rel="popup" data-position-to="window" data-transition="pop">编辑</a> \
+                '
                 );
 
         $('#thread_bid').html(para.board);
@@ -1077,11 +1086,18 @@ function thread_save_title(para, res){
                 );
 
         $('#thread_refresh').attr('href', local_url + '&refresh=1');
+
+        var tag_key = format_cache_key('thread_tag', para, ["board", "id"]);
+        $('#thread_tag_popup').html( input_div_html(tag_key, '标签') + 
+                '<input type="button" value="返回" id="thread_tag_close">'
+                );
+        tags_input_init(tag_key);
+        $( "#thread_tag_close" ).on('click', function(){ $('#thread_tag_popup').popup( "close" ); });
+        $('#thread_tag_list').text( DEFAULT[tag_key] );
     }
 
 
     function showmsg(para){
-        PAGE_TYPE = 'showmsg';
         var local_url = "#showmsg?" + showmsg_para_string(para); 
         showmsg_header(para);
         showmsg_banner(para);
@@ -1226,6 +1242,13 @@ function slider_div_html(key, label, on_s, off_s){
         '</select></div>';
 }
 
+function input_div_html(key, label){
+    return  '<div id="' + key + '_d" class="setting"> \
+        <label for="' + key + '">' + label + '</label> \
+        <input id="' + key + '" name="' + key + '" > \
+        </div>';
+}
+
 function slider_init(key, elem){
     $(elem).find('option[value="'+DEFAULT[key]+'"]').attr('selected', 'selected');
     $(elem).on("change", function () {
@@ -1234,48 +1257,39 @@ function slider_init(key, elem){
     });
 }
 
-function setting_init(){
-    $('#setting_content').html(
-            '<div class="containing-element">' + 
-            slider_div_html('night_color', '', '黑夜', '白天') +
-            '<div id="font_size_d" class="setting"> \
+function change_font_size_html(){
+    return '<div id="font_size_d" class="setting"> \
             字号： \
             <a class="change_font_size" type="bigger">放大</a> \
             &nbsp; \
             <a class="change_font_size" type="smaller">缩小</a> \
-            </div>' + 
-            slider_div_html('loadimg', '', '看图', '不看图') + 
-            '<div id="showmsg_jump_floor_d" class="setting"> \
-            <label for="showmsg_jump_floor">每次跳转N楼</label> \
-            <input placeholder="50" type="text" name="showmsg_jump_floor" > \
-            </div>' + 
-            slider_div_html('share_tz', '分享时是否 @hjjtz', '@', '不@') + 
-            '</div>' +
-            '<div id="filter_thread_keyword_d" class="setting"> \
-            <label for="filter_thread_keyword">贴子标题过滤</label> \
-            <input id="filter_thread_keyword" name="filter_thread_keyword" > \
-            </div>'  
-            );
+            </div>' ; 
+}
 
-    $('#setting').find('input[name="showmsg_jump_floor"]').val(JUMP_FLOOR_CNT);
+function input_init(page,key){
+    $(page).find('input[name="'+key+'"]').val(DEFAULT[key]);
+    $(page).find('input[name="'+key+'"]').on('change', function(){
+        DEFAULT[key] = $(this).val();
+        lscache.set(key, DEFAULT[key]);
+    });
+}
 
-    if(FILTER_THREAD_KEYWORD) $('#filter_thread_keyword').val(FILTER_THREAD_KEYWORD);
-    $('#filter_thread_keyword').tagsInput({
+function tags_input_init(key){
+    if(! DEFAULT[key]) DEFAULT[key] = lscache.get(key);
+
+    if(DEFAULT[key]) $('#'+key).val(DEFAULT[key]);
+    $('#'+key).tagsInput({
         'height':'100px',
         'width':'92%',
+        'defaultText':'添加',
         'onChange' : function(){
-            FILTER_THREAD_KEYWORD = $(this).val();
-            lscache.set('filter_thread_keyword', FILTER_THREAD_KEYWORD);
+            DEFAULT[key] = $(this).val();
+            lscache.set(key, DEFAULT[key]);
         }
     });
+}
 
-    $('#setting').find('input[name="showmsg_jump_floor"]').val(JUMP_FLOOR_CNT);
-    $('#setting').find('input[name="showmsg_jump_floor"]').on('change', function(){
-        JUMP_FLOOR_CNT = $(this).val();
-        lscache.set('showmsg_jump_floor', JUMP_FLOOR_CNT);
-    });
-
-
+function night_color_init(){
     $('#night_color').find('option[value="off"]').attr('selected', 'selected');
     $("#night_color").on("change", function () {
         var s= $(this).val()=='on' ?  $('#night_css').html() : ""; 
@@ -1284,14 +1298,33 @@ function setting_init(){
         var t = $(this).val()=='on' ? 'e' : 'a';
         $.mobile.changeGlobalTheme(t);
     });
+}
 
-    slider_init('loadimg','#loadimg');
-    slider_init('share_tz','#share_tz');
-
+function change_font_size_init() {
     var font_size = lscache.get('font-size') || '112%';
     $("body").css( "font-size" , font_size );
     lscache.set('font-size', font_size);
     font_click(".change_font_size", "body");
+}
+
+function setting_init(){
+    $('#setting_content').html(
+            '<div class="containing-element">' + 
+            slider_div_html('night_color', '', '黑夜', '白天') +
+            change_font_size_html() +
+            slider_div_html('loadimg', '', '看图', '不看图') + 
+            input_div_html('showmsg_jump_floor', '每次跳转N楼') + 
+            slider_div_html('share_tz', '分享时是否 @hjjtz', '@', '不@') + 
+            input_div_html('filter_thread_keyword', '贴子标题过滤')  +
+            '</div>'  
+            );
+
+    night_color_init();
+    change_font_size_init();
+    slider_init('loadimg','#loadimg');
+    input_init('#setting', 'showmsg_jump_floor');
+    slider_init('share_tz','#share_tz');
+    tags_input_init('filter_thread_keyword');
 }
 // }}
 // {{ manual_jump
@@ -1376,7 +1409,9 @@ function main(){
     manual_jump_init(); //手动跳转
 
     fav_board(); //收藏版块
+
     fav_thread(); //收藏贴子
+    $('#fav_thread').on('click', '.refresh_fav_thread', function() { fav_thread() });
 
     recent_history(); //近期访问
 
