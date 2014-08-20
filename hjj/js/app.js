@@ -14,6 +14,7 @@ var DEFAULT = {
     filter_thread_keyword : '',
     loadimg : 'on',
     share_tz : 'on', 
+    auto_jump_mark_floor : 'off',
     showmsg_jump_floor : 50
 };
 for(var k in DEFAULT){
@@ -756,20 +757,23 @@ function share_thread() {
 }
 
 function showmsg_jump_floor(dst_f) {
-    if(dst_f==undefined) return;
+    if(dst_f==undefined) return false;
     var k = '#floor' + dst_f.toString();
     if($(k).length>0){
-        $.mobile.silentScroll($(k).offset().top);
-        return 1;
+        setTimeout(function(){
+            $.mobile.silentScroll($(k).offset().top);
+        }, 100);
+        //$('html, body').animate({scrollTop: $(k).offset().top -100 }, 'slow');
+        return true;
     }
-    return ;
+    return false;
 }
 
 function showmsg_jump_page(dst_f){
     var page = parseInt((parseInt(dst_f)-1) / 300);
     var now_page = parseInt($('#thread_pid').html());
 
-    if(now_page == page) {
+    if(page==now_page){
         showmsg_jump_floor(dst_f);
         return;
     }
@@ -781,14 +785,14 @@ function showmsg_jump_page(dst_f){
         id : $('#thread_tid').text()
     };
     var u = '#showmsg?' + showmsg_para_string(x) + '&fid=' + dst_f;
-    $.mobile.changePage(u);
+    window.location.href=u;
 }
 
 function showmsg_jump_page_popup(){
     var dst_f = $('#dst_floor').val().toString();
     $('#dst_floor').val('');
-    if(dst_f) showmsg_jump_page(dst_f);
     $('#jump_floor').popup('close');
+    if(dst_f) showmsg_jump_page(dst_f);
 }
 
 function thread_save_title(para, res){
@@ -864,10 +868,13 @@ function thread_save_title(para, res){
 
     function thread_mark_floor(){
         var info = get_showmsg_info();
-        var k = format_cache_key('thread_mark_floor', 
-                info, ["board", "id"]);
+        var k = format_cache_key('thread_mark_floor', info, ["board", "id"]);
         var fid = lscache.get(k);
-        if(fid) showmsg_jump_page(fid);
+        if(fid) {
+            showmsg_jump_page(fid);
+        }else{
+            $.mobile.silentScroll(0);
+        }
     }
 
     function mark_floor(x) {
@@ -876,6 +883,21 @@ function thread_save_title(para, res){
         var k = format_cache_key('thread_mark_floor', 
                 info, ["board", "id"]);
         lscache.set(k, fid, THREAD_MARK_MINUTE);
+    }
+
+    function showmsg_tap_scroll(e) {
+        var w = screen.width;
+        var h = screen.height*0.75;
+
+        if(! e.clientY || e.clientY <= screen.height*0.8) return;
+
+        var jh = (e.pageX < w/5) ? -h : 
+            (e.pageX > 4*w/5) ?  h : 0;
+
+        if(jh!=0)
+            $('html, body').animate({
+                scrollTop: $(window).scrollTop() + jh
+            }, 1000);
     }
 
     function showmsg_click() {
@@ -939,6 +961,8 @@ function thread_save_title(para, res){
         $('#showmsg').on('click', '#floor_filter',function(){ floor_filter(); return false; });
         $('#showmsg').on('click', '#view_all_floor', function(){ view_all_floor();return false; });
         $('#showmsg').on('click', '#reverse_floor', function(){ reverse_floor();return false; });
+        $('#showmsg').on('click', '.showmsg_jump_page_btn', function(){ showmsg_jump_page_popup();return false; });
+        $('#thread_content').on('tap', function(e){ showmsg_tap_scroll(e); return false;});
     }
 
     function extract_showmsg_content(d){
@@ -1010,19 +1034,20 @@ function thread_save_title(para, res){
         check_save_thread();
         check_cache_thread();
 
-
-        if(para.fid) {
-            showmsg_jump_floor(para.fid);
-        }else{
-            $.mobile.silentScroll(0);
-        }
-
         var local_url = "#showmsg?" + showmsg_para_string(para); 
         add_history({
             url : local_url, 
             title : thread_save_title(para, res), 
             key : 'showmsg,' + para.board + ',' + para.id
         });
+
+        if(para.fid){
+            showmsg_jump_floor(para.fid);
+        }else if(DEFAULT["auto_jump_mark_floor"]=='on'){
+            setTimeout(function(){ thread_mark_floor(); }, 300);
+        }else{
+            $.mobile.silentScroll(0);
+        }
     }
 
     function showmsg_header(para){
@@ -1048,10 +1073,9 @@ function thread_save_title(para, res){
         $('#manual_jump').find('input').eq(0).val(para.board);
 
         $('#jump_floor').html(
-                '<form action="javascript:showmsg_jump_page_popup();"> \
-                <input placeholder="楼层" type="text" id="dst_floor" name="dst_floor"> \
-                <input type="submit" value="跳转" > \
-                </form>');
+        '<input placeholder="楼层" type="text" id="dst_floor" name="dst_floor"> \
+        <input class="showmsg_jump_page_btn" type="submit" value="跳转" > \
+        ');
 
     }
 
@@ -1321,6 +1345,7 @@ function setting_init(){
             slider_div_html('night_color', '', '黑夜', '白天') +
             change_font_size_html() +
             slider_div_html('loadimg', '', '看图', '不看图') + 
+            slider_div_html('auto_jump_mark_floor', '贴子上次阅读的位置', '自动跳转', '不自动跳转') + 
             input_div_html('showmsg_jump_floor', '每次跳转N楼') + 
             slider_div_html('share_tz', '分享时是否 @hjjtz', '@', '不@') + 
             input_div_html('filter_thread_keyword', '贴子标题过滤')  +
@@ -1330,6 +1355,7 @@ function setting_init(){
     night_color_init();
     change_font_size_init();
     slider_init('loadimg','#loadimg');
+    slider_init('auto_jump_mark_floor', '#auto_jump_mark_floor');
     input_init('#setting', 'showmsg_jump_floor');
     slider_init('share_tz','#share_tz');
     tags_input_init('filter_thread_keyword');
@@ -1437,7 +1463,12 @@ function main(){
     });
 
     showmsg_click(); //贴子
+
+    //$.extend($.mobile, {
+        //minScrollBack: 90000 // turn off scrolling to position on last page
+    //});
 }
+
 
 $(document).bind('pageinit',function(e){
     if(INIT>0) return;
