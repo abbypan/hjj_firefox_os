@@ -133,7 +133,7 @@
 
 <div id="showmsg" data-role="page">
 
-    <div data-role="header" data-position="fixed">
+    <div data-role="header" data-position="fixed" data-tap-toggle="false">
         <div data-role="navbar">  
             <ul>
                 <li><a href="#manual_jump" >&#8623;</a></li>
@@ -158,7 +158,7 @@
     </div>
 
 
-    <div data-role="footer" data-position="fixed">
+    <div data-role="footer" data-position="fixed" data-tap-toggle="false">
         <div data-role="navbar">  
             <ul>
                 <li><a href="#fav_board">&#9733;</a></li>
@@ -175,6 +175,22 @@
     </div>
     
     <div data-role="popup" id="thread_tag_popup" class="popup_textarea">
+    </div>
+    
+    <div data-role="popup"  id="thread_to_kindle"  data-theme="none" >
+        <input name="url" type="hidden" value="" > 
+        <input name="type" type="hidden" value="mobi" > 
+        <p>
+        <input type="checkbox" name="only_poster" data-role="none">只看楼主 
+        <input type="checkbox" name="with_toc"  value="1" checked data-role="none">生成目录 </p>
+        <p>
+        kindle邮箱<br><input name="mail" value="" id="kindle_mail" ></p>
+        <p>
+        页码 <input name="min_tiezi_page" data-role="none" class="small_input">-<input name="max_tiezi_page" data-role="none" class="small_input"></p>
+        <p>前<input name="max_tiezi_floor_num" data-role="none" class="small_input">楼 </p>
+        <p>每楼最少<input name="min_floor_word_num" data-role="none" class="small_input">字 </p>
+        <p><input type="submit" id="thread_to_kindle_btn" value="推送"></p>
+        <p style="font-size: small">说明：需要预先在 amazon 设置允许 kindle@idouzi.tk 推送到 kindle</p>
     </div>
 </div>
 

@@ -15,6 +15,8 @@ var DEFAULT = {
     loadimg : 'on',
     share_tz : 'on', 
     auto_jump_mark_floor : 'off',
+    mail : 'xxx@kindle.cn', 
+    thread_to_kindle_dom : 'xxx.com', 
     showmsg_jump_floor : 50
 };
 for(var k in DEFAULT){
@@ -41,6 +43,26 @@ function get_rem_key(x){
     var k = x.key;
     return (k==undefined)? u : k;
 }
+
+function readFile(f)
+{
+    var files = $(f).files;
+    if (!files.length)
+    {
+      alert('Please select a file!');
+      return;
+    }
+     
+    var file = files[0];
+    var reader = new FileReader();
+    reader.onload = function(event) {
+        var d = event.target.result;     
+        alert(d);
+    };
+ 
+    reader.readAsText(file);
+}
+
 
 function merge_hash(para, other){
     other = other || {};
@@ -963,6 +985,7 @@ function thread_save_title(para, res){
         $('#showmsg').on('click', '#reverse_floor', function(){ reverse_floor();return false; });
         $('#showmsg').on('click', '.showmsg_jump_page_btn', function(){ showmsg_jump_page_popup();return false; });
         $('#thread_content').on('tap', function(e){ showmsg_tap_scroll(e); return false;});
+        $('#thread_to_kindle').on('click', '#thread_to_kindle_btn', function(){ thread_to_kindle();return false; });
     }
 
     function extract_showmsg_content(d){
@@ -1079,6 +1102,32 @@ function thread_save_title(para, res){
 
     }
 
+    function thread_to_kindle(){
+        $('#thread_to_kindle').popup('close');
+
+        $('#export_thread').html('kindle');
+
+        var formData = new FormData();
+        $('#thread_to_kindle').find('input').each(function(){
+            var k = $(this).attr('name');
+            if(k) {
+                formData.append(k, $(this).val());
+            }
+        });
+
+        var u = 'http://' + DEFAULT["thread_to_kindle_dom"] + '/novel_robot';
+        var xhr = (XMLHttpRequest.noConflict ? new XMLHttpRequest.noConflict() : new XMLHttpRequest({mozSystem: true}));
+        xhr.open("POST", u);
+
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState == 4) {
+                $('#export_thread').html('&#9873;');
+            }
+        };
+        xhr.send(formData);
+
+    }
+
     function showmsg_banner(para){
         var local_url = "#showmsg?" + showmsg_para_string(para); 
         var u = HJJ+'/showmsg.php?' + showmsg_para_string(para); 
@@ -1090,6 +1139,7 @@ function thread_save_title(para, res){
                 <a id="thread_cache" href="#">.</a>&nbsp; \
                 <a id="thread_save" href="#">.</a>&nbsp; \
                 <a id="share_thread" href="#">@</a>&nbsp; \
+                <a id="export_thread" href="#thread_to_kindle" data-rel="popup" data-position-to="window" data-transition="pop">&#9872;</a>&nbsp; \
                 <a id="thread_mark_floor" href="#">&#9875;</a>&nbsp; \
                 <a id="thread_refresh" href="#">&#8635;</a> \
                 <br /> \
@@ -1103,9 +1153,9 @@ function thread_save_title(para, res){
         $('#thread_pid').html(para.page || 0);
 
         $('#thread_action').html(
-                '<input data-role="none" type="text" name="word_num" value=50 id="min_word_num_input"> \
+                '<input data-role="none" type="text" name="word_num" value=50 id="min_word_num_input" class="small_input"> \
                 <a href="#" id="min_word_num">字数</a>\
-                &nbsp; <input data-role="none" type="text" name="floor_keyword" id="floor_keyword_input" placeholder="关键字"> \
+                &nbsp; <input data-role="none" type="text" name="floor_keyword" id="floor_keyword_input" class="mid_input" placeholder="关键字"> \
                 <a href="#" id="floor_keyword">抽取</a> \
                 &nbsp; <a href="#" id="floor_filter">过滤</a> \
                 <br>\
@@ -1126,6 +1176,9 @@ function thread_save_title(para, res){
         tags_input_init(tag_key);
         $( "#thread_tag_close" ).on('click', function(){ $('#thread_tag_popup').popup( "close" ); });
         $('#thread_tag_list').text( DEFAULT[tag_key] );
+
+        $('#thread_to_kindle').find('input').eq(0).val(u);
+        $('#kindle_mail').attr('maxlength', "30");
     }
 
 
@@ -1348,6 +1401,7 @@ function setting_init(){
             slider_div_html('auto_jump_mark_floor', '贴子上次阅读的位置', '自动跳转', '不自动跳转') + 
             input_div_html('showmsg_jump_floor', '每次跳转N楼') + 
             slider_div_html('share_tz', '分享时是否 @hjjtz', '@', '不@') + 
+            input_div_html('thread_to_kindle_dom', 'kindle推送站点域名') + 
             input_div_html('filter_thread_keyword', '贴子标题过滤')  +
             '</div>'  
             );
@@ -1357,6 +1411,7 @@ function setting_init(){
     slider_init('loadimg','#loadimg');
     slider_init('auto_jump_mark_floor', '#auto_jump_mark_floor');
     input_init('#setting', 'showmsg_jump_floor');
+    input_init('#setting', 'thread_to_kindle_dom');
     slider_init('share_tz','#share_tz');
     tags_input_init('filter_thread_keyword');
 }
@@ -1463,6 +1518,7 @@ function main(){
     });
 
     showmsg_click(); //贴子
+    input_init('#showmsg', 'mail');
 
     //$.extend($.mobile, {
         //minScrollBack: 90000 // turn off scrolling to position on last page
