@@ -123,6 +123,17 @@
     </div>
 
     <div data-role="popup" id="search_form">
+        <input type="text" name="keyword" value=""> 
+        <div data-role="fieldcontain"> 
+        <select name="topic" id="search_type"> 
+        <option value="3">贴子主题</option> 
+        <option value="1">主题贴内容</option> 
+        <option value="4">主题贴发贴人</option> 
+        <option value="2">跟贴内容</option> 
+        <option value="5">跟贴发贴人</option> 
+        </select> 
+        </div>
+        <input id="search_form_btn" type="submit" value="查询">
     </div>
 
     <div data-role="popup" id="thread_type">
@@ -148,8 +159,35 @@
 
     <div data-role="content" id="thread_content">
 
-        <div id="thread_info"></div>
-        <div id="thread_action"></div>
+        <div id="thread_info">
+        <a target="_blank" href="#" id="thread_title"></a><br> 
+        <span id="thread_bid"></span>, 
+        <span id="thread_tid"></span>, 
+        <span id="thread_pid"></span>&nbsp; 
+        <a id="thread_cache" href="#">.</a>&nbsp; 
+        <a id="thread_save" href="#">.</a>&nbsp; 
+        <a id="share_thread" href="#">@</a>&nbsp; 
+        <a id="export_thread" href="#thread_to_kindle" data-rel="popup" data-position-to="window" data-transition="pop">&#9872;</a>&nbsp; 
+        <a id="thread_mark_floor" href="#">&#9875;</a>&nbsp; 
+        <a id="thread_refresh" href="#">&#8635;</a> 
+        <br /> 
+        标签：<span id="thread_tag_list"></span> 
+        <a href="#thread_tag_popup" data-rel="popup" data-position-to="window" data-transition="pop">编辑</a> 
+        </div>
+
+        <div id="thread_action">
+        <input data-role="none" type="text" name="word_num" value=50 id="min_word_num_input" class="small_input"> 
+        <a href="#" id="min_word_num">字数</a>
+        &nbsp; <input data-role="none" type="text" name="floor_keyword" id="floor_keyword_input" class="mid_input" placeholder="关键字"> 
+        <a href="#" id="floor_keyword">抽取</a> 
+        &nbsp; <a href="#" id="floor_filter">过滤</a> 
+        <br>
+        <a href="#" id="only_poster">楼主</a> 
+        &nbsp; <a href="#" id="view_img">看图</a> 
+        &nbsp; <a href="#" id="reverse_floor">倒序</a> 
+        &nbsp; <a id="view_all_floor" href="#">全部</a> 
+        <span id="thread_action_temp"></span> 
+        </div>
 
         <div id="thread_pager_top" class="pager"></div>
         <div id="thread_floor_list"></div>
@@ -172,6 +210,8 @@
     </div>
     
     <div data-role="popup" id="jump_floor" class="popup_textarea">
+            <input placeholder="楼层" type="text" id="dst_floor" name="dst_floor"> 
+            <input class="showmsg_jump_page_btn" type="submit" value="跳转" > 
     </div>
     
     <div data-role="popup" id="thread_tag_popup" class="popup_textarea">
@@ -318,6 +358,9 @@
         <a data-rel="back" href="#">&larr;</a>
     </div>
     <div data-role="content" id="manual_jump_content">
+<input placeholder="大院" type="text" name="board" > 
+                                   <input type="text" name="id" placeholder="门牌"> 
+                                   <input id="manual_jump_btn" type="submit" value="跳转">
     </div>
     <div data-role="navbar">  
         <a data-rel="back" href="#">&larr;</a>
