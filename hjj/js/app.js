@@ -17,6 +17,7 @@ var DEFAULT = {
     auto_jump_mark_floor : 'off',
     mail : 'xxx@kindle.cn', 
     thread_to_kindle_dom : 'xxx.com', 
+    night_color : 'off', 
     showmsg_jump_floor : 50
 };
 for(var k in DEFAULT){
@@ -154,7 +155,8 @@ function home() {
 
     var xhr =  new XMLHttpRequest({mozSystem: true});
 
-    xhr.open("GET", HJJ, true);
+    var u = HJJ;
+    xhr.open("GET", u , true);
     if(xhr.overrideMimeType) xhr.overrideMimeType('text/plain; charset=gb2312');
     xhr.withCredentials = true;
 
@@ -197,7 +199,8 @@ function board_menu_zone(zone_li) {
     if(id==undefined) return;
 
     var xhr = new XMLHttpRequest({mozSystem: true});
-    xhr.open("GET", HJJ +"/index"+id+".htm", true);
+    var u = HJJ +"/index"+id+".htm";
+    xhr.open("GET", u , true);
     if(xhr.overrideMimeType) xhr.overrideMimeType('text/plain; charset=gb2312');
 
     xhr.onreadystatechange = function() {
@@ -593,11 +596,11 @@ function board(para) {
 
     $('#manual_jump').find('input').eq(0).val(para.board);
 
-    var url = HJJ + "/board.php?" + board_para_string(para);
+    var u = HJJ + "/board.php?" + board_para_string(para);
 
     var thread_info = '';
     var xhr = new XMLHttpRequest({mozSystem: true});
-    xhr.open("GET", url , true);
+    xhr.open("GET", u , true);
     if(xhr.overrideMimeType) xhr.overrideMimeType('text/plain; charset=gb2312');
 
     xhr.onreadystatechange = function() {
@@ -1320,14 +1323,33 @@ function tags_input_init(key){
     });
 }
 
-function night_color_init(){
-    $('#night_color').find('option[value="off"]').attr('selected', 'selected');
-    $("#night_color").on("change", function () {
-        var s= $(this).val()=='on' ?  $('#night_css').html() : ""; 
-        $('head').find('style').html(s);
+function night_color_css() {
+return '.ui-bar-f,.ui-body-f,.ui-page-theme-f, \
+.ui-btn,.ui-btn-b, \
+p,body,div,table,ul,li,input,textarea  { \
+    background-color: #333333 !important; \
+    color: #a0a0a0 !important; \
+} \
+a:link  { color: #93bcec !important; } \
+a:hover { \
+    color: #1f72d0 !important; \
+    background-color: #c0c0c0 !important; \
+}';
+}
 
-        var t = $(this).val()=='on' ? 'e' : 'a';
-        $.mobile.changeGlobalTheme(t);
+function night_color_init(){
+    var v = DEFAULT['night_color'];
+    $('#night_color').find('option[value="' + v + '"]').attr('selected', 'selected');
+    var s = (v=='on') ? night_color_css() : ""; 
+    $('head').find('style').html(s);
+
+    $("#night_color").on("change", function () {
+        var v = $(this).val();
+        DEFAULT[k] = v;
+        lscache.set('night_color', v);
+
+        var s = (v=='on') ? night_color_css() : ""; 
+        $('head').find('style').html(s);
     });
 }
 
