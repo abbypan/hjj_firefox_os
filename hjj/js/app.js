@@ -18,6 +18,7 @@ var DEFAULT = {
     mail : 'xxx@kindle.cn', 
     thread_to_kindle_dom : 'xxx.com', 
     night_color : 'off', 
+    showmsg_jump_height : 0.65,
     showmsg_jump_floor : 50
 };
 for(var k in DEFAULT){
@@ -788,7 +789,6 @@ function showmsg_jump_floor(dst_f) {
         setTimeout(function(){
             $.mobile.silentScroll($(k).offset().top);
         }, 100);
-        //$('html, body').animate({scrollTop: $(k).offset().top -100 }, 'slow');
         return true;
     }
     return false;
@@ -912,7 +912,7 @@ function mark_floor(x) {
 
 function showmsg_tap_scroll(e) {
     var w = screen.width;
-    var h = screen.height*0.75;
+    var h = screen.height*DEFAULT["showmsg_jump_height"];
 
     if(! e.clientY || e.clientY <= screen.height*0.8) return;
 
@@ -922,7 +922,7 @@ function showmsg_tap_scroll(e) {
     if(jh!=0)
         $('html, body').animate({
             scrollTop: $(window).scrollTop() + jh
-        }, 1000);
+        }, 100);
 }
 
 function showmsg_click() {
@@ -1368,6 +1368,7 @@ function setting_init(){
         slider_div_html('loadimg', '', '看图', '不看图') + 
         slider_div_html('auto_jump_mark_floor', '贴子上次阅读的位置', '自动跳转', '不自动跳转') + 
         input_div_html('showmsg_jump_floor', '每次跳转N楼') + 
+        input_div_html('showmsg_jump_height', '每次触屏翻页高度') + 
         slider_div_html('share_tz', '分享时是否 @hjjtz', '@', '不@') + 
         input_div_html('thread_to_kindle_dom', 'kindle推送站点域名') + 
         input_div_html('filter_thread_keyword', '贴子标题过滤')  +
@@ -1379,6 +1380,7 @@ function setting_init(){
     slider_init('loadimg','#loadimg');
     slider_init('auto_jump_mark_floor', '#auto_jump_mark_floor');
     input_init('#setting', 'showmsg_jump_floor');
+    input_init('#setting', 'showmsg_jump_height');
     input_init('#setting', 'thread_to_kindle_dom');
     slider_init('share_tz','#share_tz');
     tags_input_init('filter_thread_keyword');
@@ -1485,10 +1487,6 @@ function main(){
 
     showmsg_click(); //贴子
     input_init('#showmsg', 'mail');
-
-    //$.extend($.mobile, {
-    //minScrollBack: 90000 // turn off scrolling to position on last page
-    //});
 }
 
 
