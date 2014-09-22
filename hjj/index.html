@@ -110,13 +110,15 @@
     </div>
 
     <div data-role="popup" id="sub_board">
+        <input type="button" value="全选" action="all" class="sub_board_check_all">
+        <input type="button" value="反选" action="none" class="sub_board_check_all">
         <form action="javascript:sub_board_action();">
             <input name="url" type="hidden">
             <div data-role="fieldcontain">
                 <fieldset data-role="controlgroup"> 
                 </fieldset>
             </div>
-            <input type="submit" value="选中">
+            <input type="submit" value="确定">
         </form>
     </div>
 
@@ -235,12 +237,18 @@
 
 <div data-role="page" id="recent_history">
     <div data-role="navbar">  
-        <a data-rel="back" href="#">&larr;</a>
+        <ul>
+            <li><a data-rel="back" href="#">&larr;</a></li>
+            <li><a class="refresh_recent_history" href="#">&#8635;</a></li>
+    </ul>
     </div>
-    <ul data-role="listview" data-filter="true">
+    <ul data-role="listview" data-filter="true" id="recent_history_ul">
     </ul>
     <div data-role="navbar">  
-        <a data-rel="back" href="#">&larr;</a>
+        <ul>
+            <li><a data-rel="back" href="#">&larr;</a></li>
+            <li><a class="refresh_recent_history" href="#">&#8635;</a></li>
+    </ul>
     </div>
 </div>
 
@@ -264,12 +272,18 @@
 
 <div data-role="page" id="fav_board">
     <div data-role="navbar">  
-        <a data-rel="back" href="#">&larr;</a>
+        <ul>
+        <li><a data-rel="back" href="#">&larr;</a></li>
+        <li><a class="refresh_fav_board" href="#">&#8635;</a></li>
+        </ul>
     </div>
-    <ul data-role="listview" data-filter="true">
+    <ul data-role="listview" data-filter="true" id="fav_board_ul">
     </ul>
     <div data-role="navbar">  
-        <a data-rel="back" href="#">&larr;</a>
+        <ul>
+        <li><a data-rel="back" href="#">&larr;</a></li>
+        <li><a class="refresh_fav_board" href="#">&#8635;</a></li>
+        </ul>
     </div>
 </div>
 

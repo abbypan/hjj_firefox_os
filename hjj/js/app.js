@@ -7,6 +7,8 @@ var MAX_HISTORY_CNT = 300; //历史记录最多x条
 var HISTORY_CNT = lscache.get('history_cnt') || -1;
 var FILTER_THREAD_KEYWORD_LIST;
 var INIT = 0;
+var SHARE_WEIBO = '@hjjtz';
+var SHARE_WEIBO_URL = 'http://v.t.sina.com.cn/share/share.php';
 
 //var IMGUR_CLIENT_ID = lscache.get('imgur_client_id') || '4c649ea4735c42a';
 var DEFAULT = {
@@ -257,8 +259,8 @@ function fav_board() {
         }
         s += format_url_title(x);
     }
-    $('#fav_board').find('ul').html(s);
-    $('#fav_board').find('ul').trigger('create');
+    $('#fav_board').find('#fav_board_ul').html(s);
+    $('#fav_board').find('#fav_board_ul').trigger('create');
 }
 
 function toggle_action_html(key, elem, add_s, del_s){
@@ -319,6 +321,16 @@ function board_save(){
     });
     toggle_action_html(k, '#board_save',  '&#9734;', '&#9733;');
     fav_board();
+}
+
+function sub_board_check_all(act){
+        $("#sub_board").find('input[type="checkbox"]').each(function(){     
+            if(act=="none"){
+                $(this).prop("checked",false); 
+            }else{
+                $(this).prop("checked",true);
+            }
+        });     
 }
 // }}
 // {{ fav_thread
@@ -446,8 +458,8 @@ function recent_history() {
         "key" : 'history', 
         "max_length" : MAX_HISTORY_CNT
     });
-    $('#recent_history').find('ul').html(s);
-    $('#recent_history').find('ul').trigger('create');
+    $('#recent_history').find('#recent_history_ul').html(s);
+    $('#recent_history').find('#recent_history_ul').trigger('create');
 }
 // }}
 // {{ board
@@ -774,11 +786,10 @@ function share_thread() {
     var info = get_showmsg_info();
     var su = encodeURIComponent(info.remote_url);
 
-    var share_tz = DEFAULT["share_tz"]=='on' ? '@hjjtz' : '';
+    var share_tz = DEFAULT["share_tz"]=='on' ? SHARE_WEIBO : '';
     var title = thread_save_title(info, info);
     var st = encodeURIComponent(share_tz + ' ' + title);
-    var u = 'http://v.t.sina.com.cn/share/share.php';
-    var wu = u + '?title=' + st + '&url=' + su;
+    var wu = SHARE_WEIBO_URL + '?title=' + st + '&url=' + su;
     window.open(wu, '_blank');
 }
 
@@ -1276,6 +1287,12 @@ function slider_div_html(key, label, on_s, off_s){
         '</select></div>';
 }
 
+function suggest_html(){
+    return '<div id="suggest_d" class="setting"> \
+    <a href="#" data-role="button" id="suggest">反馈意见</a> \
+    </div>';
+}
+
 function input_div_html(key, label){
     return  '<div id="' + key + '_d" class="setting"> \
     <label for="' + key + '">' + label + '</label> \
@@ -1372,6 +1389,7 @@ function setting_init(){
         slider_div_html('share_tz', '分享时是否 @hjjtz', '@', '不@') + 
         input_div_html('thread_to_kindle_dom', 'kindle推送站点域名') + 
         input_div_html('filter_thread_keyword', '贴子标题过滤')  +
+        suggest_html() +
         '</div>'  
     );
 
@@ -1384,6 +1402,12 @@ function setting_init(){
     input_init('#setting', 'thread_to_kindle_dom');
     slider_init('share_tz','#share_tz');
     tags_input_init('filter_thread_keyword');
+
+    $('#setting').on('click', '#suggest', function(){
+        var st = encodeURIComponent(SHARE_WEIBO + ' ');
+        var wu = SHARE_WEIBO_URL + '?title=' + st;
+        window.open(wu, '_blank');
+    });
 }
 // }}
 // {{ manual_jump
@@ -1466,16 +1490,22 @@ function main(){
     manual_jump_init(); //手动跳转
 
     fav_board(); //收藏版块
+    $('#fav_board').on('click', '.refresh_fav_board', function() { fav_board() });
 
     fav_thread(); //收藏贴子
     $('#fav_thread').on('click', '.refresh_fav_thread', function() { fav_thread() });
 
     recent_history(); //近期访问
+    $('#recent_history').on('click', '.refresh_recent_history', function() { recent_history() });
 
     //版块
     $('#recent_history').click(function(){ recent_history(); });
 
     $('#board').on('click', '#board_save', function(){ board_save(); }); 
+    $('#board').on('click', '.sub_board_check_all', function() { 
+        var act = $(this).attr('action');
+        sub_board_check_all(act); 
+    });
 
     $('body').on('click', '.textarea_format', function(){
         var area = $(this).parent().find('textarea').eq(0);
