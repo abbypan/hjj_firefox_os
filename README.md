@@ -23,4 +23,3 @@ phonegap 打包的 android apk 地址：[HJJ-phonegap](https://build.phonegap.co
 
 ![manual_jump.png](manual_jump.png)
 
-![filter_keyword.png](filter_keyword.png)
