@@ -45,9 +45,20 @@ phonegap 打包的 android apk 地址：[HJJ-phonegap](https://build.phonegap.co
 
 ![showmsg_btn_share.png](showmsg_btn_share.png)
 
-楼层按钮：1）引用此楼内容，回帖；2）直接回帖；3）跳转到顶部；4）跳转到底部；5）跳到指定楼层；6）往前跳转N楼；7）往后跳转N楼；8）标记当前楼层
+楼层按钮：1）引用此楼内容，回帖；2）直接回帖；3）标记当前楼层
 
 ![showmsg_btn_reply.png](showmsg_btn_reply.png)
+
+### 事件
+
+底部 左/右 侧单击：上一页/下一页
+
+底部 左/右 侧双击：往 前/后 跳转N楼
+
+底部 左/右 侧长按：跳转到 顶部/底部
+
+底部 中间长按：跳转到指定楼层
+
 
 ## 黑夜模式
 
