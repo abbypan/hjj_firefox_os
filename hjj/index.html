@@ -3,7 +3,9 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=gbk" />
 <meta name="format-detection" content="telephone=no" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=2.0, user-scalable=yes" />  
+<!--<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=2.0, user-scalable=yes" />  -->
+<meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">
+
 
 <title>HJJ</title>
 <script src="js/jquery.min.js" type="text/javascript"></script>
@@ -15,7 +17,7 @@
 <script src="js/jquery.tagsinput.min.js" type="text/javascript"></script>
 <link type="text/css" rel="stylesheet" href="css/jquery.tagsinput.css" />
 
-<script src="js/jquery.tap.js" type="text/javascript"></script>
+<script src="js/jquery.mobile-events.min.js" type="text/javascript"></script>
 
 <script src="js/app.js" type="text/javascript" charset="gb2312"></script>
 <link type="text/css" rel="stylesheet" href="css/app.css" />
@@ -173,6 +175,7 @@
         <a href="#thread_tag_popup" data-rel="popup" data-position-to="window" data-transition="pop">编辑</a>,
         <a id="share_thread" href="#">@</a>&nbsp; 
         <a id="export_thread" href="#thread_to_kindle" data-rel="popup" data-position-to="window" data-transition="pop">&#9872;</a>&nbsp; 
+        <a id="jump_floor_btn" style="display:none" href="#jump_floor" data-rel="popup" data-position-to="window" data-transition="pop">&#9735;</a>
         </div>
 
         <div id="thread_action">
