@@ -43,7 +43,7 @@ android 版本（基于phonegap打包）：[HJJ-phonegap](https://build.phonegap
 
 ### 事件
 
-楼层 左/右　滑动：　直接回帖 / 引用此楼内容回帖
+楼层 左/右　 滑动：　不引用内容直接回复此楼 / 引用此楼内容回帖
 
 底部 左/右 侧单击：上一页/下一页
 
@@ -51,7 +51,7 @@ android 版本（基于phonegap打包）：[HJJ-phonegap](https://build.phonegap
 
 底部 左/右 侧长按：跳转到 顶部/底部
 
-底部 中间长按：跳转到指定楼层
+底部 中间    长按：跳转到指定楼层
 
 
 ## 黑夜模式
