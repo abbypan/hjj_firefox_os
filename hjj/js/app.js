@@ -480,6 +480,14 @@ function is_filter_thread(title) {
     return is_key_match_list(title, FILTER_THREAD_KEYWORD_LIST);
 }
 
+function format_thread_info_bottom(info){
+        return info.poster + '<br>' + 
+        '<div style="font-size: small">'+
+        '热:<span class="hot">' + info.hot + '</span>;' + 
+        '回:<span class="reply">' + info.reply + '</span>;' + 
+        info.time + '</div>';
+}
+
 function board_thread_info(tr) {
     var href_list = '';
     var i = 0;
@@ -503,13 +511,14 @@ function board_thread_info(tr) {
     var recent_img = is_recent(info.time) ? '<img class="smallgif" src="icons/new.gif" />' : '';
 
     var s = '<div class="onethread">' + 
-        info.tag+ ': <a href="'+ info.url + '">' + info.title + '</a> '+ href_list + recent_img +
+        '<span class="left_string">' + info.tag+ '</span>: ' + 
+        '<a href="'+ info.url + '">' + info.title + '</a> '+ href_list + recent_img +
         '<br>' + 
-        info.poster + '; 热:' + info.hot + '; 回:' + info.reply + '; ' + info.time + 
-        '<br>'+
+        format_thread_info_bottom(info)+
         '</div>';
     return is_filter_thread(info.title) ? null : s;
 }
+
 
 function sub_board_action(){
     $('#sub_board').popup('close');
@@ -1227,7 +1236,7 @@ function search_para_string(para, other){
 
 function search_thread_info(tr) {
     var info =  {
-        id : tr.children('td').eq(0).text(),
+        id : sprintf("%03d", tr.children('td').eq(0).text()),
         title : tr.find('a').eq(0).text(),
         url : tr.find('a').eq(0).attr('href').replace(/showmsg.php/, '#showmsg').replace(/&keyword=[^&]+/, ''),
         poster : tr.children('td').eq(2).text(),
@@ -1235,9 +1244,10 @@ function search_thread_info(tr) {
         reply : tr.children('td').eq(5).text(),
         hot : tr.children('td').eq(6).text()
     };
-    var s = '<div class="onethread">[' + 
-        info.id+ '] <a href="'+ info.url + '">' + info.title + '</a><br>' + 
-        info.poster + '; 热:' + info.hot + '; 回:' + info.reply + '; ' + info.time + '<br>'+
+    var s = '<div class="onethread">' + 
+        '[' + info.id+ ']' + 
+        '<a href="'+ info.url + '">' + info.title + '</a><br>' + 
+        format_thread_info_bottom(info) + 
         '</div>';
     return s;
 }

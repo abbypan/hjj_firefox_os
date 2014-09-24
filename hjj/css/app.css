@@ -56,6 +56,23 @@ textarea {
     box-sizing: border-box;       
 }
 
+.reply {
+    text-align : right;
+    display : inline-block;
+    width : 13%;
+}
+
+.left_string {
+    display : inline-block;
+    width : 18%;
+}
+
+.hot {
+    text-align : right;
+    display : inline-block;
+    width : 18%;
+}
+
 .popup_textarea {
     height: 60% ;
     width: 90% ;

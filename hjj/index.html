@@ -20,6 +20,7 @@
 
 <script src="js/jquery.mobile-events.min.js" type="text/javascript"></script>
 
+<script src="js/sprintf.js" type="text/javascript"></script>
 <script src="js/app.js" type="text/javascript" charset="gb2312"></script>
 <link type="text/css" rel="stylesheet" href="css/app.css" />
 
@@ -35,7 +36,7 @@
             <ul>
                 <li><a href="#manual_jump">&#8623;</a></li>
                 <li><a href="#board_menu">&#8801;</a></li>
-                <li><a href="#setting" >&#10016;</a></li>
+                <li><a href="#setting" >&#9839;</a></li>
             </ul>
         </div>
     </div>
@@ -177,7 +178,8 @@
         <div id="thread_action">
         <input data-role="none" type="text" name="word_num" value=50 id="min_word_num_input" class="small_input"> 
         <a href="#" id="min_word_num">字数</a>
-        &nbsp; <input data-role="none" type="text" name="floor_keyword" id="floor_keyword_input" class="mid_input" placeholder="关键字"> 
+        &nbsp; 
+        <input data-role="none" type="text" name="floor_keyword" id="floor_keyword_input" class="mid_input" placeholder="关键字"> 
         <a href="#" id="floor_keyword">抽取</a> 
         &nbsp; <a href="#" id="floor_filter">过滤</a> 
         <br>
