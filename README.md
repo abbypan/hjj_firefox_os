@@ -3,13 +3,13 @@ hjj_firefox_os
 
 红晋江 http://bbs.jjwxc.net 看贴
 
-firefox market 地址：[HJJ](https://marketplace.firefox.com/app/hjj/)
+firefox 版本：[HJJ-firefoxos](https://marketplace.firefox.com/app/hjj/)
 
-phonegap 打包的 android apk 地址：[HJJ-phonegap](https://build.phonegap.com/apps/1033213/share)
+android 版本（基于phonegap打包）：[HJJ-phonegap](https://build.phonegap.com/apps/1033213/share)
 
 ## 主页
 
-顶部按钮：1）跳转到指定大院/门牌；2）版块列表、或返回主页；3）设置
+顶部按钮：1）跳转到指定大院/门牌；2）版块列表；3）设置
 
 底部按钮：1）收藏的版块；2）收藏的贴子；3）最近访问记录
 
@@ -18,7 +18,7 @@ phonegap 打包的 android apk 地址：[HJJ-phonegap](https://build.phonegap.co
 
 ## 版块
 
-顶部按钮：1）跳转到指定大院/门牌；2）版块列表、或返回主页；3）子版块
+顶部按钮：1）跳转到指定大院/门牌；2）版块列表；3）子版块
 
 ![board.png](board.png)
 
