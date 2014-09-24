@@ -64,24 +64,18 @@
 </div>
 
 <div id="board" data-role="page">
+    <div style="display:none">
+        <a href="#search_form" id="search_form_a"
+            data-rel="popup" data-position-to="window">&#1060;</a>
+        <a href="#new_thread" id="new_thread_a"
+            data-rel="popup" data-position-to="window">+</a>
+    </div>
     <div data-role="header" data-position="fixed">
         <div data-role="navbar">  
             <ul>
                 <li><a href="#manual_jump">&#8623;</a></li>
                 <li><a href="#board_menu">&#8801;</a></li>
-                <li><a href="#search_form" data-rel="popup"
-                    data-position-to="window"
-                    >&#1060;</a></li>
-            </ul>
-        </div>
-    </div>
-
-    <div data-role="header">
-        <div data-role="navbar">  
-            <ul>
-                <li><a href="#sub_board" data-rel="popup">&darr;</a></li>
-                <li><a href="#thread_type" data-rel="popup">&rarr;</a></li>
-                <li><a href="#new_thread" data-rel="popup" data-position-to="window">+</a></li>
+                <li><a href="#sub_board" data-rel="popup">&rarr;</a></li>
             </ul>
         </div>
     </div>
@@ -112,16 +106,21 @@
     </div>
 
     <div data-role="popup" id="sub_board">
-        <input type="button" value="全选" action="all" class="sub_board_check_all">
-        <input type="button" value="反选" action="none" class="sub_board_check_all">
-        <form action="javascript:sub_board_action();">
+
+        <div id="thread_type">
+        </div>
+
+        <a style="display:none" href="#" id="sub_board_url"></a>
+
+            <input type="button" value="全选" action="all" class="sub_board_check_all">
+            <input type="button" value="反选" action="none" class="sub_board_check_all">
+
             <input name="url" type="hidden">
             <div data-role="fieldcontain">
                 <fieldset data-role="controlgroup"> 
                 </fieldset>
             </div>
-            <input type="submit" value="确定">
-        </form>
+            <input type="button" value="确定" id="sub_board_btn">
     </div>
 
     <div data-role="popup" id="search_form">
@@ -138,10 +137,6 @@
         <input id="search_form_btn" type="submit" value="查询">
     </div>
 
-    <div data-role="popup" id="thread_type">
-        <ul data-role="listview">
-        </ul>
-    </div>
 </div>
 
 <div id="showmsg" data-role="page">

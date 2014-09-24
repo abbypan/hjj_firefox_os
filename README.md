@@ -9,33 +9,29 @@ phonegap 打包的 android apk 地址：[HJJ-phonegap](https://build.phonegap.co
 
 ## 主页
 
-![home.png](home.png)
-
 顶部按钮：1）跳转到指定大院/门牌；2）版块列表、或返回主页；3）设置
-
-![home_header.png](home_header.png)
 
 底部按钮：1）收藏的版块；2）收藏的贴子；3）最近访问记录
 
-![footer.png](footer.png)
+![home.png](home.png)
+
 
 ## 版块
 
+顶部按钮：1）跳转到指定大院/门牌；2）版块列表、或返回主页；3）子版块
+
 ![board.png](board.png)
 
-顶部首行按钮：1）跳转到指定大院/门牌；2）版块列表、或返回主页；3）搜索
+### 事件
 
-顶部第2行按钮：1）子版块；2）加精/套红/加星；3）发贴
-
-![board_header.png](board_header.png)
+左/右　滑动：　搜索 / 发贴
 
 ## 贴子
 
+顶部按钮：1）跳转到指定大院/门牌；2）返回本版；3）回帖
+
 ![showmsg.png](showmsg.png)
 
-顶部首行按钮：1）跳转到指定大院/门牌；2）返回本版；3）回帖
-
-![showmsg_header.png](showmsg_header.png)
 
 基础按钮：1）缓存；2）收藏；3）跳转到上一次标记的楼层；4）刷新
 
@@ -45,11 +41,9 @@ phonegap 打包的 android apk 地址：[HJJ-phonegap](https://build.phonegap.co
 
 ![showmsg_btn_share.png](showmsg_btn_share.png)
 
-楼层按钮：1）引用此楼内容，回帖；2）直接回帖；3）标记当前楼层
-
-![showmsg_btn_reply.png](showmsg_btn_reply.png)
-
 ### 事件
+
+楼层 左/右　滑动：　直接回帖 / 引用此楼内容回帖
 
 底部 左/右 侧单击：上一页/下一页
 
