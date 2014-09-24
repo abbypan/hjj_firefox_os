@@ -149,83 +149,87 @@ function format_cache_key(head, data, keylist){
 
 // }}
 // {{{ home
+function get_hjj_url(u, succ_cb){
+    var xhr =  new XMLHttpRequest({mozSystem: true});
+
+    xhr.open("GET", u , true);
+
+    if(xhr.overrideMimeType) 
+        xhr.overrideMimeType('text/plain; charset=gb2312');
+    xhr.withCredentials = true;
+
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState == 4) {
+            succ_cb(xhr.responseText);
+        }
+    };
+
+    xhr.send();
+}
+
+function parse_home(data){
+    h = $.parseHTML(data);
+
+    var top_h = $(h).find('.cont01 div').eq(2).html();
+    top_h = 
+        '<div class="headline"><strong>置顶</strong></div>' + 
+        top_h.replace(/height:130px;/g,'');
+    $('#home_top').html( top_h );
+
+    $('#home_hot').html( $(h).find('.cont03').html());
+    $('#home_mt').html( $(h).find('.cont04').eq(2).html());
+    $('#home_ss').html( $(h).find('.cont05').eq(2).html());
+    $('#home_yl').html( $(h).find('.cont04').eq(1).html());
+    $('#home_pt').html( $(h).find('.cont05').eq(1).html());
+    $('#home_qg').html( $(h).find('.cont04').eq(0).html());
+    $('#home_cz').html( $(h).find('.cont05').eq(0).html());
+
+    var body_h = $('#home_content').html()
+        .replace(/http:\/\/bbs.jjwxc.net\/showmsg.php/g, '#showmsg')
+        .replace(/target="_blank"/g,'')
+        .replace(/<\/?ul>/g, '')
+        .replace(/<\/li>/g, '<br />')
+        .replace(/<li>/g, '');
+    $('#home_content').html(body_h);
+    lscache.set('home', body_h);
+}
+
 function home() {
     var rem = lscache.get('home');
     if(rem) $('#home_content').html(rem);
 
     $('#manual_jump').find('input').eq(0).val('');
 
-    var xhr =  new XMLHttpRequest({mozSystem: true});
-
     var u = HJJ;
-    xhr.open("GET", u , true);
-    if(xhr.overrideMimeType) xhr.overrideMimeType('text/plain; charset=gb2312');
-    xhr.withCredentials = true;
-
-    xhr.onreadystatechange = function() {
-        if (xhr.readyState == 4) {
-            h = $.parseHTML(xhr.responseText);
-
-            var top_h = $(h).find('.cont01 div').eq(2).html();
-            top_h = 
-                '<div class="headline"><strong>置顶</strong></div>' + 
-                top_h.replace(/height:130px;/g,'');
-            $('#home_top').html( top_h );
-
-            $('#home_hot').html( $(h).find('.cont03').html());
-            $('#home_mt').html( $(h).find('.cont04').eq(2).html());
-            $('#home_ss').html( $(h).find('.cont05').eq(2).html());
-            $('#home_yl').html( $(h).find('.cont04').eq(1).html());
-            $('#home_pt').html( $(h).find('.cont05').eq(1).html());
-            $('#home_qg').html( $(h).find('.cont04').eq(0).html());
-            $('#home_cz').html( $(h).find('.cont05').eq(0).html());
-
-            var body_h = $('#home_content').html()
-            .replace(/http:\/\/bbs.jjwxc.net\/showmsg.php/g, '#showmsg')
-            .replace(/target="_blank"/g,'')
-            .replace(/<\/?ul>/g, '')
-            .replace(/<\/li>/g, '<br />')
-            .replace(/<li>/g, '');
-            $('#home_content').html(body_h);
-            lscache.set('home', body_h);
-        }
-    }
-    xhr.send();
-
+    get_hjj_url(u, parse_home);
 }
 // }}}
 //  {{{ board_menu
 function board_menu_zone(zone_li) {
-
     var id = zone_li.attr("zid");
     if(id==undefined) return;
 
-    var xhr = new XMLHttpRequest({mozSystem: true});
+    var zone_cb = function(d) {
+        var tm = d.match(/<font color=red size=\+1>([^<]+)<\/font>/);
+        var t = tm[1].replace(/<[^>]+>/g,'');
+        var s ='<h3>' + 
+            t + '</h3><ul data-role="listview" data-inset="false">';
+
+        var m = d.match(/<center>[^<]+(<a href="board.php\?board=\d+&page=\d+">[^<]+<\/a>)[^<]+<\/center>/g);
+        $.each(m, function(i, v)
+                {
+                    var vm = v.replace(/center>/g, 'li>')
+            .replace(/board.php/, '#board')
+            ;
+        s+=vm;
+                });
+        s+="</ul>";
+        $('#board_menu').find('div[zid='+id+']').html(s);
+        lscache.set('board_menu', $('#board_menu_content').html(), BOARD_MENU_MINUTE);
+    };
+
     var u = HJJ +"/index"+id+".htm";
-    xhr.open("GET", u , true);
-    if(xhr.overrideMimeType) xhr.overrideMimeType('text/plain; charset=gb2312');
-
-    xhr.onreadystatechange = function() {
-        if (xhr.readyState == 4) {
-            var tm = xhr.responseText.match(/<font color=red size=\+1>([^<]+)<\/font>/);
-            var t = tm[1].replace(/<[^>]+>/g,'');
-            var s ='<h3>' + 
-                t + '</h3><ul data-role="listview" data-inset="false">';
-
-            var m = xhr.responseText.match(/<center>[^<]+(<a href="board.php\?board=\d+&page=\d+">[^<]+<\/a>)[^<]+<\/center>/g);
-            $.each(m, function(i, v)
-                   {
-                       var vm = v.replace(/center>/g, 'li>')
-                       .replace(/board.php/, '#board')
-                       ;
-                       s+=vm;
-                   });
-                   s+="</ul>";
-                   $('#board_menu').find('div[zid='+id+']').html(s);
-                   lscache.set('board_menu', $('#board_menu_content').html(), BOARD_MENU_MINUTE);
-        }
-    }
-    xhr.send();
+    get_hjj_url(u, zone_cb);
 }
 
 function board_menu(){
@@ -615,13 +619,9 @@ function board(para) {
     var u = HJJ + "/board.php?" + board_para_string(para);
 
     var thread_info = '';
-    var xhr = new XMLHttpRequest({mozSystem: true});
-    xhr.open("GET", u , true);
-    if(xhr.overrideMimeType) xhr.overrideMimeType('text/plain; charset=gb2312');
 
-    xhr.onreadystatechange = function() {
-        if (xhr.readyState == 4) {
-            var h = jQuery.parseHTML(xhr.responseText);
+    var board_cb = function(d){
+            var h = jQuery.parseHTML(d);
             $(h).find('tr[valign="middle"][bgcolor="#FFE7F7"]')
             .each(function(){
                 var ti = board_thread_info($(this));
@@ -639,11 +639,10 @@ function board(para) {
                 key : 'board,' + para.board
             });
 
-            board_pager(xhr.responseText);
-            sub_board(para, xhr.responseText);
-        }
-    }
-    xhr.send();
+            board_pager(d);
+            sub_board(para, d);
+        };
+        get_hjj_url(u, board_cb);
 }
 
 // -- }}
@@ -828,15 +827,10 @@ function thread_save_title(para, res){
 }
 
 function showmsg_cache(para) {
-    var xhr = new XMLHttpRequest({mozSystem: true});
-
     var u = HJJ+'/showmsg.php?' + showmsg_para_string(para); 
-    xhr.open("GET", u, true);
-    if(xhr.overrideMimeType) xhr.overrideMimeType('text/plain; charset=gb2312');
 
-    xhr.onreadystatechange = function() {
-        if (xhr.readyState == 4) {
-            var res = extract_showmsg_content(xhr.responseText);
+    var showmsg_cb = function(d){
+            var res = extract_showmsg_content(d);
 
             var local_url = "#showmsg?" + showmsg_para_string(para); 
             lscache.set(local_url, res);
@@ -861,9 +855,8 @@ function showmsg_cache(para) {
                 toggle_action_html(k, '#thread_cache', '&#9831;', '&#9827;');
                 fav_thread();
             }
-        }
-    }
-    xhr.send();
+        };
+    get_hjj_url(u, showmsg_cb);
 }
 
 function thread_cache() {
@@ -1089,22 +1082,16 @@ function extract_showmsg_content(d){
 }
 
 function showmsg_refresh(para) {
-    var xhr = new XMLHttpRequest({mozSystem: true});
-
     var u = HJJ+'/showmsg.php?' + showmsg_para_string(para); 
-    xhr.open("GET", u, true);
-    if(xhr.overrideMimeType) xhr.overrideMimeType('text/plain; charset=gb2312');
 
-    xhr.onreadystatechange = function() {
-        if (xhr.readyState == 4) {
-            var res = extract_showmsg_content(xhr.responseText);
+    var showmsg_f5_cb = function(d){
+            var res = extract_showmsg_content(d);
             showmsg_tail(para, res);
 
             var local_url = "#showmsg?" + showmsg_para_string(para); 
             lscache.set(local_url, res, THREAD_CACHE_MINUTE);
-        }
     }
-    xhr.send();
+    get_hjj_url(u, showmsg_f5_cb);
 }
 
 function showmsg_tail(para, res){
@@ -1179,9 +1166,9 @@ function thread_to_kindle(){
     });
 
     var u = 'http://' + DEFAULT["thread_to_kindle_dom"] + '/novel_robot';
+
     var xhr =  new XMLHttpRequest({mozSystem: true});
     xhr.open("POST", u);
-
     xhr.onreadystatechange = function() {
         if (xhr.readyState == 4) {
             $('#export_thread').html('&#9873;');
@@ -1266,19 +1253,12 @@ function search(para){
 
     var u = HJJ+'/search.php?' + search_para_string(para); 
 
-    var xhr = new XMLHttpRequest({mozSystem: true});
-    xhr.open("GET", u, true);
-    xhr.overrideMimeType('text/plain; charset=gb2312');
-
-    xhr.onreadystatechange = function() {
-        if (xhr.readyState == 4) {
-
-
-            var tm = xhr.responseText.match(/查询到的信息([\s\S]+?)<\/td>/);
+    var search_cb = function(d){
+            var tm = d.match(/查询到的信息([\s\S]+?)<\/td>/);
             var title_h = tm[1];
             $('#search_info').html( title_h );
 
-            var h = $.parseHTML(xhr.responseText);
+            var h = $.parseHTML(d);
             var pager = $(h).find('td[valign="bottom"]').eq(0);
             if(pager){
                 var page_h = pager.html().replace(/\/search.php/g, "#search").replace(/\<a\=\"\"/g,'');
@@ -1295,9 +1275,8 @@ function search(para){
             }).promise().done(function(){
                 $('#search_thread_list').html(ts);
             });
-        }
-    }
-    xhr.send();
+        };
+    get_hjj_url(u, search_cb);
 }
 
 function search_form(){
