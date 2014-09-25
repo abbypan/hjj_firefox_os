@@ -150,7 +150,8 @@ function format_cache_key(head, data, keylist){
 // }}
 // {{{ home
 function get_hjj_url(u, succ_cb){
-    var xhr =  new XMLHttpRequest({mozSystem: true});
+    //var xhr =  new XMLHttpRequest({mozSystem: true});
+     var xhr = (XMLHttpRequest.noConflict ? new XMLHttpRequest.noConflict() : new XMLHttpRequest({mozSystem: true}));
 
     xhr.open("GET", u , true);
 
@@ -952,7 +953,7 @@ function get_screen_top_floor(e) {
 
 function reply_thread(f, reply_type){
     $('#reply_thread').find('textarea').val('');
-    var c = f.children('.chapter').text().replace(/\n/g, ' ');
+    var c = f.find('.chapter').text().replace(/\n/g, ' ');
     if(reply_type=="cite") 
         c = "" + 
             f.children('.flcontent').text().replace(/(\s*\n)+/g, "\n").trim().substr(0, 100) + 
@@ -962,7 +963,20 @@ function reply_thread(f, reply_type){
     $('#reply_thread_a').click();
 }
 
-function check_screen_tap(e) {
+function check_middle_middle_bottom(e) {
+    var ee = get_current_position(e);
+    var w = screen.width;
+    var h = screen.height;
+
+    if ( (ee.pageX < 0.4*w) || (ee.pageX > 0.8*w) ) return 0;
+    if (! ee.clientY) return 0;
+
+    if (ee.clientY > h*0.8) return 1;
+    if ( (ee.clientY >= h*0.4) && (ee.clientY <= h*0.6) ) return -1;
+    return 0;
+}
+
+function check_bottom_left_right(e) {
     var ee = get_current_position(e);
     var w = screen.width;
 
@@ -973,23 +987,19 @@ function check_screen_tap(e) {
     return flag;
 }
 
-function showmsg_doubletap_scroll(e){
-    var f = check_screen_tap(e);
-    if(f==0) return;
+function showmsg_scroll_floor(f, e){
     var floor = get_screen_top_floor(e);
     if(f==1) jump_to_next(floor);
     if(f==-1) jump_to_prev(floor);
 }
 
-function showmsg_taphold_scroll(e){
-    var f = check_screen_tap(e);
-    if(f==0) $('#jump_floor_btn').click();
+function showmsg_scroll_page(f, e){
     if(f==1) $(document).scrollTop($(document).height());
     if(f==-1) $.mobile.silentScroll(0);
 }
 
-function showmsg_singletap_scroll(e) {
-    var jh = check_screen_tap(e) * screen.height*DEFAULT["showmsg_jump_height"];
+function showmsg_scroll_screen(e) {
+    var jh = check_bottom_left_right(e) * screen.height*DEFAULT["showmsg_jump_height"];
     if(jh==0) return;
 
     $('html, body').animate({
@@ -1047,13 +1057,23 @@ function showmsg_click() {
         reply_thread($(this), 'cite');
     });
 
-    $('#showmsg').on('swipeleft', function(e){ 
+    $('#showmsg').on('swipeleft', '.floor', function(e){ 
         reply_thread($(this), 'reply');
     });
 
-    $('#showmsg').on('singletap', function(e){ showmsg_singletap_scroll(e);});
-    $('#showmsg').on('doubletap', function(e){ showmsg_doubletap_scroll(e);});
-    $('#showmsg').on('taphold', function(e){ showmsg_taphold_scroll(e); });
+    $('#showmsg').on('tap', function(e){ showmsg_scroll_screen(e);});
+    $('#showmsg').on('taphold', function(e){ 
+        var floor_flag = check_bottom_left_right(e);
+        if(floor_flag){
+            showmsg_scroll_floor(floor_flag, e);
+            return;
+        }
+        var page_flag = check_middle_middle_bottom(e);
+        if(page_flag){
+            showmsg_scroll_page(page_flag, e);
+            return;
+        }
+    });
 
     $('#thread_to_kindle').on('click', '#thread_to_kindle_btn', function(){ thread_to_kindle();});
 }
@@ -1127,6 +1147,9 @@ function showmsg_tail(para, res){
         title : thread_save_title(para, res), 
         key : 'showmsg,' + para.board + ',' + para.id
     });
+    
+    $("#thread_floor_list").niceScroll();
+    $("#thread_floor_list").getNiceScroll().resize();
 
     if(para.fid){
         showmsg_jump_floor(para.fid);
@@ -1176,7 +1199,8 @@ function thread_to_kindle(){
 
     var u = 'http://' + DEFAULT["thread_to_kindle_dom"] + '/novel_robot';
 
-    var xhr =  new XMLHttpRequest({mozSystem: true});
+    //var xhr =  new XMLHttpRequest({mozSystem: true});
+ var xhr = (XMLHttpRequest.noConflict ? new XMLHttpRequest.noConflict() : new XMLHttpRequest({mozSystem: true}));
     xhr.open("POST", u);
     xhr.onreadystatechange = function() {
         if (xhr.readyState == 4) {
