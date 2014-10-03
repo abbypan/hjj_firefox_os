@@ -8,20 +8,25 @@
 
 
 <title>HJJ</title>
-<!--<script src="js/jquery.min.js" type="text/javascript"></script>-->
 <script src="js/jquery-2.1.1.min.js" type="text/javascript"></script>
+
+<script src="js/app_init.js" type="text/javascript" charset="gbk"></script>
 <script src="js/jquery.mobile-1.4.4.min.js" type="text/javascript"></script>
-<link type="text/css" rel="stylesheet" href="css/jquery.mobile-1.4.4.min.css" />
+
 <script src="js/jquery.mobile.paramsHandler-1.4.2.js" type="text/javascript"></script>
 <script src="js/jquery.elastic.source.js" type="text/javascript"></script>
 <script src="js/lscache.min.js" type="text/javascript"></script>
 <script src="js/jquery.tagsinput.min.js" type="text/javascript"></script>
-<link type="text/css" rel="stylesheet" href="css/jquery.tagsinput.css" />
 
 <script src="js/jquery.mobile-events.min.js" type="text/javascript"></script>
+<!--<script src="js/jquery.tap.js" type="text/javascript"></script>-->
+<!--<script src="js/jquery.event.tap.js" type="text/javascript"></script>-->
 
 <script src="js/sprintf.js" type="text/javascript"></script>
 <script src="js/app.js" type="text/javascript" charset="gbk"></script>
+
+<link type="text/css" rel="stylesheet" href="css/jquery.tagsinput.css" />
+<link type="text/css" rel="stylesheet" href="css/jquery.mobile-1.4.4.min.css" />
 <link type="text/css" rel="stylesheet" href="css/app.css" />
 
 <style>
@@ -72,15 +77,24 @@
         <a href="#new_thread" id="new_thread_a"
             data-rel="popup" data-position-to="window">+</a>
     </div>
+    
     <div data-role="header" data-position="fixed">
         <div data-role="navbar">  
             <ul>
                 <li><a href="#manual_jump">&#8623;</a></li>
                 <li><a href="#board_menu">&#8801;</a></li>
+                <li><a href="#search_form" data-rel="popup">&#248;</a></li>
+            </ul>
+
+            <ul>
                 <li><a href="#sub_board" data-rel="popup">&rarr;</a></li>
+                <li><a href="#sub_board_t" data-rel="popup">&darr;</a></li>
+                <li><a href="#new_thread" data-rel="popup"> + </a></li>
             </ul>
         </div>
     </div>
+
+
 
     <div data-role="content" id="board_content">
         <div id="board_info">
@@ -107,10 +121,18 @@
         </div>
     </div>
 
-    <div data-role="popup" id="sub_board">
+    <div data-role="popup" id="sub_board_t">
 
         <div id="thread_type">
         </div>
+
+    </div>
+
+
+    <div data-role="popup" id="sub_board">
+
+        <!--<div id="thread_type">-->
+        <!--</div>-->
 
         <a style="display:none" href="#" id="sub_board_url"></a>
 
@@ -156,7 +178,7 @@
         </div>
     </div>
 
-    <div data-role="content" id="thread_content">
+    <div data-role="content" id="thread_content" >
 
         <div id="thread_info">
         <a target="_blank" href="#" id="thread_title"></a><br> 

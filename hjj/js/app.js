@@ -21,7 +21,7 @@ var DEFAULT = {
     mail : 'xxx@kindle.cn', 
     thread_to_kindle_dom : 'xxx.com', 
     night_color : 'off', 
-    showmsg_jump_height : 0.65,
+    showmsg_jump_height : 0.6,
     showmsg_jump_floor : 50
 };
 for(var k in DEFAULT){
@@ -156,7 +156,7 @@ function get_hjj_url(u, succ_cb){
     xhr.open("GET", u , true);
 
     if(xhr.overrideMimeType) 
-        xhr.overrideMimeType('text/plain; charset=gb2312');
+        xhr.overrideMimeType('text/plain; charset=gbk');
     xhr.withCredentials = true;
 
     xhr.onreadystatechange = function() {
@@ -768,6 +768,18 @@ function format_floor_content(f) {
         '<div class="flcontent" word_num="' + f.word_num + '">' + f.content + '</div>' +
         '<span class="chapter">¡í' + f.id + '<span class="star">¡î</span><span class="floor_poster">' + f.poster + '</span><span class="star">¡î</span>' + f.time + '<span class="star">¡î</span></span>' +
         '&nbsp;' +
+        '<a  class="reply_thread_floor" action="cite" href="#">&raquo;</a>' + 
+        '&nbsp;&nbsp;&nbsp;' +
+        '<a  class="reply_thread_floor" action="default" href="#">&rsaquo;</a>' + 
+        '&nbsp;&nbsp;&nbsp;' +
+        '<a class="jump_to_top" href="#">&uArr;</a>' + 
+        '&nbsp;&nbsp;&nbsp;' +
+        '<a class="jump_to_bottom" href="#">&dArr;</a>' + 
+        '&nbsp;&nbsp;&nbsp;' +
+        '<a class="jump_to_prev" href="#">&uarr;</a>' + 
+        '&nbsp;&nbsp;&nbsp;' +
+        '<a class="jump_to_next" href="#">&darr;</a>' + 
+        '&nbsp;&nbsp;&nbsp;' +
         '<a class="mark_floor" href="#">&#9875;</a>' + 
         '&nbsp;&nbsp;&nbsp;' +
         '<span class="temp_floor"></span>' + 
@@ -915,6 +927,8 @@ function mark_floor(x) {
 }
 
 function get_current_position(e){
+        //if(e.attr('class')=='floor') return e;
+        //if(! e.originalEvent) return e;
         return e.originalEvent.touches[0] || e.originalEvent.changedTouches[0] || e;
 }
 
@@ -936,9 +950,11 @@ function get_current_floor(e){
 }
 
 function get_screen_top_floor(e) {
+
     var sh = screen.height;
     var ee = get_current_position(e);
     var eh = ee.pageY;
+        
     var i = 0;
     $('#showmsg').find('div[class="floor"]').each(function(){
         var h =$(this).offset().top; 
@@ -963,70 +979,83 @@ function reply_thread(f, reply_type){
     $('#reply_thread_a').click();
 }
 
-function check_middle_middle_bottom(e) {
-    var ee = get_current_position(e);
+//function check_middle_middle_bottom(e) {
+    //var ee = get_current_position(e);
+    //var w = screen.width;
+    //var h = screen.height;
+
+    //if ( (ee.pageX < 0.3*w) || (ee.pageX > 0.7*w) ) return 0;
+    //if (! ee.clientY) return 0;
+
+    //if (ee.clientY > h*0.7) return 1;
+    //if ( (ee.clientY >= h*0.3) && (ee.clientY <= h*0.7) ) return -1;
+    //return 0;
+//}
+
+
+//function showmsg_scroll_floor(f, e){
+    //var floor = get_screen_top_floor(e);
+    //if(f==1) jump_to_next(floor);
+    //if(f==-1) jump_to_prev(floor);
+//}
+
+//function showmsg_scroll_page(f, e){
+    //if(f==1)  $(document).scrollTop($(document).height());
+    //if(f==-1) $.mobile.silentScroll(0);
+//}
+
+function check_bottom_left_right(ee) {
+
+    if(! ee.clientY || ee.clientY <= screen.height*0.6) return 0;
+    
     var w = screen.width;
-    var h = screen.height;
-
-    if ( (ee.pageX < 0.4*w) || (ee.pageX > 0.8*w) ) return 0;
-    if (! ee.clientY) return 0;
-
-    if (ee.clientY > h*0.8) return 1;
-    if ( (ee.clientY >= h*0.4) && (ee.clientY <= h*0.6) ) return -1;
+    if(ee.clientX < 0.3*w) return -1;
+    if(ee.clientX > 0.7*w) return 1;
     return 0;
 }
 
-function check_bottom_left_right(e) {
-    var ee = get_current_position(e);
-    var w = screen.width;
-
-    if(! ee.clientY || ee.clientY <= screen.height*0.8) return 0;
-
-    var flag = (ee.pageX < w/5) ? -1 : 
-        (ee.pageX > 4*w/5) ?  1 : 0;
-    return flag;
-}
-
-function showmsg_scroll_floor(f, e){
-    var floor = get_screen_top_floor(e);
-    if(f==1) jump_to_next(floor);
-    if(f==-1) jump_to_prev(floor);
-}
-
-function showmsg_scroll_page(f, e){
-    if(f==1) $(document).scrollTop($(document).height());
-    if(f==-1) $.mobile.silentScroll(0);
-}
-
 function showmsg_scroll_screen(e) {
-    var jh = check_bottom_left_right(e) * screen.height*DEFAULT["showmsg_jump_height"];
+    var ee = get_current_position(e);
+    var jh = check_bottom_left_right(ee) * screen.height*DEFAULT["showmsg_jump_height"];
+    //alert(ee.pageY + ',' + ee.clientY + ',' + screen.height + ',' +
+//ee.pageX + ',' + ee.clientX + ',' + screen.width + 
+//',' + jh);
     if(jh==0) return;
+    if(jh>0) {
+        $.mobile.silentScroll(ee.pageY-0.1*screen.height);
+    }else{
+        $.mobile.silentScroll(ee.pageY+2*jh);
+    }
+}
 
-    $('html, body').animate({
-        scrollTop: $(window).scrollTop() + jh
-    }, 100);
+function showmsg_tap_scroll(e) {
+    alert(e.clientY);
+    var w = screen.width;
+    var h = screen.height*DEFAULT["showmsg_jump_height"];
+    if(! e.clientY || e.clientY <= screen.height*0.7) return;
+    var jh = (e.pageX < 0.3*w) ? -h :
+        (e.pageX > 0.7*w) ? h : 0;
+    if(jh!=0)
+        $('html, body').animate({
+            scrollTop: $(window).scrollTop() + jh
+        }, 100);
 }
 
 function jump_to_prev(f){
-        var x = f.prevAll();
-        var i = parseInt(DEFAULT["showmsg_jump_floor"])-1;
-        if(x[i]) {
-            var pos = $(x[i]).offset().top;
-            $.mobile.silentScroll(pos);
-        }else{
-            $.mobile.silentScroll(0);
-        }
-    }
+    var x = f.prevAll();
+    var i = parseInt(DEFAULT["showmsg_jump_floor"])-1;
+
+    var pos = x[i] ? $(x[i]).offset().top : 0;
+
+    $.mobile.silentScroll(pos);
+}
 
 function jump_to_next(f){
     var x = f.nextAll();
     var i = parseInt(DEFAULT["showmsg_jump_floor"])-1;
-    if(x[i]) {
-        var pos = $(x[i]).offset().top;
-        $.mobile.silentScroll(pos);
-    }else{
-        $(document).scrollTop($(document).height());
-    }
+
+    var pos = x[i] ? $(x[i]).offset().top : $(document).height();
+    $.mobile.silentScroll(pos);
 }
 
 function showmsg_click() {
@@ -1052,30 +1081,57 @@ function showmsg_click() {
     $('#showmsg').on('click', '#view_all_floor', function(){ view_all_floor();});
     $('#showmsg').on('click', '#reverse_floor', function(){ reverse_floor();});
     $('#showmsg').on('click', '.showmsg_jump_page_btn', function(){ showmsg_jump_page_popup();});
-
-    $('#showmsg').on('swiperight', '.floor', function(e){ 
-        reply_thread($(this), 'cite');
+    
+    $('#showmsg').on('click', '.reply_thread_floor', function(){
+        reply_thread($(this).parent(), $(this).attr('action'));
     });
 
-    $('#showmsg').on('swipeleft', '.floor', function(e){ 
-        reply_thread($(this), 'reply');
+    //$('#showmsg').on('swiperight', '.floor', function(e){ 
+        //reply_thread($(this), 'cite');
+    //});
+
+    //$('#showmsg').on('swipeleft', '.floor', function(e){ 
+        //reply_thread($(this), 'reply');
+    //});
+
+    //$('#showmsg').on('tap', function(e){ showmsg_scroll_screen(e);});
+    //$('#showmsg').on('tap', '#thread_content', function(e){ showmsg_scroll_screen(e); });
+    //
+    $('#showmsg').on('tap', function(e){ showmsg_scroll_screen(e); });
+    //$('#showmsg').on('tap', function(e){ alert('tap');showmsg_tap_scroll(e); return false;});
+
+    $('#showmsg').on('click', '.jump_to_bottom', function(){
+        $(document).scrollTop($(document).height());
+        return false;
+    });
+    $('#showmsg').on('click', '.jump_to_top', function(){
+        $.mobile.silentScroll(0);
+        return false;
     });
 
-    $('#showmsg').on('tap', function(e){ showmsg_scroll_screen(e);});
-    $('#showmsg').on('taphold', function(e){ 
-        var floor_flag = check_bottom_left_right(e);
-        if(floor_flag){
-            showmsg_scroll_floor(floor_flag, e);
-            return;
-        }
-        var page_flag = check_middle_middle_bottom(e);
-        if(page_flag){
-            showmsg_scroll_page(page_flag, e);
-            return;
-        }
+    $('#showmsg').on('click', '.jump_to_prev', function(){
+        jump_to_prev($(this).parent())
+        return false;
+    });
+    $('#showmsg').on('click', '.jump_to_next', function(){
+        jump_to_next($(this).parent())
+        return false;
     });
 
-    $('#thread_to_kindle').on('click', '#thread_to_kindle_btn', function(){ thread_to_kindle();});
+    //$('#showmsg').on('taphold', function(e){ 
+        //var floor_flag = check_bottom_left_right(e);
+        //if(floor_flag){
+            //showmsg_scroll_floor(floor_flag, e);
+            //return;
+        //}
+        //var page_flag = check_middle_middle_bottom(e);
+        //if(page_flag){
+            //showmsg_scroll_page(page_flag, e);
+            //return;
+        //}
+    //});
+
+    $('#showmsg').on('click', '#thread_to_kindle_btn', function(){ thread_to_kindle();});
 }
 
 function extract_showmsg_content(d){
@@ -1537,6 +1593,7 @@ function main(){
     $.mobile.allowCrossDomainPages = true;
     $.mobile.phonegapNavigationEnabled = true;
     $.mobile.ajaxEnabled = true;
+    $.mobile.buttonMarkup.hoverDelay = "false";
 
     $.mobile.defaultPageTransition = 'none';
     $.mobile.buttonMarkup.hoverDelay = "false";
@@ -1579,13 +1636,13 @@ function main(){
         sub_board_check_all(act); 
     });
 
-    $('#board').on('swipeleft', function(e){ 
-        $('#search_form_a').click();
-    });
+    //$('#board').on('swipeleft', function(e){ 
+        //$('#search_form_a').click();
+    //});
 
-    $('#board').on('swiperight', function(e){ 
-        $('#new_thread_a').click();
-    });
+    //$('#board').on('swiperight', function(e){ 
+        //$('#new_thread_a').click();
+    //});
 
     $('body').on('click', '.textarea_format', function(){
         var area = $(this).parent().find('textarea').eq(0);
@@ -1606,3 +1663,4 @@ $(document).bind('pageinit',function(e){
     INIT=1;
 });
 // }}
+

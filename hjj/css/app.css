@@ -97,3 +97,9 @@ input,select {
 .big_input {
     width: 60% ;
 }
+
+/*.ui-page {  */
+     /*backface-visibility: hidden;  */
+     /*-webkit-backface-visibility: hidden; [> Chrome and Safari <]  */
+     /*-moz-backface-visibility: hidden; [> Firefox <]  */
+/*} */

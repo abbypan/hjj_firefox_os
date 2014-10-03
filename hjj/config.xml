@@ -43,7 +43,7 @@
     <!--<gap:plugin name="org.apache.cordova.vibration" />-->
 
     <icon src="icons/hjj64.png" />
-    <gap:splash src="icons/splash.png" />
+    <!--<gap:splash src="icons/splash.png" />-->
     
     <access origin="http://bbs.jjwxc.net" />
     <access origin="*" />
