@@ -150,7 +150,6 @@ function format_cache_key(head, data, keylist){
 // }}
 // {{{ home
 function get_hjj_url(u, succ_cb){
-    //var xhr =  new XMLHttpRequest({mozSystem: true});
      var xhr = (XMLHttpRequest.noConflict ? new XMLHttpRequest.noConflict() : new XMLHttpRequest({mozSystem: true}));
 
     xhr.open("GET", u , true);
@@ -927,8 +926,6 @@ function mark_floor(x) {
 }
 
 function get_current_position(e){
-        //if(e.attr('class')=='floor') return e;
-        //if(! e.originalEvent) return e;
         return e.originalEvent.touches[0] || e.originalEvent.changedTouches[0] || e;
 }
 
@@ -979,12 +976,11 @@ function reply_thread(f, reply_type){
     $('#reply_thread_a').click();
 }
 
-//function check_middle_middle_bottom(e) {
-    //var ee = get_current_position(e);
+//function check_middle_middle_bottom(ee) {
     //var w = screen.width;
     //var h = screen.height;
 
-    //if ( (ee.pageX < 0.3*w) || (ee.pageX > 0.7*w) ) return 0;
+    //if ( (ee.clientX < 0.3*w) || (ee.pageX > 0.7*w) ) return 0;
     //if (! ee.clientY) return 0;
 
     //if (ee.clientY > h*0.7) return 1;
@@ -992,20 +988,7 @@ function reply_thread(f, reply_type){
     //return 0;
 //}
 
-
-//function showmsg_scroll_floor(f, e){
-    //var floor = get_screen_top_floor(e);
-    //if(f==1) jump_to_next(floor);
-    //if(f==-1) jump_to_prev(floor);
-//}
-
-//function showmsg_scroll_page(f, e){
-    //if(f==1)  $(document).scrollTop($(document).height());
-    //if(f==-1) $.mobile.silentScroll(0);
-//}
-
 function check_bottom_left_right(ee) {
-
     if(! ee.clientY || ee.clientY <= screen.height*0.6) return 0;
     
     var w = screen.width;
@@ -1017,28 +1000,12 @@ function check_bottom_left_right(ee) {
 function showmsg_scroll_screen(e) {
     var ee = get_current_position(e);
     var jh = check_bottom_left_right(ee) * screen.height*DEFAULT["showmsg_jump_height"];
-    //alert(ee.pageY + ',' + ee.clientY + ',' + screen.height + ',' +
-//ee.pageX + ',' + ee.clientX + ',' + screen.width + 
-//',' + jh);
     if(jh==0) return;
     if(jh>0) {
         $.mobile.silentScroll(ee.pageY-0.1*screen.height);
     }else{
         $.mobile.silentScroll(ee.pageY+2*jh);
     }
-}
-
-function showmsg_tap_scroll(e) {
-    alert(e.clientY);
-    var w = screen.width;
-    var h = screen.height*DEFAULT["showmsg_jump_height"];
-    if(! e.clientY || e.clientY <= screen.height*0.7) return;
-    var jh = (e.pageX < 0.3*w) ? -h :
-        (e.pageX > 0.7*w) ? h : 0;
-    if(jh!=0)
-        $('html, body').animate({
-            scrollTop: $(window).scrollTop() + jh
-        }, 100);
 }
 
 function jump_to_prev(f){
@@ -1094,11 +1061,7 @@ function showmsg_click() {
         //reply_thread($(this), 'reply');
     //});
 
-    //$('#showmsg').on('tap', function(e){ showmsg_scroll_screen(e);});
-    //$('#showmsg').on('tap', '#thread_content', function(e){ showmsg_scroll_screen(e); });
-    //
     $('#showmsg').on('tap', function(e){ showmsg_scroll_screen(e); });
-    //$('#showmsg').on('tap', function(e){ alert('tap');showmsg_tap_scroll(e); return false;});
 
     $('#showmsg').on('click', '.jump_to_bottom', function(){
         $(document).scrollTop($(document).height());
@@ -1117,19 +1080,6 @@ function showmsg_click() {
         jump_to_next($(this).parent())
         return false;
     });
-
-    //$('#showmsg').on('taphold', function(e){ 
-        //var floor_flag = check_bottom_left_right(e);
-        //if(floor_flag){
-            //showmsg_scroll_floor(floor_flag, e);
-            //return;
-        //}
-        //var page_flag = check_middle_middle_bottom(e);
-        //if(page_flag){
-            //showmsg_scroll_page(page_flag, e);
-            //return;
-        //}
-    //});
 
     $('#showmsg').on('click', '#thread_to_kindle_btn', function(){ thread_to_kindle();});
 }
@@ -1255,7 +1205,6 @@ function thread_to_kindle(){
 
     var u = 'http://' + DEFAULT["thread_to_kindle_dom"] + '/novel_robot';
 
-    //var xhr =  new XMLHttpRequest({mozSystem: true});
  var xhr = (XMLHttpRequest.noConflict ? new XMLHttpRequest.noConflict() : new XMLHttpRequest({mozSystem: true}));
     xhr.open("POST", u);
     xhr.onreadystatechange = function() {
