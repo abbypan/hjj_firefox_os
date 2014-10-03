@@ -19,6 +19,7 @@ android 版本（基于phonegap打包）：[HJJ-phonegap](https://build.phonegap
 ## 版块
 
 顶部按钮1：1）跳转到指定大院/门牌；2）版块列表；3）搜索
+
 顶部按钮2：1）子版块；2）贴子类型；3）发帖
 
 ![board.png](board.png)
@@ -35,6 +36,7 @@ android 版本（基于phonegap打包）：[HJJ-phonegap](https://build.phonegap
 
 5) 往 前 跳转N楼; 6) 往 后 跳转N楼
 
+7) 标记当前楼层
 
 ![showmsg.png](showmsg.png)
 
