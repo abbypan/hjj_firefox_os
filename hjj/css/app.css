@@ -103,3 +103,8 @@ input,select {
      /*-webkit-backface-visibility: hidden; [> Chrome and Safari <]  */
      /*-moz-backface-visibility: hidden; [> Firefox <]  */
 /*} */
+
+/*div {*/
+/*-webkit-transform: translate3d(0,0,0);*/
+/*transform: translate3d(0, 0, 0);*/
+/*}*/

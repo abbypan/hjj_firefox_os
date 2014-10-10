@@ -12,9 +12,11 @@
     "name": "Abby Pan",
     "url": "http://abbypan.github.io"
   },
-	"type": "privileged",
-    "csp" : "default-src *; script-src 'self'; object-src 'none'; style-src 'self' 'unsafe-inline'", 
-    "permissions": {
-        "systemXHR": { "description": "Required to make Ajax Calls over the Network" }
+  "type": "privileged",
+  "csp": "default-src *; script-src 'self'; object-src 'none'; style-src 'self' 'unsafe-inline'",
+  "permissions": {
+    "systemXHR": {
+      "description": "Required to make Ajax Calls over the Network"
     }
+  }
 }

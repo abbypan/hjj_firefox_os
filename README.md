@@ -68,3 +68,7 @@ android 版本（基于phonegap打包）：[HJJ-phonegap](https://build.phonegap
 ## 跳转到指定大院/门牌
 
 ![manual_jump.png](manual_jump.png)
+
+## ChangeLog
+
+2014-10-03 : 移除部分点击事件，处理滑动卡顿问题

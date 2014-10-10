@@ -767,22 +767,14 @@ function format_floor_content(f) {
         '<div class="flcontent" word_num="' + f.word_num + '">' + f.content + '</div>' +
         '<span class="chapter">¡í' + f.id + '<span class="star">¡î</span><span class="floor_poster">' + f.poster + '</span><span class="star">¡î</span>' + f.time + '<span class="star">¡î</span></span>' +
         '&nbsp;' +
-        '<a  class="reply_thread_floor" action="cite" href="#">&raquo;</a>' + 
-        '&nbsp;&nbsp;&nbsp;' +
-        '<a  class="reply_thread_floor" action="default" href="#">&rsaquo;</a>' + 
-        '&nbsp;&nbsp;&nbsp;' +
-        '<a class="jump_to_top" href="#">&uArr;</a>' + 
-        '&nbsp;&nbsp;&nbsp;' +
-        '<a class="jump_to_bottom" href="#">&dArr;</a>' + 
-        '&nbsp;&nbsp;&nbsp;' +
-        '<a class="jump_to_prev" href="#">&uarr;</a>' + 
-        '&nbsp;&nbsp;&nbsp;' +
-        '<a class="jump_to_next" href="#">&darr;</a>' + 
-        '&nbsp;&nbsp;&nbsp;' +
         '<a class="mark_floor" href="#">&#9875;</a>' + 
         '&nbsp;&nbsp;&nbsp;' +
         '<span class="temp_floor"></span>' + 
         '</div>';
+        //'<a  class="reply_thread_floor" action="cite" href="#">&raquo;</a>' + 
+        //'&nbsp;&nbsp;&nbsp;' +
+        //'<a  class="reply_thread_floor" action="default" href="#">&rsaquo;</a>' + 
+        //'&nbsp;&nbsp;&nbsp;' +
     return html;
 }
 
@@ -926,13 +918,16 @@ function mark_floor(x) {
 }
 
 function get_current_position(e){
-        return e.originalEvent.touches[0] || e.originalEvent.changedTouches[0] || e;
+    if(! e.originalEvent) return e;
+    return e.originalEvent.touches[0] || e.originalEvent.changedTouches[0] || e;
 }
 
-function get_current_floor(e){
+function get_current_floor(ee, delta_height){
     var sh = screen.height;
-    var ee = get_current_position(e);
+    //var ee = get_current_position(e);
+
     var eh = ee.pageY;
+    if(delta_height) eh=eh+delta_height;
 
     var i=0; 
     $('#showmsg').find('div[class="floor"]').each(function(){
@@ -942,6 +937,7 @@ function get_current_floor(e){
             i = $(this).attr('fid');
         }
     });
+
     var k = '#floor' + i;
     return $(k);
 }
@@ -976,36 +972,39 @@ function reply_thread(f, reply_type){
     $('#reply_thread_a').click();
 }
 
-//function check_middle_middle_bottom(ee) {
-    //var w = screen.width;
-    //var h = screen.height;
-
-    //if ( (ee.clientX < 0.3*w) || (ee.pageX > 0.7*w) ) return 0;
-    //if (! ee.clientY) return 0;
-
-    //if (ee.clientY > h*0.7) return 1;
-    //if ( (ee.clientY >= h*0.3) && (ee.clientY <= h*0.7) ) return -1;
-    //return 0;
-//}
-
-function check_bottom_left_right(ee) {
-    if(! ee.clientY || ee.clientY <= screen.height*0.6) return 0;
-    
+function get_event_zone(e){
+    var ee = get_current_position(e);
     var w = screen.width;
-    if(ee.clientX < 0.3*w) return -1;
-    if(ee.clientX > 0.7*w) return 1;
-    return 0;
+    ee.xzone = (ee.clientX < 0.3*w) ? 'left' : 
+        (ee.clientX > 0.7*w) ? 'right' : 
+        'middle';
+
+    var h = screen.height;
+    ee.yzone = (ee.clientY < 0.3*h) ? 'top' : 
+        (ee.clientY > 0.7*h) ? 'bottom' : 
+        'middle';
+    return ee;
 }
 
-function showmsg_scroll_screen(e) {
-    var ee = get_current_position(e);
-    var jh = check_bottom_left_right(ee) * screen.height*DEFAULT["showmsg_jump_height"];
+
+function showmsg_scroll_screen(ee) {
+    var jh = (ee.yzone=='bottom' && ee.xzone=='left') ? -1 : 
+        (ee.yzone=='bottom' && ee.xzone=='right') ? 1 : 
+        0;
     if(jh==0) return;
+    jh = jh * screen.height*DEFAULT["showmsg_jump_height"];
     if(jh>0) {
         $.mobile.silentScroll(ee.pageY-0.1*screen.height);
     }else{
         $.mobile.silentScroll(ee.pageY+2*jh);
     }
+}
+
+function jump_floor(f, arrow, step){
+    var x = arrow=='prev' ? f.prevAll() : f.nextAll();
+    var i = parseInt(step) -1;
+    var pos = x[i] ? $(x[i]).offset().top : 0;
+    $.mobile.silentScroll(pos);
 }
 
 function jump_to_prev(f){
@@ -1014,14 +1013,18 @@ function jump_to_prev(f){
 
     var pos = x[i] ? $(x[i]).offset().top : 0;
 
+    var fid = x[i] ? $(x[i]).attr('fid') : 0;
+    $('#showmsg_floor_slider').val(fid);
     $.mobile.silentScroll(pos);
 }
 
 function jump_to_next(f){
     var x = f.nextAll();
-    var i = parseInt(DEFAULT["showmsg_jump_floor"])-1;
+    var i = parseInt(DEFAULT["showmsg_jump_floor"]) -1;
 
     var pos = x[i] ? $(x[i]).offset().top : $(document).height();
+    var fid = x[i] ? $(x[i]).attr('fid') : $('#showmsg_floor_slider').attr('max');
+    $('#showmsg_floor_slider').val(fid);
     $.mobile.silentScroll(pos);
 }
 
@@ -1053,32 +1056,39 @@ function showmsg_click() {
         reply_thread($(this).parent(), $(this).attr('action'));
     });
 
-    //$('#showmsg').on('swiperight', '.floor', function(e){ 
-        //reply_thread($(this), 'cite');
-    //});
+    $('#showmsg').on('swiperight', '.floor', function(e){ 
+        reply_thread($(this), 'cite');
+    });
 
-    //$('#showmsg').on('swipeleft', '.floor', function(e){ 
-        //reply_thread($(this), 'reply');
-    //});
+    $('#showmsg').on('swipeleft', '.floor', function(e){ 
+        reply_thread($(this), 'reply');
+    });
 
-    $('#showmsg').on('tap', function(e){ showmsg_scroll_screen(e); });
+    $('#showmsg').on('tap', '.floor', function(e){ 
+        var z = get_event_zone(e);
+        showmsg_scroll_screen(z); 
+        return false;
+    });
+    
+    $('#showmsg').on("change", '#showmsg_floor_slider', function () {
+        var v = parseInt($(this).val()) - parseInt($(this).attr('min'));
+        jump_floor($('#floor0'), 'next', v);
+    });
 
     $('#showmsg').on('click', '.jump_to_bottom', function(){
+        $('#showmsg_floor_slider').val($('#showmsg_floor_slider').attr('max'));
         $(document).scrollTop($(document).height());
-        return false;
     });
     $('#showmsg').on('click', '.jump_to_top', function(){
+        $('#showmsg_floor_slider').val(0);
         $.mobile.silentScroll(0);
-        return false;
     });
 
-    $('#showmsg').on('click', '.jump_to_prev', function(){
-        jump_to_prev($(this).parent())
-        return false;
+    $('#showmsg').on('click', '.jump_to_prev', function(e){
+        jump_to_prev(get_current_floor(e), -screen.height*2);
     });
-    $('#showmsg').on('click', '.jump_to_next', function(){
-        jump_to_next($(this).parent())
-        return false;
+    $('#showmsg').on('click', '.jump_to_next', function(e){
+        jump_to_next(get_current_floor(e), -screen.height*2);
     });
 
     $('#showmsg').on('click', '#thread_to_kindle_btn', function(){ thread_to_kindle();});
@@ -1143,6 +1153,19 @@ function showmsg_tail(para, res){
         $(this).removeAttr('target');
         $(this).removeAttr('rel');
     });
+
+    var min =0;
+    var max = 0;
+    $('#thread_floor_list').find('.floor').each(function(){
+        var id = parseInt($(this).attr('fid'));
+        if(! min) min = id;
+        max = id;
+    }).promise().done(function(){
+        $('#showmsg_floor_slider').attr('min', min);
+        $('#showmsg_floor_slider').attr('max', max);
+        $('#showmsg_floor_slider').val(min);
+    });
+
 
     check_save_thread();
     check_cache_thread();
