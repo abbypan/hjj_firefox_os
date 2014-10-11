@@ -3,8 +3,6 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=gbk" />
 <meta name="format-detection" content="telephone=no" />
-<!--<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=2.0, user-scalable=yes" />  -->
-<!--<meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">-->
 <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0" />
 <title>HJJ</title>
 <script src="js/jquery-2.1.1.min.js" type="text/javascript"></script>
@@ -19,7 +17,6 @@
 
 
 <script src="js/sprintf.js" type="text/javascript"></script>
-<!--<script src="js/hammer.min.js" type="text/javascript"></script>-->
 <script src="js/jquery.mobile-events.min.js" type="text/javascript"></script>
 <!--<script src="js/jquery.tap.js" type="text/javascript"></script>-->
 <!--<script src="js/jquery.event.tap.js" type="text/javascript"></script>-->
@@ -86,13 +83,13 @@
             <ul>
                 <li><a href="#manual_jump">&#8623;</a></li>
                 <li><a href="#board_menu">&#8801;</a></li>
-                <li><a href="#search_form" data-rel="popup">&#248;</a></li>
+                <li><a href="#new_thread" data-rel="popup"> + </a></li>
             </ul>
 
             <ul>
-                <li><a href="#sub_board" data-rel="popup">&rarr;</a></li>
-                <li><a href="#sub_board_t" data-rel="popup">&darr;</a></li>
-                <li><a href="#new_thread" data-rel="popup"> + </a></li>
+                <li><a href="#sub_board" data-rel="popup">&#8891;</a></li>
+                <li><a href="#some_sort" data-rel="popup">...</a></li>
+                <li><a href="#search_form" data-rel="popup">&#8709;</a></li>
             </ul>
         </div>
     </div>
@@ -124,18 +121,11 @@
         </div>
     </div>
 
-    <div data-role="popup" id="sub_board_t">
+
+    <div data-role="popup" id="sub_board" data-position-to="window">
 
         <div id="thread_type">
         </div>
-
-    </div>
-
-
-    <div data-role="popup" id="sub_board">
-
-        <!--<div id="thread_type">-->
-        <!--</div>-->
 
         <a style="display:none" href="#" id="sub_board_url"></a>
 
@@ -150,7 +140,7 @@
             <input type="button" value="确定" id="sub_board_btn">
     </div>
 
-    <div data-role="popup" id="search_form">
+    <div data-role="popup" id="search_form" data-position-to="window">
         <input type="text" name="keyword" value=""> 
         <div data-role="fieldcontain"> 
         <select name="topic" id="search_type"> 
@@ -167,16 +157,49 @@
 </div>
 
 <div id="showmsg" data-role="page">
+    <div style="display:none">
+        <a id="jump_floor_btn" href="#jump_floor" data-rel="popup" data-position-to="window" data-transition="pop">&#9735;</a>
+    </div>
+
+    <div data-role="panel" id="showmsg_right_panel" data-display="overlay" data-position="right" data-dismissible="true" class="panel">
+        <div class="setting">
+            <input data-role="none" type="text" name="wordnum" placeholder="50" id="min_wordnum" class="mid_input"> 
+            <a href="#" id="min_wordnum_btn">字数过滤</a><br><br>
+
+            <input data-role="none" type="text" name="floor_keyword" id="floor_keyword" class="big_input" placeholder="关键字"> 
+            <br> 
+            <a href="#" id="floor_grep">抽取</a>，
+            <a href="#" id="floor_filter">过滤</a> 
+        </div>
+        <br>
+        <div class="setting">
+            <a id="thread_mark_floor" href="#">&#9875; 跳转到标记的楼层</a><br>
+            
+    <a href="#reply_thread" data-rel="popup" id="reply_thread_a" data-position-to="window">&#8626; 回贴</a>
+        </div>
+        <br>
+
+        <div class="setting">
+            <a id="share_thread" href="#">@ 分享到微博</a><br>
+            <a id="thread_cache" href="#">&#9831; 缓存贴子</a><br>
+            <a id="export_thread" href="#thread_to_kindle" data-rel="popup" data-position-to="window" data-transition="pop">&#9872; 推送到kindle</a>
+</div>
+    </div>
 
     <div data-role="header" data-position="fixed" data-tap-toggle="false">
         <div data-role="navbar">  
             <ul>
-                <li><a id="jump_floor_btn" href="#jump_floor" data-rel="popup" data-position-to="window" data-transition="pop">&#8623;</a></li>
+                <li><a href="#manual_jump">&#8623;</a></li>
                 <li><a href="#" id="thread_to_board">&uarr;</a></li>
-                <li><a href="#reply_thread" data-rel="popup"
-                    id="reply_thread_a"
-                    data-position-to="window" 
-                    >&#8626;</a></li>
+                <li><a href="#showmsg_right_panel">&#x2604;</a></li>
+            </ul>
+            <ul>
+                <li class="smallnav"><a href="#" id="only_poster">&#9863;</a></li> 
+                <li class="smallnav"><a href="#" id="view_img">&#9880;</a></li>
+                <li class="smallnav"><a href="#" id="thread_dewater">&#x2653;</a></li>
+                <li class="smallnav"><a href="#" id="view_all_floor">&#9810;</a></li>
+                <li class="smallnav"><a href="#" id="reverse_floor">&#8597;</a></li>
+                <li class="smallnav"><a href="#" id="thread_refresh">&#8635;</a></li>
             </ul>
         </div>
     </div>
@@ -184,35 +207,16 @@
     <div data-role="content" id="thread_content" >
 
         <div id="thread_info">
-        <a target="_blank" href="#" id="thread_title"></a><br> 
-        <span id="thread_bid"></span>, 
-        <span id="thread_tid"></span>, 
-        <span id="thread_pid"></span>&nbsp; 
-        <a id="thread_cache" href="#">.</a>&nbsp; 
-        <a id="thread_save" href="#">.</a>&nbsp; 
-        <a id="thread_mark_floor" href="#">&#9875;</a>&nbsp; 
-        <a id="thread_refresh" href="#">&#8635;</a> 
-        <br /> 
-        标签：<span id="thread_tag_list"></span> 
-        <a href="#thread_tag_popup" data-rel="popup" data-position-to="window" data-transition="pop">编辑</a>,
-        <a id="share_thread" href="#">@</a>&nbsp; 
-        <a id="export_thread" href="#thread_to_kindle" data-rel="popup" data-position-to="window" data-transition="pop">&#9872;</a>&nbsp; 
-        <a id="jump_floor_btn" style="display:none" href="#jump_floor" data-rel="popup" data-position-to="window" data-transition="pop">&#9735;</a>
+            <a target="_blank" href="#" id="thread_title"></a><br> 
+            <span id="thread_bid"></span>, 
+            <span id="thread_tid"></span>, 
+            <span id="thread_pid"></span>&nbsp; 
+            <a id="thread_save" href="#">.</a>&nbsp; 
+            <span id="thread_action_temp"></span> 
         </div>
-
         <div id="thread_action">
-        <input data-role="none" type="text" name="word_num" value=50 id="min_word_num_input" class="small_input"> 
-        <a href="#" id="min_word_num">字数</a>
-        &nbsp; 
-        <input data-role="none" type="text" name="floor_keyword" id="floor_keyword_input" class="mid_input" placeholder="关键字"> 
-        <a href="#" id="floor_keyword">抽取</a> 
-        &nbsp; <a href="#" id="floor_filter">过滤</a> 
-        <br>
-        <a href="#" id="only_poster">楼主</a> 
-        &nbsp; <a href="#" id="view_img">看图</a> 
-        &nbsp; <a href="#" id="reverse_floor">倒序</a> 
-        &nbsp; <a id="view_all_floor" href="#">全部</a> 
-        <span id="thread_action_temp"></span> 
+            标签：<span id="thread_tag_list"></span> 
+            <a href="#thread_tag_popup" data-rel="popup" data-position-to="window" data-transition="pop">编辑</a>
         </div>
 
         <div id="thread_pager_top" class="pager"></div>
@@ -221,28 +225,32 @@
 
     </div>
 
-
-    <div data-role="footer" data-position="fixed" >
+    <div id="showmsg_floor" data-role="footer" data-position="fixed" data-tap-toggle="false">
         <div data-role="navbar">  
             <ul>
-                <li><a href="#fav_board">&#9733;</a></li>
-                <li><a href="#fav_thread">&#9829;</a></li>
-                <li><a href="#recent_history">&#167;</a></li>
+                <li><a class="jump_to_top" href="#">&lArr;</a></li>
+                <li><a class="jump_to_prev" href="#">&larr;</a></li>
+                <li><a class="jump_to_next" href="#">&rarr;</a></li>
+                <li><a class="jump_to_bottom" href="#">&rArr;</a></li>
+            </ul>
+            <ul>
+                <li><input type="range" name="showmsg_floor_slider" id="showmsg_floor_slider" min="0" max="300" value="0"></li>
             </ul>
         </div>
     </div>
 
+
     <div data-role="popup" id="reply_thread" class="popup_textarea">
     </div>
-    
+
     <div data-role="popup" id="jump_floor" class="popup_textarea">
-            <input placeholder="楼层" type="text" id="dst_floor" name="dst_floor"> 
-            <input class="showmsg_jump_page_btn" type="submit" value="跳转" > 
+        <input placeholder="楼层" type="text" id="dst_floor" name="dst_floor"> 
+        <input class="showmsg_jump_page_btn" type="submit" value="跳转" > 
     </div>
-    
+
     <div data-role="popup" id="thread_tag_popup" class="popup_textarea">
     </div>
-    
+
     <div data-role="popup"  id="thread_to_kindle"  data-theme="none" >
         <input name="url" type="hidden" value="" > 
         <input name="type" type="hidden" value="mobi" > 
@@ -256,32 +264,10 @@
         <p>前<input name="max_tiezi_floor_num" data-role="none" class="small_input">楼 </p>
         <p>每楼最少<input name="min_floor_word_num" data-role="none" class="small_input">字 </p>
         <p><input type="submit" id="thread_to_kindle_btn" value="推送"></p>
-        <p style="font-size: small">说明：需要预先在 amazon 设置允许 kindle@idouzi.tk 推送到 kindle</p>
-    </div>
-
-    <div id="showmsg_footer"></div>
-    
-    <div id="showmsg_floor_popup" data-role="footer" data-position="fixed"
-        data-tap-toggle="false"
-        >
- <!--data-tap-toggle="false"-->
-        <div data-role="navbar">  
-            <ul>
-                <li><a class="jump_to_top" href="#">&lArr;</a></li>
-                <li><a class="jump_to_prev" href="#">&larr;</a></li>
-                <li><a class="jump_to_next" href="#">&rarr;</a></li>
-                <li><a class="jump_to_bottom" href="#">&rArr;</a></li>
-            </ul>
-        </div>
-        <div data-role="navbar">  
-            <ul>
-                <li><input type="range" name="showmsg_floor_slider" id="showmsg_floor_slider" min="0" max="300" value="0"></li>
-            </ul>
-        </div>
+        <p style="font-size: small">说明：需要预先在 amazon 设置允许 推送站点的邮箱（例如 kindle@xxx.com）推送到 kindle</p>
     </div>
 
 </div>
-
 
 <div data-role="page" id="recent_history">
     <div data-role="navbar">  
@@ -340,7 +326,7 @@
         <div data-role="navbar">  
             <ul>
                 <li><a data-rel="back" href="#">&larr;</a></li>
-                <li><a href="#home">&#955;</a></li>
+                <li><a href="#home">&Lambda;</a></li>
             </ul>
         </div>
     </div>
@@ -358,7 +344,7 @@
         <div data-role="navbar">  
             <ul>
                 <li><a data-rel="back" href="#">&larr;</a></li>
-                <li><a href="#home">&#955;</a></li>
+                <li><a href="#home">&Lambda;</a></li>
             </ul>
         </div>
     </div>

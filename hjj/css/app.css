@@ -1,5 +1,5 @@
 body,div,table,ul,li,input,textarea  {
-    background-color: #ffe7f7;
+    background-color: #ffe7f7 !important;
     background-size: 100%;
     word-wrap: break-word;      
 }
@@ -64,7 +64,7 @@ textarea {
 
 .left_string {
     display : inline-block;
-    width : 18%;
+    width : 15%;
 }
 
 .hot {
@@ -73,9 +73,14 @@ textarea {
     width : 18%;
 }
 
+.panel {
+    width: 65% ;
+    overflow: auto !important; 
+}
+
 .popup_textarea {
     height: 60% ;
-    width: 90% ;
+    width: 95% ;
     overflow: auto !important; 
 }
 
@@ -96,6 +101,12 @@ input,select {
 
 .big_input {
     width: 60% ;
+}
+
+.smallnav {
+    text-align : left;
+    width: 16.65% !important;  
+    clear: none !important;  /* Prevent line break caused by ui-block-a */
 }
 
 /*.ui-page {  */
