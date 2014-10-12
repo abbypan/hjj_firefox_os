@@ -1112,8 +1112,13 @@ function showmsg_click() {
     });
     
     $('#showmsg').on("change", '#showmsg_floor_slider', function () {
+        var all = parseInt($(this).attr('max')) - parseInt($(this).attr('min')) + 1;
+        var show = $('#showmsg').find('.floor:visible').length;
+
         var v = parseInt($(this).val()) - parseInt($(this).attr('min')) ;
-        var x = $('#showmsg').find('.floor').eq(v);
+        v = parseInt(v*show/all);
+
+        var x = $('#showmsg').find('.floor:visible').eq(v);
         var pos = x ? x.offset().top : 0;
         $.mobile.silentScroll(pos);
     });
