@@ -2,25 +2,23 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=gbk" />
-<meta name="format-detection" content="telephone=no" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0" />
+<!--<meta name="format-detection" content="telephone=no" />-->
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0" />
+
 <title>HJJ</title>
 <script src="js/jquery-2.1.1.min.js" type="text/javascript"></script>
 
 <script src="js/app_init.js" type="text/javascript" charset="gbk"></script>
-<script src="js/jquery.mobile-1.4.4.min.js" type="text/javascript"></script>
 
+<script src="js/jquery.mobile-1.4.4.min.js" type="text/javascript"></script>
 <script src="js/jquery.mobile.paramsHandler-1.4.2.js" type="text/javascript"></script>
 <script src="js/jquery.elastic.source.js" type="text/javascript"></script>
 <script src="js/lscache.min.js" type="text/javascript"></script>
 <script src="js/jquery.tagsinput.min.js" type="text/javascript"></script>
-
-
 <script src="js/sprintf.js" type="text/javascript"></script>
 <script src="js/jquery.mobile-events.min.js" type="text/javascript"></script>
 <!--<script src="js/jquery.tap.js" type="text/javascript"></script>-->
 <!--<script src="js/jquery.event.tap.js" type="text/javascript"></script>-->
-
 <script src="js/app.js" type="text/javascript" charset="gbk"></script>
 
 <link type="text/css" rel="stylesheet" href="css/jquery.tagsinput.css" />
@@ -76,6 +74,7 @@
             data-rel="popup" data-position-to="window">+</a>
         <a href="#showmsg_floor_popup" id="showmsg_floor_popup_a"
             data-rel="popup" data-position-to="window">+</a>
+        <span id="only_recent_thread">no</span>
     </div>
     
     <div data-role="header" data-position="fixed">
@@ -87,8 +86,8 @@
             </ul>
 
             <ul>
-                <li><a href="#sub_board" data-rel="popup">&#8891;</a></li>
-                <li><a href="#some_sort" data-rel="popup">...</a></li>
+                <li><a href="#sub_board" data-rel="popup">&yen;</a></li>
+                <li><a href="#" id="toggle_recent_thread">&#413;</a></li>
                 <li><a href="#search_form" data-rel="popup">&#8709;</a></li>
             </ul>
         </div>
@@ -129,8 +128,8 @@
 
         <a style="display:none" href="#" id="sub_board_url"></a>
 
-            <input type="button" value="全选" action="all" class="sub_board_check_all">
-            <input type="button" value="反选" action="none" class="sub_board_check_all">
+            <input type="button" data-role="none" value="全选" action="all" class="sub_board_check_all">
+            <input type="button" data-role="none" value="反选" action="none" class="sub_board_check_all">
 
             <input name="url" type="hidden">
             <div data-role="fieldcontain">
@@ -161,41 +160,18 @@
         <a id="jump_floor_btn" href="#jump_floor" data-rel="popup" data-position-to="window" data-transition="pop">&#9735;</a>
     </div>
 
-    <div data-role="panel" id="showmsg_right_panel" data-display="overlay" data-position="right" data-dismissible="true" class="panel">
-        <div class="setting">
-            <input data-role="none" type="text" name="wordnum" placeholder="50" id="min_wordnum" class="mid_input"> 
-            <a href="#" id="min_wordnum_btn">字数过滤</a><br><br>
-
-            <input data-role="none" type="text" name="floor_keyword" id="floor_keyword" class="big_input" placeholder="关键字"> 
-            <br> 
-            <a href="#" id="floor_grep">抽取</a>，
-            <a href="#" id="floor_filter">过滤</a> 
-        </div>
-        <br>
-        <div class="setting">
-            <a id="thread_mark_floor" href="#">&#9875; 跳转到标记的楼层</a><br>
-            
-    <a href="#reply_thread" data-rel="popup" id="reply_thread_a" data-position-to="window">&#8626; 回贴</a>
-        </div>
-        <br>
-
-        <div class="setting">
-            <a id="share_thread" href="#">@ 分享到微博</a><br>
-            <a id="thread_cache" href="#">&#9831; 缓存贴子</a><br>
-            <a id="export_thread" href="#thread_to_kindle" data-rel="popup" data-position-to="window" data-transition="pop">&#9872; 推送到kindle</a>
-</div>
-    </div>
 
     <div data-role="header" data-position="fixed" data-tap-toggle="false">
         <div data-role="navbar">  
             <ul>
                 <li><a href="#manual_jump">&#8623;</a></li>
                 <li><a href="#" id="thread_to_board">&uarr;</a></li>
-                <li><a href="#showmsg_right_panel">&#x2604;</a></li>
+                <li><a href="#showmsg_right_panel">&#8649;</a></li>
+                <!--<li><a href="#showmsg_right_panel" data-rel="popup" data-position-to="window" data-transition="pop">&#8649;</a>-->
             </ul>
             <ul>
-                <li class="smallnav"><a href="#" id="only_poster">&#9863;</a></li> 
-                <li class="smallnav"><a href="#" id="view_img">&#9880;</a></li>
+                <li class="smallnav"><a href="#" id="only_poster">&real;</a></li> 
+                <li class="smallnav"><a href="#" id="view_img">&#8465;</a></li>
                 <li class="smallnav"><a href="#" id="thread_dewater">&#x2653;</a></li>
                 <li class="smallnav"><a href="#" id="view_all_floor">&#9810;</a></li>
                 <li class="smallnav"><a href="#" id="reverse_floor">&#8597;</a></li>
@@ -242,6 +218,34 @@
 
     <div data-role="popup" id="reply_thread" class="popup_textarea">
     </div>
+    
+    <div data-role="panel" id="showmsg_right_panel" data-display="overlay" data-position="right" class="panel">
+    <!--<div data-role="popup" id="showmsg_right_panel">-->
+        <div class="paneldiv">
+            <input data-role="none" type="text" name="wordnum" placeholder="字数" id="min_wordnum" class="mid_input"> 
+            <a href='#' id="min_wordnum_btn">过滤</a><br><br>
+
+            <input data-role="none" type="text" name="floor_keyword" id="floor_keyword" class="big_input" placeholder="关键字"> 
+            <br> 
+            <a href="#" id="floor_grep">抽取</a>，
+            <a href="#" id="floor_filter">过滤</a> 
+        </div>
+        <br>
+        <div class="paneldiv">
+            <a id="thread_mark_floor" href="#">&#9875; 跳转到标记的楼层</a><br>
+            
+    <a href="#reply_thread" data-rel="popup" id="reply_thread_a" data-position-to="window">&#8626; 回贴</a>
+        </div>
+        <br>
+
+        <div class="paneldiv">
+            <a id="share_thread" href="#">@ 分享到微博</a><br>
+            <a id="thread_cache" href="#">&#9831; 缓存贴子</a><br>
+            <a id="export_thread" href="#thread_to_kindle" data-rel="popup" data-position-to="window" data-transition="pop">&#9872; 推送到kindle</a>
+</div>
+<br>
+ <a data-rel="close" data-role="button" data-icon="delete" data-inline="true">返回</a>
+</div>
 
     <div data-role="popup" id="jump_floor" class="popup_textarea">
         <input placeholder="楼层" type="text" id="dst_floor" name="dst_floor"> 

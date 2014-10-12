@@ -20,7 +20,7 @@ android 版本（基于phonegap打包）：[HJJ-phonegap](https://build.phonegap
 
 顶部按钮1：1）跳转到指定大院/门牌；2）版块列表；3）发帖
 
-顶部按钮2：1）子版块；2）暂未定义；3）搜索
+顶部按钮2：1）子版块；2）最近新贴；3）搜索
 
 ![board.png](board.png)
 

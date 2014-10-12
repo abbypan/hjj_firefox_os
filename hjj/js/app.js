@@ -489,6 +489,21 @@ function format_thread_info_bottom(info){
         info.time + '</div>';
 }
 
+function toggle_recent_thread() {
+    var status = $('#only_recent_thread').text();
+
+    $('.onethread').each(function() {
+        if(status=='no'){
+            if($(this).attr('recent')=='no') $(this).hide();
+        }else{
+            $(this).show();
+        }
+    }).promise().done(function(){
+        var new_status = status=='no' ? 'yes' : 'no';
+        $('#only_recent_thread').text(new_status);
+    });
+}
+
 function board_thread_info(tr) {
     var href_list = '';
     var i = 0;
@@ -509,9 +524,10 @@ function board_thread_info(tr) {
         hot : tr.children('td').eq(5).text()
     };
 
+    var recent_status = is_recent(info.time) ? 'yes' : 'no';
     var recent_img = is_recent(info.time) ? '<img class="smallgif" src="icons/new.gif" />' : '';
 
-    var s = '<div class="onethread">' + 
+    var s = '<div class="onethread" recent="' + recent_status + '">' + 
         '<span class="left_string">' + info.tag+ '</span>: ' + 
         '<a href="'+ info.url + '">' + info.title + '</a> '+ href_list + recent_img +
         '<br>' + 
@@ -522,7 +538,7 @@ function board_thread_info(tr) {
 
 
 function sub_board_action(){
-    $('#sub_board').popup('close');
+    //$('#sub_board').popup('close');
     var url =$("#sub_board").find("input[name='url']").attr("value"); 
 
     var id_list = [];
@@ -675,6 +691,7 @@ function extract_floor_info(info) {
         time: m[3]
     };
 }
+
 function filter_floor(is_to_filter,msg) {
     var i = 0;
     $('.floor').each(function() {
@@ -767,15 +784,15 @@ function format_floor_content(f) {
     var html = '<div class="floor" id="floor' + f.id + '" fid="'+ f.id +'">' +
         '<div class="flcontent" wordnum="' + f.wordnum + '">' + f.content + '</div>' +
         '<span class="chapter">№' + f.id + '<span class="star">☆</span><span class="floor_poster">' + f.poster + '</span><span class="star">☆</span>' + f.time + '<span class="star">☆</span></span>' +
+        '<a  class="reply_thread_floor" action="cite" href="#">&#8811;</a>' + 
+        '&nbsp;&nbsp;&nbsp;' +
+        '<a  class="reply_thread_floor" action="default" href="#">&gt;</a>' + 
+        '&nbsp;&nbsp;&nbsp;' +
         '&nbsp;' +
         '<a class="mark_floor" href="#">&#9875;</a>' + 
         '&nbsp;&nbsp;&nbsp;' +
         '<span class="temp_floor"></span>' + 
         '</div>';
-        //'<a  class="reply_thread_floor" action="cite" href="#">&raquo;</a>' + 
-        //'&nbsp;&nbsp;&nbsp;' +
-        //'<a  class="reply_thread_floor" action="default" href="#">&rsaquo;</a>' + 
-        //'&nbsp;&nbsp;&nbsp;' +
     return html;
 }
 
@@ -824,13 +841,14 @@ function showmsg_jump_page(dst_f){
         id : $('#thread_tid').text()
     };
     var u = '#showmsg?' + showmsg_para_string(x) + '&fid=' + dst_f;
-    window.location.href=u;
+    //window.location.href=u;
+    $.mobile.changePage( u );
 }
 
 function showmsg_jump_page_popup(){
     var dst_f = $('#dst_floor').val().toString();
     $('#dst_floor').val('');
-    $('#jump_floor').popup('close');
+    //$('#jump_floor').popup('close');
     if(dst_f) showmsg_jump_page(dst_f);
 }
 
@@ -1030,7 +1048,9 @@ function jump_to_next(f){
 }
 
 function showmsg_click() {
-    $('#showmsg').on('click', '#thread_cache', function(){ thread_cache() });
+    $('#showmsg').on('click', '#thread_cache', function(){ 
+        thread_cache();
+    });
 
     $('#showmsg').on('click', '#thread_mark_floor', function(){ 
         thread_mark_floor();
@@ -1046,6 +1066,14 @@ function showmsg_click() {
     $('#showmsg').on('click', '#thread_save', function(){ thread_save(); });
     $('#showmsg').on('click', '#share_thread', function(){ share_thread(); });
     $('#showmsg').on('click', '#only_poster', function(){ only_poster(); });
+
+    $('#showmsg_right_panel').delegate("a", "click", function ( e ) {
+        setTimeout(function(){  
+            $('#showmsg_right_panel').panel("close");
+        });
+    });
+
+
     $('#showmsg').on('click', '#min_wordnum_btn',function(){ 
         var min = $('#min_wordnum').val();
         min_wordnum(min);
@@ -1054,8 +1082,10 @@ function showmsg_click() {
         var min = $('#showmsg_dewater_wordnum').val();
         min_wordnum(min);
     });
-    $('#showmsg').on('click', '#floor_grep',function(){ floor_grep();});
-    $('#showmsg').on('click', '#floor_filter',function(){ floor_filter(); });
+    $('#showmsg').on('click', '#floor_grep',function(){ 
+        floor_grep();});
+    $('#showmsg').on('click', '#floor_filter',function(){ 
+        floor_filter(); });
     $('#showmsg').on('click', '#view_all_floor', function(){ view_all_floor();});
     $('#showmsg').on('click', '#reverse_floor', function(){ reverse_floor();});
     $('#showmsg').on('click', '.showmsg_jump_page_btn', function(){ showmsg_jump_page_popup();});
@@ -1064,23 +1094,28 @@ function showmsg_click() {
         reply_thread($(this).parent(), $(this).attr('action'));
     });
 
-    $('#showmsg').on('swiperight', '.floor', function(e){ 
+    $('#showmsg').on('swiperight',  '.floor', function(e){ 
+        e.preventDefault();
         reply_thread($(this), 'cite');
     });
 
     $('#showmsg').on('swipeleft', '.floor', function(e){ 
+        e.preventDefault();
         reply_thread($(this), 'reply');
     });
 
-    $('#showmsg').on('tap', '.floor', function(e){ 
+    $('#showmsg').on('tap', '#thread_floor_list', function(e){ 
+        e.preventDefault();
         var z = get_event_zone(e);
         showmsg_scroll_screen(z); 
         return false;
     });
     
     $('#showmsg').on("change", '#showmsg_floor_slider', function () {
-        var v = parseInt($(this).val()) - parseInt($(this).attr('min'));
-        jump_floor($('#floor0'), 'next', v);
+        var v = parseInt($(this).val()) - parseInt($(this).attr('min')) ;
+        var x = $('#showmsg').find('.floor').eq(v);
+        var pos = x ? x.offset().top : 0;
+        $.mobile.silentScroll(pos);
     });
 
     $('#showmsg').on('click', '.jump_to_bottom', function(){
@@ -1169,10 +1204,10 @@ function showmsg_tail(para, res){
     $('#thread_floor_list').find('.floor').each(function(){
         var id = parseInt($(this).attr('fid'));
         if(! min) min = id;
-        max = id;
+        max++;
     }).promise().done(function(){
         $('#showmsg_floor_slider').attr('min', min);
-        $('#showmsg_floor_slider').attr('max', max);
+        $('#showmsg_floor_slider').attr('max', max+min-1);
         $('#showmsg_floor_slider').val(min);
     });
 
@@ -1181,6 +1216,9 @@ function showmsg_tail(para, res){
     check_cache_thread();
 
     var local_url = "#showmsg?" + showmsg_para_string(para); 
+    $('#thread_refresh').attr('href', local_url + '&refresh=1');
+    $( '#showmsg_right_panel' ).panel( "refresh" );
+
     add_history({
         url : local_url, 
         title : thread_save_title(para, res), 
@@ -1224,7 +1262,7 @@ function showmsg_header(para){
 }
 
 function thread_to_kindle(){
-    $('#thread_to_kindle').popup('close');
+    //$('#thread_to_kindle').popup('close');
 
     $('#export_thread').html('kindle');
 
@@ -1258,14 +1296,14 @@ function showmsg_banner(para){
     $('#thread_tid').html(para.id);
     $('#thread_pid').html(para.page || 0);
 
-    $('#thread_refresh').attr('href', local_url + '&refresh=1');
 
     var tag_key = format_cache_key('thread_tag', para, ["board", "id"]);
     $('#thread_tag_popup').html( input_div_html(tag_key, '标签') + 
-                                '<input type="button" value="返回" id="thread_tag_close">'
+            '<input type="button" value="返回" id="thread_tag_close">'
                                );
                                tags_input_init(tag_key);
-                               $( "#thread_tag_close" ).on('click', function(){ $('#thread_tag_popup').popup( "close" ); });
+                               $( "#thread_tag_close" ).on('click', function(){ 
+                                   $('#thread_tag_popup').popup( "close" ); });
                                $('#thread_tag_list').text( DEFAULT[tag_key] );
 
                                $('#thread_to_kindle').find('input').eq(0).val(u);
@@ -1317,38 +1355,38 @@ function search_thread_info(tr) {
 function search(para){
 
     var s = 'search[' + para.board + '](' + para.topic + ')' + para.keyword;
-    add_history({
-        url : "#search?" + search_para_string(para), 
-        title : s, 
-        key : s
-    });
-
-    var u = HJJ+'/search.php?' + search_para_string(para); 
-
-    var search_cb = function(d){
-            var tm = d.match(/查询到的信息([\s\S]+?)<\/td>/);
-            var title_h = tm[1];
-            $('#search_info').html( title_h );
-
-            var h = $.parseHTML(d);
-            var pager = $(h).find('td[valign="bottom"]').eq(0);
-            if(pager){
-                var page_h = pager.html().replace(/\/search.php/g, "#search").replace(/\<a\=\"\"/g,'');
-                $('#search_pager_top').html( page_h );
-                $('#search_pager_bottom').html( page_h );
-            }
-
-            $('#search_thread_list').html('');
-            var ts = '';
-            $(h).find('tr[align="left"]').each(function() {
-                var bot = $(this);
-                var f_i = search_thread_info(bot);
-                ts+=f_i;
-            }).promise().done(function(){
-                $('#search_thread_list').html(ts);
+            add_history({
+                url : "#search?" + search_para_string(para), 
+                title : s, 
+                key : s
             });
-        };
-    get_hjj_url(u, search_cb);
+
+            var u = HJJ+'/search.php?' + search_para_string(para); 
+
+            var search_cb = function(d){
+                var tm = d.match(/查询到的信息([\s\S]+?)<\/td>/);
+                var title_h = tm[1];
+                $('#search_info').html( title_h );
+
+                var h = $.parseHTML(d);
+                var pager = $(h).find('td[valign="bottom"]').eq(0);
+                if(pager){
+                    var page_h = pager.html().replace(/\/search.php/g, "#search").replace(/\<a\=\"\"/g,'');
+                    $('#search_pager_top').html( page_h );
+                    $('#search_pager_bottom').html( page_h );
+                }
+
+                $('#search_thread_list').html('');
+                var ts = '';
+                $(h).find('tr[align="left"]').each(function() {
+                    var bot = $(this);
+                    var f_i = search_thread_info(bot);
+                    ts+=f_i;
+                }).promise().done(function(){
+                    $('#search_thread_list').html(ts);
+                });
+            };
+            get_hjj_url(u, search_cb);
 }
 
 function search_form(){
@@ -1394,17 +1432,17 @@ function slider_div_html(key, label, on_s, off_s){
 
 function suggest_html(){
     return '<div id="suggest_d" class="setting"> \
-    <a href="' + README_URL + 
-    '" data-role="button" target="_blank">使用说明</a> \
-    <a href="#" data-role="button" id="suggest">反馈意见</a> \
-    </div>';
+        <a href="' + README_URL + 
+        '" data-role="button" target="_blank">使用说明</a> \
+        <a href="#" data-role="button" id="suggest">反馈意见</a> \
+        </div>';
 }
 
 function input_div_html(key, label){
     return  '<div id="' + key + '_d" class="setting"> \
-    <label for="' + key + '">' + label + '</label> \
-    <input id="' + key + '" name="' + key + '" > \
-    </div>';
+        <label for="' + key + '">' + label + '</label> \
+        <input id="' + key + '" name="' + key + '" > \
+        </div>';
 }
 
 function slider_init(key, elem){
@@ -1417,11 +1455,11 @@ function slider_init(key, elem){
 
 function change_font_size_html(){
     return '<div id="font_size_d" class="setting"> \
-    字号： \
-    <a class="change_font_size" type="bigger">放大</a> \
-    &nbsp; \
-    <a class="change_font_size" type="smaller">缩小</a> \
-    </div>' ; 
+        字号： \
+        <a class="change_font_size" type="bigger">放大</a> \
+        &nbsp; \
+        <a class="change_font_size" type="smaller">缩小</a> \
+        </div>' ; 
 }
 
 function input_init(page,key){
@@ -1448,17 +1486,17 @@ function tags_input_init(key){
 }
 
 function night_color_css() {
-return '.ui-bar-f,.ui-body-f,.ui-page-theme-f, \
-.ui-btn,.ui-btn-b, \
-p,body,div,table,ul,li,input,textarea  { \
-    background-color: #333333 !important; \
-    color: #a0a0a0 !important; \
-} \
-a:link  { color: #93bcec !important; } \
-a:hover { \
-    color: #1f72d0 !important; \
-    background-color: #c0c0c0 !important; \
-}';
+    return '.ui-bar-f,.ui-body-f,.ui-page-theme-f, \
+        .ui-btn,.ui-btn-b, \
+        p,body,div,table,ul,li,input,textarea  { \
+            background-color: #333333 !important; \
+                color: #a0a0a0 !important; \
+        } \
+    a:link  { color: #93bcec !important; } \
+        a:hover { \
+            color: #1f72d0 !important; \
+                background-color: #c0c0c0 !important; \
+        }';
 }
 
 function night_color_init(){
@@ -1486,22 +1524,22 @@ function change_font_size_init() {
 
 function setting_init(){
     $('#setting_content').html(
-        '<div class="containing-element">' + 
-        slider_div_html('night_color', '', '黑夜', '白天') +
-        slider_div_html('loadimg', '', '看图', '不看图') + 
-        input_div_html('filter_thread_keyword', '贴子标题过滤')  +
-        change_font_size_html() +
-        '<br>' + 
-        suggest_html() +
-        '<br>' + 
-        slider_div_html('auto_jump_mark_floor', '贴子上次阅读的位置', '自动跳转', '不自动跳转') + 
-        slider_div_html('share_tz', '分享时是否 @hjjtz', '@', '不@') + 
-        input_div_html('showmsg_jump_height', '贴子页每次触屏单击翻页高度') + 
-        input_div_html('showmsg_jump_floor', '贴子页每次触屏双击跳转N楼') + 
-        input_div_html('showmsg_dewater_wordnum', '贴子页脱水的最小字数') + 
-        input_div_html('thread_to_kindle_dom', 'kindle推送站点域名') + 
-        '</div>'  
-    );
+            '<div class="containing-element">' + 
+            slider_div_html('night_color', '', '黑夜', '白天') +
+            slider_div_html('loadimg', '', '看图', '不看图') + 
+            input_div_html('filter_thread_keyword', '贴子标题过滤')  +
+            change_font_size_html() +
+            '<br>' + 
+            suggest_html() +
+            '<br>' + 
+            slider_div_html('auto_jump_mark_floor', '贴子上次阅读的位置', '自动跳转', '不自动跳转') + 
+            slider_div_html('share_tz', '分享时是否 @hjjtz', '@', '不@') + 
+            input_div_html('showmsg_jump_height', '贴子页每次触屏单击翻页高度') + 
+            input_div_html('showmsg_jump_floor', '贴子页每次触屏双击跳转N楼') + 
+            input_div_html('showmsg_dewater_wordnum', '贴子页脱水的最小字数') + 
+            input_div_html('thread_to_kindle_dom', 'kindle推送站点域名') + 
+            '</div>'  
+            );
 
     night_color_init();
     change_font_size_init();
@@ -1531,9 +1569,9 @@ function manual_jump_init(){
 
         if(! bid) return;
         var u = (tid && tid.match(/^\d+$/)) ? ("#showmsg?board=" + bid + '&id=' + tid)  : 
-            ("#board?board=" + bid + '&page=0');
+        ("#board?board=" + bid + '&page=0');
 
-        $.mobile.changePage(u);
+    $.mobile.changePage(u);
     });
 }
 
@@ -1542,53 +1580,55 @@ function manual_jump_init(){
 // {{ main
 function params_page(){
 
-    $.mobile.paramsHandler.addPage(
-        "board",                      
-        ["board", "page"],       
-        ["type", "subid"],                     
-        function (para) {
-            board(para);
-        }
-    );
+    $(document).bind("popupcreate", function (e) { 
+        var $widget = $(e.target);
+
+        $widget.delegate(".ui-btn", "click", function ( e ) {
+            setTimeout(function(){  
+                $widget.popup("close");
+            });
+        });
+    });
+
 
     $.mobile.paramsHandler.addPage(
-        "showmsg",                      
-        ["board", "id"],       
-        ["page", "boardpagemsg", "keyword", "refresh", "fid"],                     
-        function (para) {
-            showmsg(para);
-        }
-    );
+            "board",                      
+            ["board", "page"],       
+            ["type", "subid"],                     
+            function (para) {
+                board(para);
+            }
+            );
 
     $.mobile.paramsHandler.addPage(
-        "search",                      
-        ["board", "keyword"],       
-        ["topic", "page", "act"],                     
-        function (para) {
-            search(para);
-        }
-    );
+            "showmsg",                      
+            ["board", "id"],       
+            ["page", "boardpagemsg", "keyword", "refresh", "fid"],                     
+            function (para) {
+                showmsg(para);
+            }
+            );
+
+    $.mobile.paramsHandler.addPage(
+            "search",                      
+            ["board", "keyword"],       
+            ["topic", "page", "act"],                     
+            function (para) {
+                search(para);
+            }
+            );
 
     $.mobile.paramsHandler.init();
 }
 function main(){
     $.support.cors = true;  
-    jQuery.support.cors = true;  
-    $.mobile.allowCrossDomainPages = true;
-    $.mobile.phonegapNavigationEnabled = true;
-    $.mobile.ajaxEnabled = true;
-    $.mobile.buttonMarkup.hoverDelay = "false";
+    //jQuery.support.cors = true;  
 
-    $.mobile.defaultPageTransition = 'none';
-    $.mobile.buttonMarkup.hoverDelay = "false";
-
+    $("[data-role=panel]").enhanceWithin().panel();
     $('textarea').elastic(); 
-    //$(document).bind('swiperight', function () {
-        //window.history.back();
-    //});
-    //$(document).bind('swipeleft', function () {
-        //window.history.forward();
-    //});
+
+    //$(document).bind('swiperight', function () { window.history.back(); });
+    //$(document).bind('swipeleft', function () { window.history.forward(); });
 
     params_page();
 
@@ -1619,13 +1659,14 @@ function main(){
         var act = $(this).attr('action');
         sub_board_check_all(act); 
     });
+    $('#board').on('click', '#toggle_recent_thread', function() { toggle_recent_thread(); });
 
     //$('#board').on('swipeleft', function(e){ 
-        //$('#search_form_a').click();
+    //$('#search_form_a').click();
     //});
 
     //$('#board').on('swiperight', function(e){ 
-        //$('#new_thread_a').click();
+    //$('#new_thread_a').click();
     //});
 
     $('body').on('click', '.textarea_format', function(){
@@ -1633,11 +1674,13 @@ function main(){
         var f = area.val()
         .replace(/\b(http:\/\/.*?\.(jpg|gif|png|jpeg))\b/ig , "<img src='$1' />\n")
         .replace(/\b(http:\/\/[^\s'"]+)\s/ig , "<a href='$1'>$1</a>\n");
-        area.val(f);
+    area.val(f);
     });
 
     showmsg_click(); //贴子
+
     input_init('#showmsg', 'mail');
+
 }
 
 

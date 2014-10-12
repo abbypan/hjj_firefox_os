@@ -64,7 +64,7 @@ textarea {
 
 .left_string {
     display : inline-block;
-    width : 15%;
+    width : 14%;
 }
 
 .hot {
@@ -73,8 +73,12 @@ textarea {
     width : 18%;
 }
 
+.paneldiv {
+    width: 100% !important;
+    border: 0.1em solid rgb(153, 204, 0); 
+}
 .panel {
-    width: 65% ;
+    width: 60% !important;
     overflow: auto !important; 
 }
 
@@ -119,3 +123,11 @@ input,select {
 /*-webkit-transform: translate3d(0,0,0);*/
 /*transform: translate3d(0, 0, 0);*/
 /*}*/
+
+.ui-panel-3dtransforms {
+    position: fixed;
+}
+
+.ui-page-active.ui-panel-page-block{
+    /*overflow-x:hidden;*/
+}
