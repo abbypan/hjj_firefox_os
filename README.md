@@ -64,7 +64,7 @@ android 版本（基于phonegap打包）：[HJJ-phonegap](https://build.phonegap
 
 ## 绑定腾讯微博，贴图
 
-浏览器打开 http://test.open.t.qq.com，选择授权方式为``oauth2.0``
+浏览器打开 http://test.open.t.qq.com ，选择授权方式为``oauth2.0``
 
 ![qq_oauth2_1.png](qq_oauth2_1.png)
 
