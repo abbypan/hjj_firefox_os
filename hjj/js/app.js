@@ -1,18 +1,20 @@
+// {{ config
 var HJJ='http://bbs.jjwxc.net';
-var RECENT_HOT_THREAD_SEC = 1000*60*60*24*3; //最近x天热贴
-var THREAD_CACHE_MINUTE = 60*24*7; //默认缓存帖子x天
-var THREAD_MARK_MINUTE =  60*24*7;  //记住上回看到哪一楼x天
-var BOARD_MENU_MINUTE = 60*24*7; //版块列表缓存x天
-var MAX_HISTORY_CNT = 300; //历史记录最多x条
-var HISTORY_CNT = lscache.get('history_cnt') || -1;
-var FILTER_THREAD_KEYWORD_LIST;
-var INIT = 0;
 var SHARE_WEIBO = '@hjjtz';
 var SHARE_WEIBO_URL = 'http://v.t.sina.com.cn/share/share.php';
 var README_URL='https://github.com/abbypan/hjj_firefox_os/blob/master/README.md';
-
-//var IMGUR_CLIENT_ID = lscache.get('imgur_client_id') || '4c649ea4735c42a';
+var MOBILE_INIT = 0;
+var FILTER_THREAD_KEYWORD_LIST;
 var DEFAULT = {
+    qq_openid : "", 
+    qq_access_token : "", 
+    qq_appkey : "", 
+    history_cnt : -1, 
+    max_history_cnt : 300, //历史记录最多x条 
+    board_menu_minute : 60*24*7, //版块列表缓存x天
+    thread_cache_minute : 60*24*7, //默认缓存帖子x天
+    thread_mark_minute : 60*24*7, //记住上回看到哪一楼x天
+    recent_hot_thread_second : 1000*60*60*24*3, //最近x天热贴
     username : '==',
     filter_thread_keyword : '',
     loadimg : 'on',
@@ -29,6 +31,7 @@ for(var k in DEFAULT){
     var v = lscache.get(k);
     if(v) DEFAULT[k] = v;
 }
+// }} 
 // {{ base
 function is_key_match_list(k, list){
     for(var i in list){
@@ -41,7 +44,7 @@ function is_key_match_list(k, list){
 function is_recent(dt){
     var t = dt.replace(/-/g,'/');
     var diff = new Date() - new Date(t);
-    return diff<RECENT_HOT_THREAD_SEC ? 1 : 0;
+    return diff < DEFAULT["recent_hot_thread_second"] ? 1 : 0;
 }
 
 function get_rem_key(x){
@@ -67,7 +70,6 @@ function readFile(f)
 
         reader.readAsText(file);
 }
-
 
 function merge_hash(para, other){
     other = other || {};
@@ -114,44 +116,65 @@ function format_cache_key(head, data, keylist){
 }
 
 //}}
-// {{ imgur
-//function upload_imgur (file) {
-//xhttp = new XMLHttpRequest(),
-//fd = new FormData();
-//fd.append('image', file);
-//xhttp.open('POST', 'https://api.imgur.com/3/image');
-//xhttp.setRequestHeader('Authorization', 'Client-ID '+ IMGUR_CLIENT_ID); 
-//xhttp.onreadystatechange = function () {
-//if (xhttp.status === 200 && xhttp.readyState === 4) {
-//var res = JSON.parse(xhttp.responseText), link, p, t;
-//link = res.data.link;
-//$('.upload_pic_status').html(link);
-//}
-//};
-//xhttp.send(fd);
-//}
+// {{ img
+function upload_img_form(file, msg){
+    var fd = new FormData();
+    fd.append("openid",DEFAULT["qq_openid"]);
+    fd.append("access_token",DEFAULT["qq_access_token"]);
+    fd.append("oauth_consumer_key",DEFAULT["qq_appkey"]);
 
-//function upload_init(){
-//var fileinput = document.querySelector('.upload_pic_btn'),
-//self = this;
-//fileinput.addEventListener('change', function (e) {
-//var files = e.target.files, file, p, t, i, len;
-//for (i = 0, len = files.length; i < len; i += 1) {
-//file = files[i];
-//if (file.type.match(/image.*/)) {
-//$('.upload_pic_status').html('upload...');
-//upload_imgur(file);
-//} else {
-//$('.upload_pic_status').html('err...');
-//}
-//}
-//}, false);
-//}
+    fd.append("appfrom","php-sdk2.0beta");
+    fd.append("oauth_version","2.a");
+    fd.append("scope","all");
+    fd.append("format","json");
+    fd.append('content', msg);
+    fd.append('pic', file);
+    return fd;
+}
+
+function upload_img(file, place) {
+    var msg = $('#remote_url_short').html();
+    $('.upload_img_status').html('uploading...' + msg);
+    var fd = upload_img_form(file,msg);
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", "https://open.t.qq.com/api/t/add_pic", true);
+    xhr.withCredentials = true;
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState == 4) {
+            $('.upload_img_status').html(xhr.responseText);
+            var d = $.parseJSON(xhr.responseText);
+            var img = d.img_url + '/2000';
+            $(place).find('textarea').append("\n<img src='" + img + "' />\n");
+            $('.upload_img_status').html(img);
+        } else {
+            $('.upload_img_status').html("Error " + xhr.status + ',' + msg);
+        }
+    };
+
+    xhr.send(fd);
+}
+
+function upload_img_init(){
+    //self = this;
+    $(document).on('change', '.upload_img_btn', function (e) {
+        var place = $(this).attr('place');
+        var files = e.target.files, file, p, t, i, len;
+        for (i = 0, len = files.length; i < len; i += 1) {
+            file = files[i];
+            $('.upload_img_status').html(file.name);
+            if (file.name.match(/(png|jpg|jpeg|gif)$/i)) {
+                upload_img(file, place);
+            } else {
+                $('.upload_img_status').html('err...');
+            }
+        }
+    });
+}
 
 // }}
 // {{{ home
 function get_hjj_url(u, succ_cb){
-     var xhr = (XMLHttpRequest.noConflict ? new XMLHttpRequest.noConflict() : new XMLHttpRequest({mozSystem: true}));
+    var xhr = (XMLHttpRequest.noConflict ? new XMLHttpRequest.noConflict() : new XMLHttpRequest({mozSystem: true}));
 
     xhr.open("GET", u , true);
 
@@ -186,11 +209,11 @@ function parse_home(data){
     $('#home_cz').html( $(h).find('.cont05').eq(0).html());
 
     var body_h = $('#home_content').html()
-        .replace(/http:\/\/bbs.jjwxc.net\/showmsg.php/g, '#showmsg')
-        .replace(/target="_blank"/g,'')
-        .replace(/<\/?ul>/g, '')
-        .replace(/<\/li>/g, '<br />')
-        .replace(/<li>/g, '');
+    .replace(/http:\/\/bbs.jjwxc.net\/showmsg.php/g, '#showmsg')
+    .replace(/target="_blank"/g,'')
+    .replace(/<\/?ul>/g, '')
+    .replace(/<\/li>/g, '<br />')
+    .replace(/<li>/g, '');
     $('#home_content').html(body_h);
     lscache.set('home', body_h);
 }
@@ -218,15 +241,15 @@ function board_menu_zone(zone_li) {
 
         var m = d.match(/<center>[^<]+(<a href="board.php\?board=\d+&page=\d+">[^<]+<\/a>)[^<]+<\/center>/g);
         $.each(m, function(i, v)
-                {
-                    var vm = v.replace(/center>/g, 'li>')
-            .replace(/board.php/, '#board')
-            ;
-        s+=vm;
-                });
-        s+="</ul>";
-        $('#board_menu').find('div[zid='+id+']').html(s);
-        lscache.set('board_menu', $('#board_menu_content').html(), BOARD_MENU_MINUTE);
+               {
+                   var vm = v.replace(/center>/g, 'li>')
+                   .replace(/board.php/, '#board')
+                   ;
+                   s+=vm;
+               });
+               s+="</ul>";
+               $('#board_menu').find('div[zid='+id+']').html(s);
+               lscache.set('board_menu', $('#board_menu_content').html(), DEFAULT["board_menu_minute"]);
     };
 
     var u = HJJ +"/index"+id+".htm";
@@ -328,13 +351,13 @@ function board_save(){
 }
 
 function sub_board_check_all(act){
-        $("#sub_board").find('input[type="checkbox"]').each(function(){     
-            if(act=="none"){
-                $(this).prop("checked",false); 
-            }else{
-                $(this).prop("checked",true);
-            }
-        });     
+    $("#sub_board").find('input[type="checkbox"]').each(function(){     
+        if(act=="none"){
+            $(this).prop("checked",false); 
+        }else{
+            $(this).prop("checked",true);
+        }
+    });     
 }
 // }}
 // {{ fav_thread
@@ -407,13 +430,13 @@ function thread_save(){
 // }}
 // {{ recent_history
 function add_history(x){
-    HISTORY_CNT= ( HISTORY_CNT + 1 ) % MAX_HISTORY_CNT;
+    DEFAULT["history_cnt"]= ( DEFAULT["history_cnt"] + 1 ) % DEFAULT["max_history_cnt"];
 
     var d = new Date();
     x["time"] = d.getTime();
 
-    lscache.set('history,' + HISTORY_CNT, x);
-    lscache.set('history_cnt', HISTORY_CNT);
+    lscache.set('history,' + DEFAULT["history_cnt"], x);
+    lscache.set('history_cnt', DEFAULT["history_cnt"]);
 }
 
 function format_url_title(update){
@@ -460,7 +483,7 @@ function format_cache_list(para) {
 function recent_history() {
     var s = format_cache_list( {
         "key" : 'history', 
-        "max_length" : MAX_HISTORY_CNT
+        "max_length" : DEFAULT["max_history_cnt"]
     });
     $('#recent_history').find('#recent_history_ul').html(s);
     $('#recent_history').find('#recent_history_ul').trigger('create');
@@ -482,7 +505,7 @@ function is_filter_thread(title) {
 }
 
 function format_thread_info_bottom(info){
-        return info.poster + '<br>' + 
+    return info.poster + '<br>' + 
         '<div style="font-size: small">'+
         '热:<span class="hot">' + info.hot + '</span>;' + 
         '回:<span class="reply">' + info.reply + '</span>;' + 
@@ -582,6 +605,7 @@ function board_title(para, h){
     var t = $(h).find('font[color="red"]').eq(0).text().trim();
     $('#board_title').html(t);
     $('#board_id').html(para.board);
+    $('#remote_url_title').html(t);
     check_fav_board();
 }
 
@@ -598,15 +622,14 @@ function new_thread(para){
         <select id="new_thread_subid" name="subid"> \
         </select> \
         <input type="text" name="subject" placeholder="主题"> \
-        <a href="#" class="textarea_format">自动贴图/链接</a> \
+        <input type="file" place="#new_thread" class="upload_img_btn" data-role="none" > \
         <textarea rows=12 placeholder="内容" name="body" ></textarea> \
+        <a href="#" class="format_url_code">图片/网址 代码转换</a> \
         <input type="submit" value="发贴"> \
         </form> \
+        <div class="upload_img_status">...</div> \
         ');
 
-        //<input type="file" class="upload_pic_btn" value="上传"> \
-        //<div class="upload_pic_status">...</div> \
-        //upload_init();
         input_init('#new_thread', 'username');
 
         $('#new_thread').find('form').attr("action", u);
@@ -643,32 +666,34 @@ function board(para) {
     $('#manual_jump').find('input').eq(0).val(para.board);
 
     var u = HJJ + "/board.php?" + board_para_string(para);
+    $('#remote_url').html(u);
+    $('#remote_url_short').html(['HJJ', para.board ].join(","));
 
     var thread_info = '';
 
     var board_cb = function(d){
-            var h = jQuery.parseHTML(d);
-            $(h).find('tr[valign="middle"][bgcolor="#FFE7F7"]')
-            .each(function(){
-                var ti = board_thread_info($(this));
-                if(ti) thread_info += ti;
-            });
+        var h = jQuery.parseHTML(d);
+        $(h).find('tr[valign="middle"][bgcolor="#FFE7F7"]')
+        .each(function(){
+            var ti = board_thread_info($(this));
+            if(ti) thread_info += ti;
+        });
 
-            $('#thread_list').html(thread_info);
-            $('#new_thread').find('textarea').val('');
+        $('#thread_list').html(thread_info);
+        $('#new_thread').find('textarea').val('');
 
-            board_title(para, h);
+        board_title(para, h);
 
-            add_history({
-                url : "#board?" + board_para_string(para), 
-                title : board_save_title(), 
-                key : 'board,' + para.board
-            });
+        add_history({
+            url : "#board?" + board_para_string(para), 
+            title : board_save_title(), 
+            key : 'board,' + para.board
+        });
 
-            board_pager(d);
-            sub_board(para, d);
-        };
-        get_hjj_url(u, board_cb);
+        board_pager(d);
+        sub_board(para, d);
+    };
+    get_hjj_url(u, board_cb);
 }
 
 // -- }}
@@ -862,32 +887,32 @@ function showmsg_cache(para) {
     var u = HJJ+'/showmsg.php?' + showmsg_para_string(para); 
 
     var showmsg_cb = function(d){
-            var res = extract_showmsg_content(d);
+        var res = extract_showmsg_content(d);
 
-            var local_url = "#showmsg?" + showmsg_para_string(para); 
-            lscache.set(local_url, res);
+        var local_url = "#showmsg?" + showmsg_para_string(para); 
+        lscache.set(local_url, res);
 
-            $('#thread_action_temp').html('已缓存'+para.page);
+        $('#thread_action_temp').html('已缓存'+para.page);
 
-            para.page  = para.page + 1;
-            if(para.page<para.page_num) {
-                showmsg_cache(para);
-            }else{
-                var k = format_cache_key('thread_cache', para, ["board", "id"]);
-                para.page = 0;
-                local_url = "#showmsg?" + showmsg_para_string(para); 
+        para.page  = para.page + 1;
+        if(para.page<para.page_num) {
+            showmsg_cache(para);
+        }else{
+            var k = format_cache_key('thread_cache', para, ["board", "id"]);
+            para.page = 0;
+            local_url = "#showmsg?" + showmsg_para_string(para); 
 
-                toggle_action(k, '#thread_cache', 'thread_cache', {
-                    title : thread_save_title(para, res),
-                    url : local_url,
-                    board : para.board,
-                    id : para.id
-                });
+            toggle_action(k, '#thread_cache', 'thread_cache', {
+                title : thread_save_title(para, res),
+                url : local_url,
+                board : para.board,
+                id : para.id
+            });
 
-                toggle_action_html(k, '#thread_cache', '&#9831; 缓存贴子', '&#9827; 已缓存贴子');
-                fav_thread();
-            }
-        };
+            toggle_action_html(k, '#thread_cache', '&#9831; 缓存贴子', '&#9827; 已缓存贴子');
+            fav_thread();
+        }
+    };
     get_hjj_url(u, showmsg_cb);
 }
 
@@ -933,7 +958,7 @@ function mark_floor(x) {
     var info = get_showmsg_info();
     var k = format_cache_key('thread_mark_floor', 
                              info, ["board", "id"]);
-                             lscache.set(k, fid, THREAD_MARK_MINUTE);
+                             lscache.set(k, fid, DEFAULT["thread_mark_minute"]);
 }
 
 function get_current_position(e){
@@ -966,7 +991,7 @@ function get_screen_top_floor(e) {
     var sh = screen.height;
     var ee = get_current_position(e);
     var eh = ee.pageY;
-        
+
     var i = 0;
     $('#showmsg').find('div[class="floor"]').each(function(){
         var h =$(this).offset().top; 
@@ -984,8 +1009,8 @@ function reply_thread(f, reply_type){
     var c = f.find('.chapter').text().replace(/\n/g, ' ');
     if(reply_type=="cite") 
         c = "" + 
-            f.children('.flcontent').text().replace(/(\s*\n)+/g, "\n").trim().substr(0, 100) + 
-            "......\n\n" + c ;
+        f.children('.flcontent').text().replace(/(\s*\n)+/g, "\n").trim().substr(0, 100) + 
+    "......\n\n" + c ;
     $('#reply_thread').find('textarea').val(c.trim()+"\n");
 
     $('#reply_thread_a').click();
@@ -1084,62 +1109,62 @@ function showmsg_click() {
     });
     $('#showmsg').on('click', '#floor_grep',function(){ 
         floor_grep();});
-    $('#showmsg').on('click', '#floor_filter',function(){ 
-        floor_filter(); });
-    $('#showmsg').on('click', '#view_all_floor', function(){ view_all_floor();});
-    $('#showmsg').on('click', '#reverse_floor', function(){ reverse_floor();});
-    $('#showmsg').on('click', '.showmsg_jump_page_btn', function(){ showmsg_jump_page_popup();});
-    
-    $('#showmsg').on('click', '.reply_thread_floor', function(){
-        reply_thread($(this).parent(), $(this).attr('action'));
-    });
+        $('#showmsg').on('click', '#floor_filter',function(){ 
+            floor_filter(); });
+            $('#showmsg').on('click', '#view_all_floor', function(){ view_all_floor();});
+            $('#showmsg').on('click', '#reverse_floor', function(){ reverse_floor();});
+            $('#showmsg').on('click', '.showmsg_jump_page_btn', function(){ showmsg_jump_page_popup();});
 
-    $('#showmsg').on('swiperight',  '.floor', function(e){ 
-        e.preventDefault();
-        reply_thread($(this), 'cite');
-    });
+            $('#showmsg').on('click', '.reply_thread_floor', function(){
+                reply_thread($(this).parent(), $(this).attr('action'));
+            });
 
-    $('#showmsg').on('swipeleft', '.floor', function(e){ 
-        e.preventDefault();
-        reply_thread($(this), 'reply');
-    });
+            $('#showmsg').on('swiperight',  '.floor', function(e){ 
+                e.preventDefault();
+                reply_thread($(this), 'cite');
+            });
 
-    $('#showmsg').on('tap', '#thread_floor_list', function(e){ 
-        e.preventDefault();
-        var z = get_event_zone(e);
-        showmsg_scroll_screen(z); 
-        return false;
-    });
-    
-    $('#showmsg').on("change", '#showmsg_floor_slider', function () {
-        var all = parseInt($(this).attr('max')) - parseInt($(this).attr('min')) + 1;
-        var show = $('#showmsg').find('.floor:visible').length;
+            $('#showmsg').on('swipeleft', '.floor', function(e){ 
+                e.preventDefault();
+                reply_thread($(this), 'reply');
+            });
 
-        var v = parseInt($(this).val()) - parseInt($(this).attr('min')) ;
-        v = parseInt(v*show/all);
+            $('#showmsg').on('tap', '#thread_floor_list', function(e){ 
+                e.preventDefault();
+                var z = get_event_zone(e);
+                showmsg_scroll_screen(z); 
+                return false;
+            });
 
-        var x = $('#showmsg').find('.floor:visible').eq(v);
-        var pos = x ? x.offset().top : 0;
-        $.mobile.silentScroll(pos);
-    });
+            $('#showmsg').on("change", '#showmsg_floor_slider', function () {
+                var all = parseInt($(this).attr('max')) - parseInt($(this).attr('min')) + 1;
+                var show = $('#showmsg').find('.floor:visible').length;
 
-    $('#showmsg').on('click', '.jump_to_bottom', function(){
-        $('#showmsg_floor_slider').val($('#showmsg_floor_slider').attr('max'));
-        $(document).scrollTop($(document).height());
-    });
-    $('#showmsg').on('click', '.jump_to_top', function(){
-        $('#showmsg_floor_slider').val(0);
-        $.mobile.silentScroll(0);
-    });
+                var v = parseInt($(this).val()) - parseInt($(this).attr('min')) ;
+                v = parseInt(v*show/all);
 
-    $('#showmsg').on('click', '.jump_to_prev', function(e){
-        jump_to_prev(get_current_floor(e), -screen.height*2);
-    });
-    $('#showmsg').on('click', '.jump_to_next', function(e){
-        jump_to_next(get_current_floor(e), -screen.height*2);
-    });
+                var x = $('#showmsg').find('.floor:visible').eq(v);
+                var pos = x ? x.offset().top : 0;
+                $.mobile.silentScroll(pos);
+            });
 
-    $('#showmsg').on('click', '#thread_to_kindle_btn', function(){ thread_to_kindle();});
+            $('#showmsg').on('click', '.jump_to_bottom', function(){
+                $('#showmsg_floor_slider').val($('#showmsg_floor_slider').attr('max'));
+                $(document).scrollTop($(document).height());
+            });
+            $('#showmsg').on('click', '.jump_to_top', function(){
+                $('#showmsg_floor_slider').val(0);
+                $.mobile.silentScroll(0);
+            });
+
+            $('#showmsg').on('click', '.jump_to_prev', function(e){
+                jump_to_prev(get_current_floor(e), -screen.height*2);
+            });
+            $('#showmsg').on('click', '.jump_to_next', function(e){
+                jump_to_next(get_current_floor(e), -screen.height*2);
+            });
+
+            $('#showmsg').on('click', '#thread_to_kindle_btn', function(){ thread_to_kindle();});
 }
 
 function extract_showmsg_content(d){
@@ -1180,16 +1205,17 @@ function showmsg_refresh(para) {
     if(para.refresh) $('#thread_action_temp').html('刷新');
 
     var showmsg_f5_cb = function(d){
-            var res = extract_showmsg_content(d);
-            showmsg_tail(para, res);
+        var res = extract_showmsg_content(d);
+        showmsg_tail(para, res);
 
-            var local_url = "#showmsg?" + showmsg_para_string(para); 
-            lscache.set(local_url, res, THREAD_CACHE_MINUTE);
+        var local_url = "#showmsg?" + showmsg_para_string(para); 
+        lscache.set(local_url, res, DEFAULT["thread_cache_minute"]);
     }
     get_hjj_url(u, showmsg_f5_cb);
 }
 
 function showmsg_tail(para, res){
+    $('#remote_url_title').html(res["title"]);
     $('#thread_title').html( res["title"] );
     $('#thread_pager_top').html( res["pager"] );
     $('#thread_pager_bottom').html( res["pager"]);
@@ -1224,12 +1250,13 @@ function showmsg_tail(para, res){
     $('#thread_refresh').attr('href', local_url + '&refresh=1');
     $( '#showmsg_right_panel' ).panel( "refresh" );
 
+
     add_history({
         url : local_url, 
         title : thread_save_title(para, res), 
         key : 'showmsg,' + para.board + ',' + para.id
     });
-    
+
     $("#thread_floor_list").niceScroll();
     $("#thread_floor_list").getNiceScroll().resize();
 
@@ -1243,32 +1270,28 @@ function showmsg_tail(para, res){
 }
 
 function showmsg_header(para){
+    $('#remote_url_short').html([ 'HJJ', para.board, para.id ].join(","));
     $('#reply_thread').html(
-        '<form enctype="multipart/form-data" method="post" action="reply.php?board=&id=" data-ajax="false" target="_newtab"> \
+        '<form enctype="multipart/form-data" method="post" action="reply.php?board=&id=" \
+        data-ajax="false" target="_newtab"> \
         <input placeholder="名字" type="text" name="username" >\
-        <a href="#" class="textarea_format">自动贴图/链接</a> \
-        <textarea rows=12 placeholder="内容" name="body"></textarea> <br> \
+        <input type="file" place="#reply_thread" class="upload_img_btn" data-role="none" > \
+        <textarea rows=12 placeholder="内容" name="body"></textarea> \
+        <a href="#" class="format_url_code">图片/网址 代码转换</a> \
         <input type="submit" value="回贴"> \
         </form> \
+        <div class="upload_img_status">...</div> \
         ');
 
-        //<input type="file" class="upload_pic_btn" value="上传"> \
-        //<div class="upload_pic_status">...</div> \
-        //upload_init();
+    input_init('#reply_thread', 'username');
+    $('#reply_thread').find('form').attr('action', HJJ + "/reply.php?board="+ para.board + '&id=' + para.id);
+    $('#thread_to_board').attr('href', "#board?board=" + para.board + '&page=1');
+    $('#manual_jump').find('input').eq(0).val(para.board);
 
-        input_init('#reply_thread', 'username');
-
-        $('#reply_thread').find('form').attr('action', HJJ + "/reply.php?board="+ para.board + '&id=' + para.id);
-
-        $('#thread_to_board').attr('href', "#board?board=" + para.board + '&page=1');
-
-        $('#manual_jump').find('input').eq(0).val(para.board);
-
+    $('#remote_url').html(HJJ + "/showmsg.php?" + showmsg_para_string(para)); 
 }
 
 function thread_to_kindle(){
-    //$('#thread_to_kindle').popup('close');
-
     $('#export_thread').html('kindle');
 
     var formData = new FormData();
@@ -1281,7 +1304,7 @@ function thread_to_kindle(){
 
     var u = 'http://' + DEFAULT["thread_to_kindle_dom"] + '/novel_robot';
 
- var xhr = (XMLHttpRequest.noConflict ? new XMLHttpRequest.noConflict() : new XMLHttpRequest({mozSystem: true}));
+    var xhr = (XMLHttpRequest.noConflict ? new XMLHttpRequest.noConflict() : new XMLHttpRequest({mozSystem: true}));
     xhr.open("POST", u);
     xhr.onreadystatechange = function() {
         if (xhr.readyState == 4) {
@@ -1305,14 +1328,14 @@ function showmsg_banner(para){
     var tag_key = format_cache_key('thread_tag', para, ["board", "id"]);
     $('#thread_tag_popup').html( input_div_html(tag_key, '标签') + 
             '<input type="button" value="返回" id="thread_tag_close">'
-                               );
-                               tags_input_init(tag_key);
-                               $( "#thread_tag_close" ).on('click', function(){ 
-                                   $('#thread_tag_popup').popup( "close" ); });
-                               $('#thread_tag_list').text( DEFAULT[tag_key] );
+            );
+    tags_input_init(tag_key);
+    $( "#thread_tag_close" ).on('click', function(){ 
+        $('#thread_tag_popup').popup( "close" ); });
+    $('#thread_tag_list').text( DEFAULT[tag_key] );
 
-                               $('#thread_to_kindle').find('input').eq(0).val(u);
-                               $('#kindle_mail').attr('maxlength', "30");
+    $('#thread_to_kindle').find('input').eq(0).val(u);
+    $('#kindle_mail').attr('maxlength', "30");
 }
 
 
@@ -1443,6 +1466,19 @@ function suggest_html(){
         </div>';
 }
 
+function input_list_html(key, input_list){
+    var s = [];
+    for(var i in input_list){
+        var x = input_list[i];
+        s.push('<label>'+ i + '</label>' + 
+                '<input id="' + x + '" name="' + x + 
+                '" placeholder="' + x + '">');
+    }
+    return '<div id="' + key + '" class="setting">' + 
+        '<label><b>' + key + '</b></label>' + 
+        s.join("\n") + '</div>';
+}
+
 function input_div_html(key, label){
     return  '<div id="' + key + '_d" class="setting"> \
         <label for="' + key + '">' + label + '</label> \
@@ -1543,25 +1579,33 @@ function setting_init(){
             input_div_html('showmsg_jump_floor', '贴子页每次触屏双击跳转N楼') + 
             input_div_html('showmsg_dewater_wordnum', '贴子页脱水的最小字数') + 
             input_div_html('thread_to_kindle_dom', 'kindle推送站点域名') + 
+            input_list_html('图片上传（腾讯微博oauth2授权）', {
+                openid : 'qq_openid', 
+            access_token : 'qq_access_token', 
+            appkey : 'qq_appkey' 
+            }) +
             '</div>'  
-            );
+                );
 
-    night_color_init();
-    change_font_size_init();
-    slider_init('loadimg','#loadimg');
-    slider_init('auto_jump_mark_floor', '#auto_jump_mark_floor');
-    input_init('#setting', 'showmsg_jump_floor');
-    input_init('#setting', 'showmsg_jump_height');
-    input_init('#setting', 'showmsg_dewater_wordnum');
-    input_init('#setting', 'thread_to_kindle_dom');
-    slider_init('share_tz','#share_tz');
-    tags_input_init('filter_thread_keyword');
+            night_color_init();
+            change_font_size_init();
+            slider_init('loadimg','#loadimg');
+            slider_init('auto_jump_mark_floor', '#auto_jump_mark_floor');
+            input_init('#setting', 'showmsg_jump_floor');
+            input_init('#setting', 'showmsg_jump_height');
+            input_init('#setting', 'showmsg_dewater_wordnum');
+            input_init('#setting', 'thread_to_kindle_dom');
+            slider_init('share_tz','#share_tz');
+            tags_input_init('filter_thread_keyword');
+            input_init('#setting', 'qq_appkey');
+            input_init('#setting', 'qq_access_token');
+            input_init('#setting', 'qq_openid');
 
-    $('#setting').on('click', '#suggest', function(){
-        var st = encodeURIComponent(SHARE_WEIBO + ' ');
-        var wu = SHARE_WEIBO_URL + '?title=' + st;
-        window.open(wu, '_blank');
-    });
+            $('#setting').on('click', '#suggest', function(){
+                var st = encodeURIComponent(SHARE_WEIBO + ' ');
+                var wu = SHARE_WEIBO_URL + '?title=' + st;
+                window.open(wu, '_blank');
+            });
 }
 // }}
 // {{ manual_jump
@@ -1636,6 +1680,7 @@ function main(){
     //$(document).bind('swipeleft', function () { window.history.forward(); });
 
     params_page();
+    upload_img_init();
 
     home(); //首页
     board_menu(); //版块列表
@@ -1674,11 +1719,11 @@ function main(){
     //$('#new_thread_a').click();
     //});
 
-    $('body').on('click', '.textarea_format', function(){
+    $('body').on('click', '.format_url_code', function(){
         var area = $(this).parent().find('textarea').eq(0);
         var f = area.val()
-        .replace(/\b(http:\/\/.*?\.(jpg|gif|png|jpeg))\b/ig , "<img src='$1' />\n")
-        .replace(/\b(http:\/\/[^\s'"]+)\s/ig , "<a href='$1'>$1</a>\n");
+        .replace(/\s(http:\/\/.*?\.(jpg|gif|png|jpeg))\s/ig , "<img src='$1' />\n")
+        .replace(/\s(http:\/\/[^\s'"]+)\s/ig , "<a href='$1'>$1</a>\n");
     area.val(f);
     });
 
@@ -1690,9 +1735,9 @@ function main(){
 
 
 $(document).bind('pageinit',function(e){
-    if(INIT>0) return;
+    if(MOBILE_INIT>0) return;
     main(); 
-    INIT=1;
+    MOBILE_INIT=1;
 });
 // }}
 

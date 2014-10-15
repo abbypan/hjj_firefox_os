@@ -69,13 +69,11 @@
 
 <div id="board" data-role="page">
     <div style="display:none">
-        <a href="#search_form" id="search_form_a"
-            data-rel="popup" data-position-to="window">&#1060;</a>
-        <a href="#new_thread" id="new_thread_a"
-            data-rel="popup" data-position-to="window">+</a>
-        <a href="#showmsg_floor_popup" id="showmsg_floor_popup_a"
-            data-rel="popup" data-position-to="window">+</a>
+        <a href="#search_form" id="search_form_a" data-rel="popup" data-position-to="window">&#1060;</a>
+        <a href="#new_thread" id="new_thread_a" data-rel="popup" data-position-to="window">+</a>
+        <a href="#showmsg_floor_popup" id="showmsg_floor_popup_a" data-rel="popup" data-position-to="window">+</a>
         <span id="only_recent_thread">no</span>
+        <a href="#" id="sub_board_url"></a>
     </div>
     
     <div data-role="header" data-position="fixed">
@@ -88,7 +86,7 @@
 
             <ul>
                 <li><a href="#sub_board" data-rel="popup">&yen;</a></li>
-                <li><a href="#" id="toggle_recent_thread">&#413;</a></li>
+                <li><a href="#" id="toggle_recent_thread">&#154;</a></li>
                 <li><a href="#search_form" data-rel="popup">&#8709;</a></li>
             </ul>
         </div>
@@ -127,7 +125,6 @@
         <div id="thread_type">
         </div>
 
-        <a style="display:none" href="#" id="sub_board_url"></a>
 
             <input type="button" data-role="none" value="全选" action="all" class="sub_board_check_all">
             <input type="button" data-role="none" value="反选" action="none" class="sub_board_check_all">
@@ -143,7 +140,7 @@
     <div data-role="popup" id="search_form" data-position-to="window">
         <input type="text" name="keyword" value=""> 
         <div data-role="fieldcontain"> 
-        <select name="topic" id="search_type"> 
+        <select data-role="none" name="topic" id="search_type"> 
         <option value="3">贴子主题</option> 
         <option value="1">主题贴内容</option> 
         <option value="4">主题贴发贴人</option> 
@@ -160,7 +157,6 @@
     <div style="display:none">
         <a id="jump_floor_btn" href="#jump_floor" data-rel="popup" data-position-to="window" data-transition="pop">&#9735;</a>
     </div>
-
 
     <div data-role="header" data-position="fixed" data-tap-toggle="false">
         <div data-role="navbar">  
@@ -221,7 +217,6 @@
     </div>
     
     <div data-role="panel" id="showmsg_right_panel" data-display="overlay" data-position="right" class="panel">
-    <!--<div data-role="popup" id="showmsg_right_panel">-->
         <div class="paneldiv">
             <input data-role="none" type="text" name="wordnum" placeholder="字数" id="min_wordnum" class="mid_input"> 
             <a href='#' id="min_wordnum_btn">过滤</a><br><br>
@@ -418,13 +413,18 @@
     </div>
 </div>
 
+    <div style="display:none">
+        <span id="remote_url"></span>
+        <span id="remote_url_short"></span>
+        <span id="remote_url_title"></span>
+    </div>
+
+<!-- 传图片 -->
 <!-- todo -->
 <!-- 关键字提醒：新帖标题出现自己设置的关键词时进行提醒 -->
 <!-- 发言记录 -->
 <!-- 收藏帖子 分类/标签/标签共享 -->
 <!-- 浏览器同步书签，阅读进度 -->
-<!-- 传图片 -->
-<!-- 小头像？-->
 <!--发言记录 查找-->
 
 </body>

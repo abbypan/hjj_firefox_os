@@ -78,7 +78,7 @@ textarea {
     border: 0.1em solid rgb(153, 204, 0); 
 }
 .panel {
-    width: 60% !important;
+    /*width: 60% !important;*/
     overflow: auto !important; 
 }
 

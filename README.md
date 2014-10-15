@@ -61,3 +61,15 @@ android 版本（基于phonegap打包）：[HJJ-phonegap](https://build.phonegap
 ## 跳转到指定大院/门牌
 
 ![manual_jump.png](manual_jump.png)
+
+## 绑定腾讯微博，贴图
+
+浏览器打开 http://test.open.t.qq.com，选择授权方式为``oauth2.0``
+
+![qq_oauth2_1.png](qq_oauth2_1.png)
+
+把授权信息中的``openid``、``appkey``、``access_token``填入app设置页面
+
+![qq_oauth2_2.png](qq_oauth2_2.png)
+
+![qq_oauth2_3.png](qq_oauth2_3.png)

@@ -2,7 +2,7 @@
   "name": "HJJ",
   "description": "红晋江 http://bbs.jjwxc.net 看贴",
   "version": "0.7",
-  "launch_path": "/index.html#home",
+  "launch_path": "index.html#home",
   "icons": {
     "32": "/icons/hjj32.png",
     "64": "/icons/hjj64.png",

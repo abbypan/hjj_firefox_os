@@ -8,12 +8,11 @@
         Abby Pan
     </author>
     <preference name="permissions" value="none" />
-    <preference name="phonegap-version" value="3.4.0" />
+    <preference name="phonegap-version" value="3.5.0" />
     <preference name="orientation" value="default" />
     <preference name="target-device" value="universal" />
     <preference name="fullscreen" value="true" />
     <preference name="webviewbounce" value="true" />
-    <!--<preference name="prerendered-icon" value="true" />-->
     <preference name="stay-in-webview" value="false" />
     <preference name="ios-statusbarstyle" value="black-opaque" />
     <preference name="detect-data-types" value="true" />
@@ -23,6 +22,8 @@
     <preference name="disable-cursor" value="false" />
     <preference name="android-minSdkVersion" value="7" />
     <preference name="android-installLocation" value="auto" />
+    <!--<preference name="AndroidExtraFilesystems" value="files,files-external,documents,sdcard,cache,cache-external,root"/>-->
+    <!--<preference name="prerendered-icon" value="true" />-->
     <!--<gap:plugin name="org.apache.cordova.battery-status" />-->
     <!--<gap:plugin name="org.apache.cordova.camera" />-->
     <!--<gap:plugin name="org.apache.cordova.media-capture" />-->
@@ -45,6 +46,6 @@
     <icon src="icons/hjj64.png" />
     <!--<gap:splash src="icons/splash.png" />-->
     
-    <access origin="http://bbs.jjwxc.net" />
+    <!--<access origin="http://bbs.jjwxc.net" />-->
     <access origin="*" />
 </widget>
