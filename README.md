@@ -62,7 +62,7 @@ android 版本（基于phonegap打包）：[HJJ-phonegap](https://build.phonegap
 
 ![manual_jump.png](manual_jump.png)
 
-## 绑定腾讯微博，贴图
+## 绑定腾讯微博，支持贴图
 
 浏览器打开 http://test.open.t.qq.com ，选择授权方式为``oauth2.0``
 
@@ -73,3 +73,15 @@ android 版本（基于phonegap打包）：[HJJ-phonegap](https://build.phonegap
 ![qq_oauth2_2.png](qq_oauth2_2.png)
 
 ![qq_oauth2_3.png](qq_oauth2_3.png)
+
+## 推送当前帖子到kindle
+
+用于文库看文。。。
+
+需要搭建在线小说处理服务，参考：[loadxs](https://github.com/abbypan/loadxs)
+
+假设搭建的服务域名为 abc.xxx.com，服务邮箱为 kindle@xxx.com
+
+直接将该域名填入设置页面
+
+并在 amazon 设置允许  kindle@xxx.com 邮箱推送即可
