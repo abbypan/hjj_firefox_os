@@ -1,5 +1,8 @@
 $(document).bind("mobileinit", function() 
 { 
+    $.support.cors = true;  
+    jQuery.support.cors = true;  
+    $.mobile.allowCrossDomainPages = true;
     $.mobile.allowCrossDomainPages = true;
     $.mobile.phonegapNavigationEnabled = true;
     //$.mobile.ajaxEnabled = true;
@@ -25,4 +28,8 @@ $.event.special.swipe.durationThreshold = 500;
 $.event.special.swipe.horizontalDistanceThreshold = 30;
 $.event.special.swipe.scrollSupressionThreshold = 10; 
 $.event.special.swipe.verticalDistanceThreshold = 75;
+});
+
+$(function() {
+        FastClick.attach(document.body);
 });

@@ -6,6 +6,9 @@ var README_URL='https://github.com/abbypan/hjj_firefox_os/blob/master/README.md'
 var MOBILE_INIT = 0;
 var FILTER_THREAD_KEYWORD_LIST;
 var DEFAULT = {
+    //qq_openid : "261C940CFAB529378377526B945F61EA", 
+    //qq_access_token : "86cb477f384ff56fadff73ff1bf3f637", 
+    //qq_appkey : "801058005", 
     qq_openid : "", 
     qq_access_token : "", 
     qq_appkey : "", 
@@ -115,8 +118,60 @@ function format_cache_key(head, data, keylist){
     return s.join("_");
 }
 
+function get_url(u, succ_cb, charset){
+    var xhr = (XMLHttpRequest.noConflict ? new XMLHttpRequest.noConflict() : new XMLHttpRequest({mozSystem: true}));
+
+    xhr.open("GET", u , true);
+
+    if(xhr.overrideMimeType) 
+        xhr.overrideMimeType('text/plain; charset='+charset);
+    xhr.withCredentials = true;
+
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState == 4) {
+            succ_cb(xhr.responseText);
+        }
+    };
+
+    xhr.send();
+}
+
 //}}
 // {{ img
+function get_latest_img(filename, place){
+    var param = {
+        "reqnum": "1",
+        "type": "3",
+        "contenttype": "4",
+        "format": "json",
+        "access_token": DEFAULT["qq_access_token"],
+        "oauth_consumer_key": DEFAULT["qq_appkey"],
+        "openid": DEFAULT["qq_openid"],
+        "oauth_version": "2.a",
+         "lastid": "0",
+        "scope": "all",
+        "appfrom": "php-sdk2.0beta"
+    };
+    var param_str = format_para_string(param);
+
+    var charset='utf-8';
+    var url = 'https://open.t.qq.com/api/statuses/broadcast_timeline?'+param_str;
+    get_url(url, function(c){
+        $('.upload_img_status').html(c);
+        var d = $.parseJSON(c);
+        var img = d["data"]["info"][0]["image"][0] + '/2000';
+
+        if(img.match(/^http/)){
+            $('.upload_img_status').html("上传成功" + filename);
+            var x = "<p><a data-role='button' href='#' place='" + place + "' url='" +
+                img + "' class='insert_img'>" + filename + "</a></p>";
+            $(place).find('.uploaded_img').eq(0).append(x);
+        }else{
+            $('.upload_img_status').html("上传失败: " + filename);
+        }
+    }, charset);
+}
+
 function upload_img_form(file, msg){
     var fd = new FormData();
     fd.append("openid",DEFAULT["qq_openid"]);
@@ -141,11 +196,7 @@ function upload_img(file, place) {
     xhr.withCredentials = true;
     xhr.onreadystatechange = function () {
         if (xhr.readyState == 4) {
-            $('.upload_img_status').html(xhr.responseText);
-            var d = $.parseJSON(xhr.responseText);
-            var img = d.img_url + '/2000';
-            $(place).find('textarea').append("\n<img src='" + img + "' />\n");
-            $('.upload_img_status').html(img);
+            get_latest_img(file.name, place);
         } else {
             $('.upload_img_status').html("Error " + xhr.status + ',' + msg);
         }
@@ -155,7 +206,7 @@ function upload_img(file, place) {
 }
 
 function upload_img_init(){
-    //self = this;
+    self = this;
     $(document).on('change', '.upload_img_btn', function (e) {
         var place = $(this).attr('place');
         var files = e.target.files, file, p, t, i, len;
@@ -169,26 +220,26 @@ function upload_img_init(){
             }
         }
     });
+
+    $('#reply_thread').on('click', '.insert_img', function(){
+        var place=$(this).attr('place');
+        var img = $(this).attr('url');
+
+        var tr = $(place).find('textarea');
+        c = tr.val() + "\n<img src='" + img + "' />\n";
+        tr.val(c);
+    });
+
+
 }
+
 
 // }}
 // {{{ home
-function get_hjj_url(u, succ_cb){
-    var xhr = (XMLHttpRequest.noConflict ? new XMLHttpRequest.noConflict() : new XMLHttpRequest({mozSystem: true}));
 
-    xhr.open("GET", u , true);
 
-    if(xhr.overrideMimeType) 
-        xhr.overrideMimeType('text/plain; charset=gbk');
-    xhr.withCredentials = true;
-
-    xhr.onreadystatechange = function() {
-        if (xhr.readyState == 4) {
-            succ_cb(xhr.responseText);
-        }
-    };
-
-    xhr.send();
+function get_hjj_url(u, succ_cb, charset){
+    get_url(u, succ_cb, 'gbk');
 }
 
 function parse_home(data){
@@ -209,11 +260,11 @@ function parse_home(data){
     $('#home_cz').html( $(h).find('.cont05').eq(0).html());
 
     var body_h = $('#home_content').html()
-    .replace(/http:\/\/bbs.jjwxc.net\/showmsg.php/g, '#showmsg')
-    .replace(/target="_blank"/g,'')
-    .replace(/<\/?ul>/g, '')
-    .replace(/<\/li>/g, '<br />')
-    .replace(/<li>/g, '');
+        .replace(/http:\/\/bbs.jjwxc.net\/showmsg.php/g, '#showmsg')
+        .replace(/target="_blank"/g,'')
+        .replace(/<\/?ul>/g, '')
+        .replace(/<\/li>/g, '<br />')
+        .replace(/<li>/g, '');
     $('#home_content').html(body_h);
     lscache.set('home', body_h);
 }
@@ -241,15 +292,15 @@ function board_menu_zone(zone_li) {
 
         var m = d.match(/<center>[^<]+(<a href="board.php\?board=\d+&page=\d+">[^<]+<\/a>)[^<]+<\/center>/g);
         $.each(m, function(i, v)
-               {
-                   var vm = v.replace(/center>/g, 'li>')
-                   .replace(/board.php/, '#board')
-                   ;
-                   s+=vm;
-               });
-               s+="</ul>";
-               $('#board_menu').find('div[zid='+id+']').html(s);
-               lscache.set('board_menu', $('#board_menu_content').html(), DEFAULT["board_menu_minute"]);
+                {
+                    var vm = v.replace(/center>/g, 'li>')
+            .replace(/board.php/, '#board')
+            ;
+        s+=vm;
+                });
+        s+="</ul>";
+        $('#board_menu').find('div[zid='+id+']').html(s);
+        lscache.set('board_menu', $('#board_menu_content').html(), DEFAULT["board_menu_minute"]);
     };
 
     var u = HJJ +"/index"+id+".htm";
@@ -262,9 +313,9 @@ function board_menu(){
         $('#board_menu_content').html(rem);
     }else{
         $('#board_menu').find("div").each(
-            function(){
-            board_menu_zone($(this));
-        });
+                function(){
+                    board_menu_zone($(this));
+                });
     }
 
     $("#filter_board").on( "filterablefilter", function( event, ui ) {
@@ -566,11 +617,11 @@ function sub_board_action(){
 
     var id_list = [];
     $("#sub_board").find("input[type='checkbox']")
-    .each(function(){
-        if($(this).prop("checked")){
-            id_list.push($(this).prop("value"));
-        }
-    });
+        .each(function(){
+            if($(this).prop("checked")){
+                id_list.push($(this).prop("value"));
+            }
+        });
 
     if(id_list.length>0){
         var id = id_list.join(',');
@@ -589,8 +640,8 @@ function sub_board(para, html){
     $('#sub_board').find('fieldset').html(u);
 
     var options = u.replace(/<input.+?value=(\S+)[^>]+>([^<]+)/g, "<option value='$1'>$2</option>")
-    .replace(/<option/, '<option selected="selected"')
-    ;
+        .replace(/<option/, '<option selected="selected"')
+        ;
     $('#new_thread_subid').html(options);
 }
 
@@ -611,28 +662,8 @@ function board_title(para, h){
 
 function new_thread(para){
     var u = HJJ + "/postbypolice.php?board="+ para.board;
-
-
-    $('#new_thread').html(
-        '<form enctype="multipart/form-data" method="post"  \
-        action="/postbypolice.php?board=" data-ajax="false"  \
-        target="_newtab"> \
-        <input type="hidden" value="→发布新贴子" name="msg"> \
-        <input placeholder="名字" type="text" name="username" >\
-        <select id="new_thread_subid" name="subid"> \
-        </select> \
-        <input type="text" name="subject" placeholder="主题"> \
-        <input type="file" place="#new_thread" class="upload_img_btn" data-role="none" > \
-        <textarea rows=12 placeholder="内容" name="body" ></textarea> \
-        <a href="#" class="format_url_code">图片/网址 代码转换</a> \
-        <input type="submit" value="发贴"> \
-        </form> \
-        <div class="upload_img_status">...</div> \
-        ');
-
-        input_init('#new_thread', 'username');
-
-        $('#new_thread').find('form').attr("action", u);
+    input_init('#new_thread', 'username');
+    $('#new_thread').find('form').attr("action", u);
 }
 
 function thread_type(para){
@@ -674,10 +705,10 @@ function board(para) {
     var board_cb = function(d){
         var h = jQuery.parseHTML(d);
         $(h).find('tr[valign="middle"][bgcolor="#FFE7F7"]')
-        .each(function(){
-            var ti = board_thread_info($(this));
-            if(ti) thread_info += ti;
-        });
+            .each(function(){
+                var ti = board_thread_info($(this));
+                if(ti) thread_info += ti;
+            });
 
         $('#thread_list').html(thread_info);
         $('#new_thread').find('textarea').val('');
@@ -700,20 +731,20 @@ function board(para) {
 //  {{{ showmsg
 function extract_floor_info(info) {
     var c = info.html()
-    .replace(/<(table|tr|td|font)[^>]*>/ig, "<$1>")
-    .replace(/<\/?marquee[^>]*>/ig, "")
-    .replace(/<style[^>]*>[\s\S]*?<\/style>/ig, "")
-    ;
+        .replace(/<(table|tr|td|font)[^>]*>/ig, "<$1>")
+        .replace(/<\/?marquee[^>]*>/ig, "")
+        .replace(/<style[^>]*>[\s\S]*?<\/style>/ig, "")
+        ;
     var w = info.text().replace(/\s/g, '').length;
     var meta = info.parents("tr:eq(1)").next().text();
 
     var m = meta.match(/№(\d+).+?☆☆☆(.*?)于([\d\s:-]+)留言☆☆☆/);
     return {
         content: c,
-        wordnum: w,
-        id: parseInt(m[1]),
-        poster: m[2] || ' ',
-        time: m[3]
+            wordnum: w,
+            id: parseInt(m[1]),
+            poster: m[2] || ' ',
+            time: m[3]
     };
 }
 
@@ -880,479 +911,468 @@ function showmsg_jump_page_popup(){
 function thread_save_title(para, res){
     var s = '[' + para.board + '](' + para.id + '){' +
         res.poster + '}' + res.title;
-    return s;
-}
+        return s;
+    }
 
-function showmsg_cache(para) {
-    var u = HJJ+'/showmsg.php?' + showmsg_para_string(para); 
+    function showmsg_cache(para) {
+        var u = HJJ+'/showmsg.php?' + showmsg_para_string(para); 
 
-    var showmsg_cb = function(d){
-        var res = extract_showmsg_content(d);
+        var showmsg_cb = function(d){
+            var res = extract_showmsg_content(d);
 
-        var local_url = "#showmsg?" + showmsg_para_string(para); 
-        lscache.set(local_url, res);
+            var local_url = "#showmsg?" + showmsg_para_string(para); 
+            lscache.set(local_url, res);
 
-        $('#thread_action_temp').html('已缓存'+para.page);
+            $('#thread_action_temp').html('已缓存'+para.page);
 
-        para.page  = para.page + 1;
-        if(para.page<para.page_num) {
-            showmsg_cache(para);
-        }else{
-            var k = format_cache_key('thread_cache', para, ["board", "id"]);
-            para.page = 0;
-            local_url = "#showmsg?" + showmsg_para_string(para); 
+            para.page  = para.page + 1;
+            if(para.page<para.page_num) {
+                showmsg_cache(para);
+            }else{
+                var k = format_cache_key('thread_cache', para, ["board", "id"]);
+                para.page = 0;
+                local_url = "#showmsg?" + showmsg_para_string(para); 
 
-            toggle_action(k, '#thread_cache', 'thread_cache', {
-                title : thread_save_title(para, res),
-                url : local_url,
-                board : para.board,
-                id : para.id
-            });
+                toggle_action(k, '#thread_cache', 'thread_cache', {
+                    title : thread_save_title(para, res),
+                    url : local_url,
+                    board : para.board,
+                    id : para.id
+                });
 
+                toggle_action_html(k, '#thread_cache', '&#9831; 缓存贴子', '&#9827; 已缓存贴子');
+                fav_thread();
+            }
+        };
+        get_hjj_url(u, showmsg_cb);
+    }
+
+    function thread_cache() {
+        var p = {};
+        p["board"] = $('#thread_bid').html();
+        p["id"] = $('#thread_tid').html();
+        var nm = $('#thread_pager_top').html().match(/共(\d+)页/);
+        p["page_num"] = nm ? nm[1] : 1;
+        p["page"] = 0;
+
+        var act = $('#thread_cache').attr('action');
+        if(act && act=='del'){
+            for(var i=0; i<p["page_num"]; i++){
+                p.page = i;
+                var local_url = "#showmsg?" + showmsg_para_string(p); 
+                lscache.remove(local_url);
+                $('#thread_action_temp').html('已移除缓存'+p.page);
+            }
+
+            var k = format_cache_key('thread_cache', p, ["board", "id"]);
+            toggle_action(k, '#thread_cache', 'thread_cache', {});
             toggle_action_html(k, '#thread_cache', '&#9831; 缓存贴子', '&#9827; 已缓存贴子');
             fav_thread();
+        }else{
+            showmsg_cache(p);
         }
-    };
-    get_hjj_url(u, showmsg_cb);
-}
-
-function thread_cache() {
-    var p = {};
-    p["board"] = $('#thread_bid').html();
-    p["id"] = $('#thread_tid').html();
-    var nm = $('#thread_pager_top').html().match(/共(\d+)页/);
-    p["page_num"] = nm ? nm[1] : 1;
-    p["page"] = 0;
-
-    var act = $('#thread_cache').attr('action');
-    if(act && act=='del'){
-        for(var i=0; i<p["page_num"]; i++){
-            p.page = i;
-            var local_url = "#showmsg?" + showmsg_para_string(p); 
-            lscache.remove(local_url);
-            $('#thread_action_temp').html('已移除缓存'+p.page);
-        }
-
-        var k = format_cache_key('thread_cache', p, ["board", "id"]);
-        toggle_action(k, '#thread_cache', 'thread_cache', {});
-        toggle_action_html(k, '#thread_cache', '&#9831; 缓存贴子', '&#9827; 已缓存贴子');
-        fav_thread();
-    }else{
-        showmsg_cache(p);
     }
-}
 
-function thread_mark_floor(){
-    var info = get_showmsg_info();
-    var k = format_cache_key('thread_mark_floor', info, ["board", "id"]);
-    var fid = lscache.get(k);
-    if(fid) {
-        showmsg_jump_page(fid);
-    }else{
-        $.mobile.silentScroll(0);
-    }
-}
-
-function mark_floor(x) {
-    var fid = x.parent().attr('fid');
-    var info = get_showmsg_info();
-    var k = format_cache_key('thread_mark_floor', 
-                             info, ["board", "id"]);
-                             lscache.set(k, fid, DEFAULT["thread_mark_minute"]);
-}
-
-function get_current_position(e){
-    if(! e.originalEvent) return e;
-    return e.originalEvent.touches[0] || e.originalEvent.changedTouches[0] || e;
-}
-
-function get_current_floor(ee, delta_height){
-    var sh = screen.height;
-    //var ee = get_current_position(e);
-
-    var eh = ee.pageY;
-    if(delta_height) eh=eh+delta_height;
-
-    var i=0; 
-    $('#showmsg').find('div[class="floor"]').each(function(){
-        var h =$(this).offset().top; 
-        if(h>eh) return false;
-        if(h+sh>eh) {
-            i = $(this).attr('fid');
+    function thread_mark_floor(){
+        var info = get_showmsg_info();
+        var k = format_cache_key('thread_mark_floor', info, ["board", "id"]);
+        var fid = lscache.get(k);
+        if(fid) {
+            showmsg_jump_page(fid);
+        }else{
+            $.mobile.silentScroll(0);
         }
-    });
-
-    var k = '#floor' + i;
-    return $(k);
-}
-
-function get_screen_top_floor(e) {
-
-    var sh = screen.height;
-    var ee = get_current_position(e);
-    var eh = ee.pageY;
-
-    var i = 0;
-    $('#showmsg').find('div[class="floor"]').each(function(){
-        var h =$(this).offset().top; 
-        if(h+sh>eh) {
-            i = $(this).attr('fid');
-            return false;
-        }
-    });
-    var k = '#floor' + i;
-    return $(k);
-}
-
-function reply_thread(f, reply_type){
-    $('#reply_thread').find('textarea').val('');
-    var c = f.find('.chapter').text().replace(/\n/g, ' ');
-    if(reply_type=="cite") 
-        c = "" + 
-        f.children('.flcontent').text().replace(/(\s*\n)+/g, "\n").trim().substr(0, 100) + 
-    "......\n\n" + c ;
-    $('#reply_thread').find('textarea').val(c.trim()+"\n");
-
-    $('#reply_thread_a').click();
-}
-
-function get_event_zone(e){
-    var ee = get_current_position(e);
-    var w = screen.width;
-    ee.xzone = (ee.clientX < 0.3*w) ? 'left' : 
-        (ee.clientX > 0.7*w) ? 'right' : 
-        'middle';
-
-    var h = screen.height;
-    ee.yzone = (ee.clientY < 0.3*h) ? 'top' : 
-        (ee.clientY > 0.7*h) ? 'bottom' : 
-        'middle';
-    return ee;
-}
-
-
-function showmsg_scroll_screen(ee) {
-    var jh = (ee.yzone=='bottom' && ee.xzone=='left') ? -1 : 
-        (ee.yzone=='bottom' && ee.xzone=='right') ? 1 : 
-        0;
-    if(jh==0) return;
-    jh = jh * screen.height*DEFAULT["showmsg_jump_height"];
-    if(jh>0) {
-        $.mobile.silentScroll(ee.pageY-0.1*screen.height);
-    }else{
-        $.mobile.silentScroll(ee.pageY+2*jh);
     }
-}
 
-function jump_floor(f, arrow, step){
-    var x = arrow=='prev' ? f.prevAll() : f.nextAll();
-    var i = parseInt(step) -1;
-    var pos = x[i] ? $(x[i]).offset().top : 0;
-    $.mobile.silentScroll(pos);
-}
+    function mark_floor(x) {
+        var fid = x.parent().attr('fid');
+        var info = get_showmsg_info();
+        var k = format_cache_key('thread_mark_floor', 
+                info, ["board", "id"]);
+        lscache.set(k, fid, DEFAULT["thread_mark_minute"]);
+    }
 
-function jump_to_prev(f){
-    var x = f.prevAll();
-    var i = parseInt(DEFAULT["showmsg_jump_floor"])-1;
+    function get_current_position(e){
+        if(! e.originalEvent) return e;
+        return e.originalEvent.touches[0] || e.originalEvent.changedTouches[0] || e;
+    }
 
-    var pos = x[i] ? $(x[i]).offset().top : 0;
+    function get_current_floor(ee, delta_height){
+        var sh = screen.height;
+        //var ee = get_current_position(e);
 
-    var fid = x[i] ? $(x[i]).attr('fid') : 0;
-    $('#showmsg_floor_slider').val(fid);
-    $.mobile.silentScroll(pos);
-}
+        var eh = ee.pageY;
+        if(delta_height) eh=eh+delta_height;
 
-function jump_to_next(f){
-    var x = f.nextAll();
-    var i = parseInt(DEFAULT["showmsg_jump_floor"]) -1;
-
-    var pos = x[i] ? $(x[i]).offset().top : $(document).height();
-    var fid = x[i] ? $(x[i]).attr('fid') : $('#showmsg_floor_slider').attr('max');
-    $('#showmsg_floor_slider').val(fid);
-    $.mobile.silentScroll(pos);
-}
-
-function showmsg_click() {
-    $('#showmsg').on('click', '#thread_cache', function(){ 
-        thread_cache();
-    });
-
-    $('#showmsg').on('click', '#thread_mark_floor', function(){ 
-        thread_mark_floor();
-    });
-
-    $('#showmsg').on('click', '.mark_floor', function(){ 
-        $('#showmsg').find('.temp_floor').html('');
-        mark_floor($(this));
-        $(this).next().html('记住第' + $(this).parent().attr('fid') + '楼'); 
-    });
-
-    $('#showmsg').on('click', '#view_img', function(){ view_img(); });
-    $('#showmsg').on('click', '#thread_save', function(){ thread_save(); });
-    $('#showmsg').on('click', '#share_thread', function(){ share_thread(); });
-    $('#showmsg').on('click', '#only_poster', function(){ only_poster(); });
-
-    $('#showmsg_right_panel').delegate("a", "click", function ( e ) {
-        setTimeout(function(){  
-            $('#showmsg_right_panel').panel("close");
+        var i=0; 
+        $('#showmsg').find('div[class="floor"]').each(function(){
+            var h =$(this).offset().top; 
+            if(h>eh) return false;
+            if(h+sh>eh) {
+                i = $(this).attr('fid');
+            }
         });
-    });
 
-
-    $('#showmsg').on('click', '#min_wordnum_btn',function(){ 
-        var min = $('#min_wordnum').val();
-        min_wordnum(min);
-    });
-    $('#showmsg').on('click', '#thread_dewater', function(){ 
-        var min = $('#showmsg_dewater_wordnum').val();
-        min_wordnum(min);
-    });
-    $('#showmsg').on('click', '#floor_grep',function(){ 
-        floor_grep();});
-        $('#showmsg').on('click', '#floor_filter',function(){ 
-            floor_filter(); });
-            $('#showmsg').on('click', '#view_all_floor', function(){ view_all_floor();});
-            $('#showmsg').on('click', '#reverse_floor', function(){ reverse_floor();});
-            $('#showmsg').on('click', '.showmsg_jump_page_btn', function(){ showmsg_jump_page_popup();});
-
-            $('#showmsg').on('click', '.reply_thread_floor', function(){
-                reply_thread($(this).parent(), $(this).attr('action'));
-            });
-
-            $('#showmsg').on('swiperight',  '.floor', function(e){ 
-                e.preventDefault();
-                reply_thread($(this), 'cite');
-            });
-
-            $('#showmsg').on('swipeleft', '.floor', function(e){ 
-                e.preventDefault();
-                reply_thread($(this), 'reply');
-            });
-
-            $('#showmsg').on('tap', '#thread_floor_list', function(e){ 
-                e.preventDefault();
-                var z = get_event_zone(e);
-                showmsg_scroll_screen(z); 
-                return false;
-            });
-
-            $('#showmsg').on("change", '#showmsg_floor_slider', function () {
-                var all = parseInt($(this).attr('max')) - parseInt($(this).attr('min')) + 1;
-                var show = $('#showmsg').find('.floor:visible').length;
-
-                var v = parseInt($(this).val()) - parseInt($(this).attr('min')) ;
-                v = parseInt(v*show/all);
-
-                var x = $('#showmsg').find('.floor:visible').eq(v);
-                var pos = x ? x.offset().top : 0;
-                $.mobile.silentScroll(pos);
-            });
-
-            $('#showmsg').on('click', '.jump_to_bottom', function(){
-                $('#showmsg_floor_slider').val($('#showmsg_floor_slider').attr('max'));
-                $(document).scrollTop($(document).height());
-            });
-            $('#showmsg').on('click', '.jump_to_top', function(){
-                $('#showmsg_floor_slider').val(0);
-                $.mobile.silentScroll(0);
-            });
-
-            $('#showmsg').on('click', '.jump_to_prev', function(e){
-                jump_to_prev(get_current_floor(e), -screen.height*2);
-            });
-            $('#showmsg').on('click', '.jump_to_next', function(e){
-                jump_to_next(get_current_floor(e), -screen.height*2);
-            });
-
-            $('#showmsg').on('click', '#thread_to_kindle_btn', function(){ thread_to_kindle();});
-}
-
-function extract_showmsg_content(d){
-    var res = {};
-    var tm = d.match(/<title>(.+?)<\/title>/);
-    res["title"]  = tm[1].replace(/ —— 晋江文学城网友交流区/,'');
-
-    var pm = d.match(/\>(共\d+页:.+?)<\/div>/);
-    res["pager"] = pm ? pm[1].replace(/href=(.+?)>/g, "href=\"#showmsg$1\">").replace(/<\/a>/g, '</a>&nbsp;') : '';
-
-    var h = $.parseHTML(d.replace(/<font color='gray' size='-1'>本帖尚未审核,若发布24小时后仍未审核通过会被屏蔽<\/font><br\/>/g,''));
-
-    var poster = '';
-
-    var floors_info = new Array();
-    $(h).find('td[class="read"]').each(function() {
-        var bot = $(this);
-        var f_i =  extract_floor_info(bot);
-        if(!poster) poster = f_i.poster;
-
-        var html = format_floor_content(f_i);
-        floors_info.push(html);
-    }).promise().done(function(){
-        var all_floor = floors_info.join("\n");
-        if(DEFAULT["loadimg"]!="on"){ //不看图
-            all_floor = all_floor.replace(/<img [\s\S]*?>/ig, '');
-        }
-        res["floor_list"] = all_floor;
-        res["poster"] = poster;
-    });
-
-    return res;
-}
-
-function showmsg_refresh(para) {
-    var u = HJJ+'/showmsg.php?' + showmsg_para_string(para); 
-
-    if(para.refresh) $('#thread_action_temp').html('刷新');
-
-    var showmsg_f5_cb = function(d){
-        var res = extract_showmsg_content(d);
-        showmsg_tail(para, res);
-
-        var local_url = "#showmsg?" + showmsg_para_string(para); 
-        lscache.set(local_url, res, DEFAULT["thread_cache_minute"]);
+        var k = '#floor' + i;
+        return $(k);
     }
-    get_hjj_url(u, showmsg_f5_cb);
-}
 
-function showmsg_tail(para, res){
-    $('#remote_url_title').html(res["title"]);
-    $('#thread_title').html( res["title"] );
-    $('#thread_pager_top').html( res["pager"] );
-    $('#thread_pager_bottom').html( res["pager"]);
-    $('#thread_floor_list').html(res["floor_list"]);
+    function get_screen_top_floor(e) {
 
-    $('#thread_floor_list').find('a').each(function(){
-        var href = $(this).attr('href');
-        if(! href.match(/http:\/\/bbs.jjwxc.net\/showmsg.php\?/)) return;
-        href = href.replace(/http:\/\/bbs.jjwxc.net\/showmsg.php\?/g, '#showmsg?')
-        $(this).attr('href', href);
+        var sh = screen.height;
+        var ee = get_current_position(e);
+        var eh = ee.pageY;
+
+        var i = 0;
+        $('#showmsg').find('div[class="floor"]').each(function(){
+            var h =$(this).offset().top; 
+            if(h+sh>eh) {
+                i = $(this).attr('fid');
+                return false;
+            }
+        });
+        var k = '#floor' + i;
+        return $(k);
+    }
+
+    function reply_thread(f, reply_type){
+        $('#reply_thread').find('textarea').val('');
+        var c = f.find('.chapter').text().replace(/\n/g, ' ');
+        if(reply_type=="cite") 
+            c = "" + 
+                f.children('.flcontent').text().replace(/(\s*\n)+/g, "\n").trim().substr(0, 100) + 
+                "......\n\n" + c ;
+        $('#reply_thread').find('textarea').val(c.trim()+"\n");
+
+        $('#reply_thread_a').click();
+    }
+
+    function get_event_zone(e){
+        var ee = get_current_position(e);
+        var w = screen.width;
+        ee.xzone = (ee.clientX < 0.3*w) ? 'left' : 
+            (ee.clientX > 0.7*w) ? 'right' : 
+            'middle';
+
+        var h = screen.height;
+        ee.yzone = (ee.clientY < 0.3*h) ? 'top' : 
+            (ee.clientY > 0.7*h) ? 'bottom' : 
+            'middle';
+        return ee;
+    }
+
+
+    function showmsg_scroll_screen(ee) {
+        var jh = (ee.yzone=='bottom' && ee.xzone=='left') ? -1 : 
+            (ee.yzone=='bottom' && ee.xzone=='right') ? 1 : 
+            0;
+        if(jh==0) return;
+        jh = jh * screen.height*DEFAULT["showmsg_jump_height"];
+        if(jh>0) {
+            $.mobile.silentScroll(ee.pageY-0.1*screen.height);
+        }else{
+            $.mobile.silentScroll(ee.pageY+2*jh);
+        }
+    }
+
+    function jump_floor(f, arrow, step){
+        var x = arrow=='prev' ? f.prevAll() : f.nextAll();
+        var i = parseInt(step) -1;
+        var pos = x[i] ? $(x[i]).offset().top : 0;
+        $.mobile.silentScroll(pos);
+    }
+
+    function jump_to_prev(f){
+        var x = f.prevAll();
+        var i = parseInt(DEFAULT["showmsg_jump_floor"])-1;
+
+        var pos = x[i] ? $(x[i]).offset().top : 0;
+
+        var fid = x[i] ? $(x[i]).attr('fid') : 0;
+        $('#showmsg_floor_slider').val(fid);
+        $.mobile.silentScroll(pos);
+    }
+
+    function jump_to_next(f){
+        var x = f.nextAll();
+        var i = parseInt(DEFAULT["showmsg_jump_floor"]) -1;
+
+        var pos = x[i] ? $(x[i]).offset().top : $(document).height();
+        var fid = x[i] ? $(x[i]).attr('fid') : $('#showmsg_floor_slider').attr('max');
+        $('#showmsg_floor_slider').val(fid);
+        $.mobile.silentScroll(pos);
+    }
+
+    function showmsg_click() {
+        $('#showmsg').on('touchstart', '#thread_cache', function(){ 
+            thread_cache();
+        });
+
+        $('#showmsg').on('touchstart', '#thread_mark_floor', function(){ 
+            thread_mark_floor();
+        });
+
+        $('#showmsg').on('touchstart', '.mark_floor', function(){ 
+            $('#showmsg').find('.temp_floor').html('');
+            mark_floor($(this));
+            $(this).next().html('记住第' + $(this).parent().attr('fid') + '楼'); 
+        });
+
+        $('#showmsg').on('touchstart', '#view_img', function(){ view_img(); });
+        $('#showmsg').on('touchstart', '#thread_save', function(){ thread_save(); });
+        $('#showmsg').on('touchstart', '#share_thread', function(){ share_thread(); });
+        $('#showmsg').on('touchstart', '#only_poster', function(){ only_poster(); });
+
+        $('#showmsg_right_panel').delegate("a", 'touchstart', function ( e ) {
+            setTimeout(function(){  
+                $('#showmsg_right_panel').panel("close");
+            });
+        });
+
+
+        $('#showmsg').on('touchstart', '#min_wordnum_btn',function(){ 
+            var min = $('#min_wordnum').val();
+            min_wordnum(min);
+        });
+        $('#showmsg').on('touchstart', '#thread_dewater', function(){ 
+            var min = $('#showmsg_dewater_wordnum').val();
+            min_wordnum(min);
+        });
+        $('#showmsg').on('touchstart', '#floor_grep',function(){ 
+            floor_grep();});
+        $('#showmsg').on('touchstart', '#floor_filter',function(){ 
+            floor_filter(); });
+        $('#showmsg').on('touchstart', '#view_all_floor', function(){ view_all_floor();});
+        $('#showmsg').on('touchstart', '#reverse_floor', function(){ reverse_floor();});
+        $('#showmsg').on('touchstart', '.showmsg_jump_page_btn', function(){ showmsg_jump_page_popup();});
+
+        $('#showmsg').on('touchstart', '.reply_thread_floor', function(){
+            reply_thread($(this).parent(), $(this).attr('action'));
+        });
+
+        $('#showmsg').on('swiperight',  '.floor', function(e){ 
+            e.preventDefault();
+            reply_thread($(this), 'cite');
+        });
+
+        $('#showmsg').on('swipeleft', '.floor', function(e){ 
+            e.preventDefault();
+            reply_thread($(this), 'reply');
+        });
+
+        $('#showmsg').on('tap', '#thread_floor_list', function(e){ 
+            e.preventDefault();
+            var z = get_event_zone(e);
+            showmsg_scroll_screen(z); 
+            return false;
+        });
+
+        $('#showmsg').on("change", '#showmsg_floor_slider', function () {
+            var all = parseInt($(this).attr('max')) - parseInt($(this).attr('min')) + 1;
+            var show = $('#showmsg').find('.floor:visible').length;
+
+            var v = parseInt($(this).val()) - parseInt($(this).attr('min')) ;
+            v = parseInt(v*show/all);
+
+            var x = $('#showmsg').find('.floor:visible').eq(v);
+            var pos = x ? x.offset().top : 0;
+            $.mobile.silentScroll(pos);
+        });
+
+        $('#showmsg').on('touchstart', '.jump_to_bottom', function(){
+            $('#showmsg_floor_slider').val($('#showmsg_floor_slider').attr('max'));
+            $(document).scrollTop($(document).height());
+        });
+        $('#showmsg').on('touchstart', '.jump_to_top', function(){
+            $('#showmsg_floor_slider').val(0);
+            $.mobile.silentScroll(0);
+        });
+
+        $('#showmsg').on('touchstart', '.jump_to_prev', function(e){
+            jump_to_prev(get_current_floor(e), -screen.height*2);
+        });
+        $('#showmsg').on('touchstart', '.jump_to_next', function(e){
+            jump_to_next(get_current_floor(e), -screen.height*2);
+        });
+
+        $('#showmsg').on('touchstart', '#thread_to_kindle_btn', function(){ thread_to_kindle();});
+    }
+
+    function extract_showmsg_content(d){
+        var res = {};
+        var tm = d.match(/<title>(.+?)<\/title>/);
+        res["title"]  = tm[1].replace(/ —— 晋江文学城网友交流区/,'');
+
+        var pm = d.match(/\>(共\d+页:.+?)<\/div>/);
+        res["pager"] = pm ? pm[1].replace(/href=(.+?)>/g, "href=\"#showmsg$1\">").replace(/<\/a>/g, '</a>&nbsp;') : '';
+
+        var h = $.parseHTML(d.replace(/<font color='gray' size='-1'>本帖尚未审核,若发布24小时后仍未审核通过会被屏蔽<\/font><br\/>/g,''));
+
+        var poster = '';
+
+        var floors_info = new Array();
+        $(h).find('td[class="read"]').each(function() {
+            var bot = $(this);
+            var f_i =  extract_floor_info(bot);
+            if(!poster) poster = f_i.poster;
+
+            var html = format_floor_content(f_i);
+            floors_info.push(html);
+        }).promise().done(function(){
+            var all_floor = floors_info.join("\n");
+            if(DEFAULT["loadimg"]!="on"){ //不看图
+                all_floor = all_floor.replace(/<img [\s\S]*?>/ig, '');
+            }
+            res["floor_list"] = all_floor;
+            res["poster"] = poster;
+        });
+
+        return res;
+    }
+
+    function showmsg_refresh(para) {
+        var u = HJJ+'/showmsg.php?' + showmsg_para_string(para); 
+
+        if(para.refresh) $('#thread_action_temp').html('刷新');
+
+        var showmsg_f5_cb = function(d){
+            var res = extract_showmsg_content(d);
+            showmsg_tail(para, res);
+
+            var local_url = "#showmsg?" + showmsg_para_string(para); 
+            lscache.set(local_url, res, DEFAULT["thread_cache_minute"]);
+        }
+        get_hjj_url(u, showmsg_f5_cb);
+    }
+
+    function showmsg_tail(para, res){
+        $('#remote_url_title').html(res["title"]);
+        $('#thread_title').html( res["title"] );
+        $('#thread_pager_top').html( res["pager"] );
+        $('#thread_pager_bottom').html( res["pager"]);
+        $('#thread_floor_list').html(res["floor_list"]);
+
+        $('#thread_floor_list').find('a').each(function(){
+            var href = $(this).attr('href');
+            if(! href.match(/http:\/\/bbs.jjwxc.net\/showmsg.php\?/)) return;
+            href = href.replace(/http:\/\/bbs.jjwxc.net\/showmsg.php\?/g, '#showmsg?')
+            $(this).attr('href', href);
         $(this).removeAttr('target');
         $(this).removeAttr('rel');
-    });
+        });
 
-    var min =0;
-    var max = 0;
-    $('#thread_floor_list').find('.floor').each(function(){
-        var id = parseInt($(this).attr('fid'));
-        if(! min) min = id;
-        max++;
-    }).promise().done(function(){
-        $('#showmsg_floor_slider').attr('min', min);
-        $('#showmsg_floor_slider').attr('max', max+min-1);
-        $('#showmsg_floor_slider').val(min);
-    });
-
-
-    check_save_thread();
-    check_cache_thread();
-
-    var local_url = "#showmsg?" + showmsg_para_string(para); 
-    $('#thread_refresh').attr('href', local_url + '&refresh=1');
-    $( '#showmsg_right_panel' ).panel( "refresh" );
+        var min =0;
+        var max = 0;
+        $('#thread_floor_list').find('.floor').each(function(){
+            var id = parseInt($(this).attr('fid'));
+            if(! min) min = id;
+            max++;
+        }).promise().done(function(){
+            $('#showmsg_floor_slider').attr('min', min);
+            $('#showmsg_floor_slider').attr('max', max+min-1);
+            $('#showmsg_floor_slider').val(min);
+        });
 
 
-    add_history({
-        url : local_url, 
-        title : thread_save_title(para, res), 
-        key : 'showmsg,' + para.board + ',' + para.id
-    });
+        check_save_thread();
+        check_cache_thread();
 
-    $("#thread_floor_list").niceScroll();
-    $("#thread_floor_list").getNiceScroll().resize();
+        var local_url = "#showmsg?" + showmsg_para_string(para); 
+        $('#thread_refresh').attr('href', local_url + '&refresh=1');
 
-    if(para.fid){
-        showmsg_jump_floor(para.fid);
-    }else if(DEFAULT["auto_jump_mark_floor"]=='on'){
-        setTimeout(function(){ thread_mark_floor(); }, 300);
-    }else{
-        $.mobile.silentScroll(0);
-    }
-}
+        add_history({
+            url : local_url, 
+            title : thread_save_title(para, res), 
+            key : 'showmsg,' + para.board + ',' + para.id
+        });
 
-function showmsg_header(para){
-    $('#remote_url_short').html([ 'HJJ', para.board, para.id ].join(","));
-    $('#reply_thread').html(
-        '<form enctype="multipart/form-data" method="post" action="reply.php?board=&id=" \
-        data-ajax="false" target="_newtab"> \
-        <input placeholder="名字" type="text" name="username" >\
-        <input type="file" place="#reply_thread" class="upload_img_btn" data-role="none" > \
-        <textarea rows=12 placeholder="内容" name="body"></textarea> \
-        <a href="#" class="format_url_code">图片/网址 代码转换</a> \
-        <input type="submit" value="回贴"> \
-        </form> \
-        <div class="upload_img_status">...</div> \
-        ');
+        $("#thread_floor_list").niceScroll();
+        $("#thread_floor_list").getNiceScroll().resize();
 
-    input_init('#reply_thread', 'username');
-    $('#reply_thread').find('form').attr('action', HJJ + "/reply.php?board="+ para.board + '&id=' + para.id);
-    $('#thread_to_board').attr('href', "#board?board=" + para.board + '&page=1');
-    $('#manual_jump').find('input').eq(0).val(para.board);
-
-    $('#remote_url').html(HJJ + "/showmsg.php?" + showmsg_para_string(para)); 
-}
-
-function thread_to_kindle(){
-    $('#export_thread').html('kindle');
-
-    var formData = new FormData();
-    $('#thread_to_kindle').find('input').each(function(){
-        var k = $(this).attr('name');
-        if(k) {
-            formData.append(k, $(this).val());
+        if(para.fid){
+            showmsg_jump_floor(para.fid);
+        }else if(DEFAULT["auto_jump_mark_floor"]=='on'){
+            setTimeout(function(){ thread_mark_floor(); }, 300);
+        }else{
+            $.mobile.silentScroll(0);
         }
-    });
 
-    var u = 'http://' + DEFAULT["thread_to_kindle_dom"] + '/novel_robot';
-
-    var xhr = (XMLHttpRequest.noConflict ? new XMLHttpRequest.noConflict() : new XMLHttpRequest({mozSystem: true}));
-    xhr.open("POST", u);
-    xhr.onreadystatechange = function() {
-        if (xhr.readyState == 4) {
-            $('#export_thread').html('&#9873; 已推送到kindle');
-        }
-    };
-    xhr.send(formData);
-
-}
-
-function showmsg_banner(para){
-    var local_url = "#showmsg?" + showmsg_para_string(para); 
-    var u = HJJ+'/showmsg.php?' + showmsg_para_string(para); 
-    $('#thread_title').attr('href', u);
-
-    $('#thread_bid').html(para.board);
-    $('#thread_tid').html(para.id);
-    $('#thread_pid').html(para.page || 0);
-
-
-    var tag_key = format_cache_key('thread_tag', para, ["board", "id"]);
-    $('#thread_tag_popup').html( input_div_html(tag_key, '标签') + 
-            '<input type="button" value="返回" id="thread_tag_close">'
-            );
-    tags_input_init(tag_key);
-    $( "#thread_tag_close" ).on('click', function(){ 
-        $('#thread_tag_popup').popup( "close" ); });
-    $('#thread_tag_list').text( DEFAULT[tag_key] );
-
-    $('#thread_to_kindle').find('input').eq(0).val(u);
-    $('#kindle_mail').attr('maxlength', "30");
-}
-
-
-function showmsg(para){
-    var local_url = "#showmsg?" + showmsg_para_string(para); 
-    showmsg_header(para);
-    showmsg_banner(para);
-
-    var x = lscache.get(local_url);
-    if(x && para.refresh==undefined){
-        showmsg_tail(para, x);
-    }else{
-        showmsg_refresh(para);
+        //$( '#showmsg_right_panel' ).panel( "refresh" );
     }
-}
-// -- }}}
-// {{{ search
+
+    function showmsg_header(para){
+        $('#remote_url_short').html([ 'HJJ', para.board, para.id ].join(","));
+
+        input_init('#reply_thread', 'username');
+        $('#reply_thread').find('form').attr('action', HJJ + "/reply.php?board="+ para.board + '&id=' + para.id);
+        $('#thread_to_board').attr('href', "#board?board=" + para.board + '&page=1');
+        $('#manual_jump').find('input').eq(0).val(para.board);
+
+        $('#remote_url').html(HJJ + "/showmsg.php?" + showmsg_para_string(para)); 
+    }
+
+    function thread_to_kindle(){
+        $('#export_thread').html('kindle');
+
+        var formData = new FormData();
+        $('#thread_to_kindle').find('input').each(function(){
+            var k = $(this).attr('name');
+            if(k) {
+                formData.append(k, $(this).val());
+            }
+        });
+
+        var u = 'http://' + DEFAULT["thread_to_kindle_dom"] + '/novel_robot';
+
+        var xhr = (XMLHttpRequest.noConflict ? new XMLHttpRequest.noConflict() : new XMLHttpRequest({mozSystem: true}));
+        xhr.open("POST", u);
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState == 4) {
+                $('#export_thread').html('&#9873; 已推送到kindle');
+            }
+        };
+        xhr.send(formData);
+
+    }
+
+    function showmsg_banner(para){
+        var local_url = "#showmsg?" + showmsg_para_string(para); 
+        var u = HJJ+'/showmsg.php?' + showmsg_para_string(para); 
+        $('#thread_title').attr('href', u);
+
+        $('#thread_bid').html(para.board);
+        $('#thread_tid').html(para.id);
+        $('#thread_pid').html(para.page || 0);
+
+
+        var tag_key = format_cache_key('thread_tag', para, ["board", "id"]);
+        $('#thread_tag_popup').html( input_div_html(tag_key, '标签') + 
+                '<input type="button" value="返回" id="thread_tag_close">'
+                );
+        tags_input_init(tag_key);
+        $( "#thread_tag_close" ).on('touchstart', function(){ 
+            $('#thread_tag_popup').popup( "close" ); });
+        $('#thread_tag_list').text( DEFAULT[tag_key] );
+
+        $('#thread_to_kindle').find('input').eq(0).val(u);
+        $('#kindle_mail').attr('maxlength', "30");
+    }
+
+
+    function showmsg(para){
+        var local_url = "#showmsg?" + showmsg_para_string(para); 
+        showmsg_header(para);
+        showmsg_banner(para);
+
+        var x = lscache.get(local_url);
+        if(x && para.refresh==undefined){
+            showmsg_tail(para, x);
+        }else{
+            showmsg_refresh(para);
+        }
+    }
+    // -- }}}
+    // {{{ search
 
 function search_para_string(para, other){
     var x = merge_hash(para, other);
@@ -1601,7 +1621,7 @@ function setting_init(){
             input_init('#setting', 'qq_access_token');
             input_init('#setting', 'qq_openid');
 
-            $('#setting').on('click', '#suggest', function(){
+            $('#setting').on('touchstart', '#suggest', function(){
                 var st = encodeURIComponent(SHARE_WEIBO + ' ');
                 var wu = SHARE_WEIBO_URL + '?title=' + st;
                 window.open(wu, '_blank');
@@ -1610,7 +1630,7 @@ function setting_init(){
 // }}
 // {{ manual_jump
 function manual_jump_init(){
-    $('#manual_jump').on('click', '#manual_jump_btn', function(){
+    $('#manual_jump').on('touchstart', '#manual_jump_btn', function(){
         var bid = $('#manual_jump').find('input').eq(0).val();
         $('#manual_jump').find('input').eq(0).val('');
         var tid = $('#manual_jump').find('input').eq(1).val();
@@ -1629,15 +1649,15 @@ function manual_jump_init(){
 // {{ main
 function params_page(){
 
-    $(document).bind("popupcreate", function (e) { 
-        var $widget = $(e.target);
+    //$(document).bind("popupcreate", function (e) { 
+        //var $widget = $(e.target);
 
-        $widget.delegate(".ui-btn", "click", function ( e ) {
-            setTimeout(function(){  
-                $widget.popup("close");
-            });
-        });
-    });
+        //$widget.delegate(".ui-btn", 'click', function ( e ) {
+            //setTimeout(function(){  
+                //$widget.popup("close");
+            //});
+        //});
+    //});
 
 
     $.mobile.paramsHandler.addPage(
@@ -1670,11 +1690,10 @@ function params_page(){
     $.mobile.paramsHandler.init();
 }
 function main(){
-    $.support.cors = true;  
-    //jQuery.support.cors = true;  
 
     $("[data-role=panel]").enhanceWithin().panel();
     $('textarea').elastic(); 
+
 
     //$(document).bind('swiperight', function () { window.history.back(); });
     //$(document).bind('swipeleft', function () { window.history.forward(); });
@@ -1686,30 +1705,30 @@ function main(){
     board_menu(); //版块列表
 
     //查询
-    $('#search_form').on('click', '#search_form_btn', function() { search_form() });
+    $('#search_form').on('touchstart', '#search_form_btn', function() { search_form() });
 
     setting_init(); //设置
     manual_jump_init(); //手动跳转
 
     fav_board(); //收藏版块
-    $('#fav_board').on('click', '.refresh_fav_board', function() { fav_board() });
+    $('#fav_board').on('touchstart', '.refresh_fav_board', function() { fav_board() });
 
     fav_thread(); //收藏贴子
-    $('#fav_thread').on('click', '.refresh_fav_thread', function() { fav_thread() });
+    $('#fav_thread').on('touchstart', '.refresh_fav_thread', function() { fav_thread() });
 
     recent_history(); //近期访问
-    $('#recent_history').on('click', '.refresh_recent_history', function() { recent_history() });
+    $('#recent_history').on('touchstart', '.refresh_recent_history', function() { recent_history() });
 
     //版块
     $('#recent_history').click(function(){ recent_history(); });
 
-    $('#board').on('click', '#sub_board_btn', function(){ sub_board_action(); }); 
-    $('#board').on('click', '#board_save', function(){ board_save(); }); 
-    $('#board').on('click', '.sub_board_check_all', function() { 
+    $('#board').on('touchstart', '#sub_board_btn', function(){ sub_board_action(); }); 
+    $('#board').on('touchstart', '#board_save', function(){ board_save(); }); 
+    $('#board').on('touchstart', '.sub_board_check_all', function() { 
         var act = $(this).attr('action');
         sub_board_check_all(act); 
     });
-    $('#board').on('click', '#toggle_recent_thread', function() { toggle_recent_thread(); });
+    $('#board').on('touchstart', '#toggle_recent_thread', function() { toggle_recent_thread(); });
 
     //$('#board').on('swipeleft', function(e){ 
     //$('#search_form_a').click();
@@ -1719,7 +1738,7 @@ function main(){
     //$('#new_thread_a').click();
     //});
 
-    $('body').on('click', '.format_url_code', function(){
+    $('body').on('touchstart', '.format_url_code', function(){
         var area = $(this).parent().find('textarea').eq(0);
         var f = area.val()
         .replace(/\s(http:\/\/.*?\.(jpg|gif|png|jpeg))\s/ig , "<img src='$1' />\n")

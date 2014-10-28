@@ -83,8 +83,8 @@ textarea {
 }
 
 .popup_textarea {
-    height: 60% ;
-    width: 95% ;
+    /*height: 60% ;*/
+    /*width: 95% ;*/
     overflow: auto !important; 
 }
 
@@ -131,3 +131,5 @@ input,select {
 .ui-page-active.ui-panel-page-block{
     /*overflow-x:hidden;*/
 }
+
+textarea.ui-input-text { height: inherit !important}
