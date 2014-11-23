@@ -85,3 +85,10 @@ android 版本（基于phonegap打包）：[HJJ-phonegap](https://build.phonegap
 直接将该域名填入设置页面
 
 并在 amazon 设置允许  kindle@xxx.com 邮箱推送即可
+
+# changelog
+
+v0.8 
+
+增加上传图片功能（调用腾讯微博接口）
+
