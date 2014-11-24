@@ -10,6 +10,12 @@ body,div,table,ul,li,input,textarea  {
     padding-bottom: 0.05em !important;
 }
 
+#showmsg_floor [data-role=navbar] a { 
+    font-size: 0.9em !important; 
+    padding-top: 0.05em !important;
+    padding-bottom: 0.05em !important;
+}
+
 .star {
     color: #d4db8e;
     font-weight: bold;
@@ -75,9 +81,7 @@ input,select {
 
 .small_input { width: 15% ; }
 
-.mid_input { width: 30% ; }
 
-.big_input { width: 60% ; }
 
 .smallnav {
     text-align : left;
@@ -85,14 +89,17 @@ input,select {
     clear: none !important;  
 }
 
-.ui-panel-3dtransforms { position: fixed; }
-
 textarea.ui-input-text { height: inherit !important}
 
-.paneldiv {
-    /*width: 100% !important;*/
-    border: 0.1em solid rgb(153, 204, 0); 
+/*panel start {{ */
+.paneldiv { border: 0.1em solid rgb(153, 204, 0); }
+.ui-panel { width: 50%; }
+.ui-panel-animate.ui-panel-page-content-position-left {
+        left: 0;
+        right: 0;
+        -webkit-transform: translate3d(50%,0,0);
+        -moz-transform: translate3d(50%,0,0);
+        transform: translate3d(50%,0,0);
 }
-/*.panel {*/
-    /*overflow: auto !important; */
-/*}*/
+[data-role="panel"] input { width: 60% ; }
+/*panel end }} */

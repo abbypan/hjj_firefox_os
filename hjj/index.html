@@ -34,16 +34,15 @@
 <body>
 <div id="container" >
 <div data-role="page" id="home">
-    <div data-role="panel" id="home_panel" data-position="left"
-        class="jqm-nav-panel jqm-navmenu-panel ui-panel ui-panel-position-left ui-panel-display-reveal ui-panel-closed ui-body-c ui-panel-animate"
-        data-display="reveal">
+    <div data-role="panel" id="home_panel" data-position="left">
         <div class="paneldiv">
-                <li><a href="#home">主页</a></li>
-                <li><a href="#manual_jump">快速跳转</a></li>
-                <li><a href="#board_menu">版块列表</a></li>
-                <li><a href="#setting" >设置</a></li>
+            <a href="#home">主页</a><br>
+            <a href="#manual_jump">快速跳转</a><br>
+            <br>
+            <a href="#board_menu">版块列表</a><br>
+            <a href="#setting" >设置</a><br>
         </div>
- <a data-rel="close" data-role="button" data-icon="delete" data-inline="true">返回</a>
+            <a data-rel="close" data-role="button" data-icon="delete" data-inline="true">返回</a>
     </div>
 
     <!--<div data-role="header" data-position="fixed">-->
@@ -84,20 +83,19 @@
 
 
 <div id="board" data-role="page">
-    <div data-role="panel" id="board_panel" data-position="left"
-        class="jqm-nav-panel jqm-navmenu-panel ui-panel ui-panel-position-left ui-panel-display-reveal ui-panel-closed ui-body-c ui-panel-animate"
-        data-display="reveal">
+    <div data-role="panel" id="board_panel" data-position="left">
         <div class="paneldiv">
-                <li><a href="#home">主页</a></li>
-                <li><a href="#manual_jump">快速跳转</a></li>
+            <a href="#home">主页</a><br>
+            <a href="#manual_jump">快速跳转</a><br>
+            <br>
+            <a href="#sub_board" data-rel="popup">子版块</a><br>
+            <a href="#new_thread" data-rel="popup">发贴</a><br>
+            <br>
+            <a href="#search_form" data-rel="popup">搜索</a><br>
+            <a href="#" id="toggle_recent_thread">最近热贴</a><br>
+            <a id="board_save" href="#">收藏本版</a><br>
         </div>
-        <div class="paneldiv">
-                <li><a href="#" id="toggle_recent_thread">最近热贴</a></li>
-                <li><a href="#search_form" data-rel="popup">搜索</a></li>
-                <li><a href="#new_thread" data-rel="popup">发贴</a></li>
-                <li><a href="#sub_board" data-rel="popup">子版块</a></li>
-        </div>
- <a data-rel="close" data-role="button" data-icon="delete" data-inline="true">返回</a>
+        <a data-rel="close" data-role="button" data-icon="delete" data-inline="true">返回</a>
     </div>
 
     <div style="display:none">
@@ -129,8 +127,7 @@
     <div data-role="content" id="board_content">
         <div id="board_info">
             <span id="board_title"></span>, 
-            <span id="board_id"></span>, 
-            <a id="board_save" href="#">.</a> 
+            <span id="board_id"></span>
         </div>
 
         <div id="board_pager_top" class="pager"></div>
@@ -203,23 +200,12 @@
 </div>
 
 <div id="showmsg" data-role="page">
-    <!--<div data-role="header" data-position="fixed" data-tap-toggle="false">-->
-        <!--<div data-role="navbar">  -->
-            <!--[><ul><]-->
-                <!--[><li><a href="#manual_jump">&#8623;</a></li><]-->
-                <!--[><li><a href="#" id="thread_to_board">&uarr;</a></li><]-->
-                <!--[><li><a href="#showmsg_right_panel" data-rel="popup" data-position-to="window" data-transition="pop">&#8649;</a><]-->
-            <!--[></ul><]-->
-            
-        <!--</div>-->
-    <!--</div>-->
     <div data-role="content" id="thread_content" >
         <div id="thread_info">
             <a target="_blank" href="#" id="thread_title"></a><br> 
             <span id="thread_bid"></span>, 
             <span id="thread_tid"></span>, 
             <span id="thread_pid"></span>&nbsp; 
-            <a id="thread_save" href="#">.</a>&nbsp; 
             <span id="thread_action_temp"></span> 
         </div>
         <div id="thread_action">
@@ -232,7 +218,7 @@
         <div id="thread_pager_bottom" class="pager"></div>
     </div>
 
-    <div id="showmsg_floor" data-role="footer" data-position="fixed">
+    <div id="showmsg_footer" data-role="footer" data-position="fixed" data-tap-toggle="false">
         <div data-role="navbar">  
             <ul>
                 <li><a href="#showmsg_panel">...</a></li>
@@ -248,27 +234,22 @@
                 <li><a class="jump_to_next" href="#">&rarr;</a></li>
                 <li><a class="jump_to_bottom" href="#">&rArr;</a></li>
             </ul>
-            <!--<ul>-->
-                <!--<li>-->
-                <!--<input type="range" name="showmsg_floor_slider" id="showmsg_floor_slider" min="0" max="300" value="0">-->
-                <!--</li>-->
-            <!--</ul>-->
         </div>
     </div>
 
     <div data-role="popup" id="reply_thread">
         <form enctype="multipart/form-data" method="post" action="reply.php?board=&id=" data-role="none" data-ajax="false" target="_newtab"> 
-        <input placeholder="名字" type="text" name="username" >
-        <input type="file" place="#reply_thread" class="upload_img_btn" data-role="none" > 
-        <div class="uploaded_img">
-        </div>
-        <textarea rows=12 placeholder="内容" name="body"></textarea> 
-        <a href="#" class="format_url_code">图片/网址 代码转换</a> 
-        <input type="submit" value="发贴"> 
+            <input placeholder="名字" type="text" name="username" >
+            <input type="file" place="#reply_thread" class="upload_img_btn" data-role="none" > 
+            <div class="uploaded_img">
+            </div>
+            <textarea rows=12 placeholder="内容" name="body"></textarea> 
+            <a href="#" class="format_url_code">图片/网址 代码转换</a> 
+            <input type="submit" value="发贴"> 
         </form>
         <div class="upload_img_status">...</div> 
     </div>
-    
+
     <div data-role="popup" id="jump_floor" class="popup_textarea">
         <input placeholder="楼层" type="text" id="dst_floor" name="dst_floor"> 
         <input class="showmsg_jump_page_btn" type="submit" value="跳转" > 
@@ -296,41 +277,30 @@
     <div style="display:none">
         <a id="jump_floor_btn" href="#jump_floor" data-rel="popup" data-position-to="window" data-transition="pop">&#9735;</a>
     </div>
-    <div data-role="panel" id="showmsg_panel" data-position="left"
-        class="jqm-nav-panel jqm-navmenu-panel ui-panel ui-panel-position-left ui-panel-display-reveal ui-panel-closed ui-body-c ui-panel-animate"
-        data-display="reveal">
+    <div data-role="panel" id="showmsg_panel" data-position="left">
         <div class="paneldiv">
-            <a href="#" id="reverse_floor">倒序</a><br><br>
-
-            <input data-role="none" type="text" name="wordnum" placeholder="字数" id="min_wordnum" class="mid_input"> 
-            <a href='#' id="min_wordnum_btn">过滤</a><br><br>
-
-            <input data-role="none" type="text" name="floor_keyword" id="floor_keyword" class="big_input" placeholder="关键字"> 
-            <br> 
-            <a href="#" id="floor_grep">抽取</a>，
-            <a href="#" id="floor_filter">过滤</a> 
-            <br><br>
-                <!--<a href="#" id="reverse_floor">&#8597;</a><br>-->
-                <!--<a href="#" id="reverse_floor">倒序</a><br>-->
-                <!--<a href="#" id="thread_refresh">&#8635;</a>-->
-                <a href="#" id="thread_refresh">刷新</a>
+            <a href="#home">主页</a><br>
+            <a href="#manual_jump">快速跳转</a><br>
+            <br>
+            <a id="export_thread" href="#thread_to_kindle" data-rel="popup" data-position-to="window" data-transition="pop">推送到kindle</a><br>
+            <a id="share_thread" href="#">分享到微博</a><br>
+            <br>
+            <input data-role="none" type="text" name="wordnum" placeholder="字数" id="min_wordnum"><br>
+            <a href='#' id="min_wordnum_btn">过滤</a><br>
+            <input data-role="none" type="text" name="floor_keyword" id="floor_keyword" class="panel_input" placeholder="关键字"><br>
+            <a href="#" id="floor_grep">抽取</a>，<a href="#" id="floor_filter">过滤</a><br> 
+            <br>
+            <a id="thread_mark_floor" href="#">转到标记楼层</a><br>
+            <a href="#reply_thread" data-rel="popup" id="reply_thread_a" data-position-to="window">回贴</a><br>
+            <a href="#" id="reverse_floor">倒序</a><br>
+            <br>
+            <a href="#" id="thread_refresh">刷新</a><br>
+            <a id="thread_save" href="#">收藏贴子</a><br>
+            <a id="thread_cache" href="#">缓存贴子</a><br>
         </div>
         <br>
-        <div class="paneldiv">
-            <a id="thread_mark_floor" href="#">&#9875; 跳转到标记的楼层</a><br>
-            
-    <a href="#reply_thread" data-rel="popup" id="reply_thread_a" data-position-to="window">&#8626; 回贴</a>
-        </div>
-        <br>
-
-        <div class="paneldiv">
-            <a id="share_thread" href="#">@ 分享到微博</a><br>
-            <a id="thread_cache" href="#">&#9831; 缓存贴子</a><br>
-            <a id="export_thread" href="#thread_to_kindle" data-rel="popup" data-position-to="window" data-transition="pop">&#9872; 推送到kindle</a>
-</div>
-<br>
- <a data-rel="close" data-role="button" data-icon="delete" data-inline="true">返回</a>
-</div>
+        <a data-rel="close" data-role="button" data-icon="delete" data-inline="true">返回</a>
+    </div>
 </div>
 
 <div data-role="page" id="recent_history">
@@ -446,27 +416,24 @@
     <div data-role="header" data-position="fixed">
         <div data-role="navbar">  
             <ul>
-                <li><a data-rel="back" href="#">&larr;</a></li>
-                <li><a href="#board_menu">&#8801;</a></li>
+                <li><a class="board_url" href="#">&larr;</a></li>
             </ul>
         </div>
     </div>
+    
     <div id="search_banner"></div>
-    <div data-role="content" id="search_content">
-        <div id="search_info">
-        </div>
 
+    <div data-role="content" id="search_content">
+        <div id="search_info"></div>
         <div id="search_pager_top" class="pager"></div>
         <div id="search_thread_list"></div>
         <div id="search_pager_bottom" class="pager"></div>
-
     </div>
+
     <div data-role="footer" data-position="fixed">
         <div data-role="navbar">  
             <ul>
-                <li><a href="#fav_board">&#9733;</a></li>
-                <li><a href="#fav_thread">&#9829;</a></li>
-                <li><a href="#recent_history">&#167;</a></li>
+                <li><a class="board_url" href="#">&larr;</a></li>
             </ul>
         </div>
     </div>
