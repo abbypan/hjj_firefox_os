@@ -171,15 +171,16 @@
         <div id="thread_type">
         </div>
 
-
+            <input type="button" data-role="none" value="取消默认子版块" id="not_rem_sub_board">
             <input type="button" data-role="none" value="全选" action="all" class="sub_board_check_all">
             <input type="button" data-role="none" value="反选" action="none" class="sub_board_check_all">
 
             <input name="url" type="hidden">
-            <div data-role="fieldcontain">
+            <div data-role="fieldcontain" id="sub_board_list">
                 <fieldset data-role="controlgroup"> 
                 </fieldset>
             </div>
+            <input type="checkbox" name="rem" data-role="none">设置为默认子版块<br>
             <input type="button" value="确定" id="sub_board_btn">
     </div>
 
@@ -279,24 +280,26 @@
     </div>
     <div data-role="panel" id="showmsg_panel" data-position="left">
         <div class="paneldiv">
-            <a href="#home">主页</a><br>
-            <a href="#manual_jump">快速跳转</a><br>
-            <br>
             <a id="export_thread" href="#thread_to_kindle" data-rel="popup" data-position-to="window" data-transition="pop">推送到kindle</a><br>
             <a id="share_thread" href="#">分享到微博</a><br>
-            <br>
-            <input data-role="none" type="text" name="wordnum" placeholder="字数" id="min_wordnum"><br>
-            <a href='#' id="min_wordnum_btn">过滤</a><br>
-            <input data-role="none" type="text" name="floor_keyword" id="floor_keyword" class="panel_input" placeholder="关键字"><br>
-            <a href="#" id="floor_grep">抽取</a>，<a href="#" id="floor_filter">过滤</a><br> 
-            <br>
             <a id="thread_mark_floor" href="#">转到标记楼层</a><br>
             <a href="#reply_thread" data-rel="popup" id="reply_thread_a" data-position-to="window">回贴</a><br>
+            <br>
+            <input data-role="none" type="text" name="wordnum" placeholder="字数" id="min_wordnum">
+            <a href='#' id="min_wordnum_btn">过滤</a><br>
+            <input data-role="none" type="text" name="floor_keyword" id="floor_keyword" class="panel_input" placeholder="关键字">
+            <br>
+            <a href="#" id="floor_grep">抽取</a>，<a href="#" id="floor_filter">过滤</a><br>
             <a href="#" id="reverse_floor">倒序</a><br>
             <br>
+            <a href="#home">主页</a><br>
+            <a href="#manual_jump">快速跳转</a><br>
+            <a id="thread_save" href="#">收藏</a>，<a id="thread_cache" href="#">缓存</a><br>
+            <br>
+            <input class="default_checkbox" type="checkbox" name="showmsg_view_img" data-role="none">只看图<br>
+            <input class="default_checkbox" type="checkbox" name="showmsg_only_poster" data-role="none">只看楼主<br>
+            <input class="default_checkbox" type="checkbox" name="showmsg_min_wordnum" data-role="none">自动脱水<br>
             <a href="#" id="thread_refresh">刷新</a><br>
-            <a id="thread_save" href="#">收藏贴子</a><br>
-            <a id="thread_cache" href="#">缓存贴子</a><br>
         </div>
         <br>
         <a data-rel="close" data-role="button" data-icon="delete" data-inline="true">返回</a>

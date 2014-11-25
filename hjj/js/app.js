@@ -29,6 +29,9 @@ var DEFAULT = {
     showmsg_jump_height : 0.6,
     showmsg_jump_floor : 50,
     showmsg_dewater_wordnum : 50, 
+    showmsg_view_img : 0, 
+    showmsg_only_poster : 0, 
+    showmsg_min_wordnum : 0 
 };
 for(var k in DEFAULT){
     var v = lscache.get(k);
@@ -614,9 +617,10 @@ function board_thread_info(tr) {
 function sub_board_action(){
     //$('#sub_board').popup('close');
     var url =$("#sub_board").find("input[name='url']").attr("value"); 
+    var rem =$("#sub_board").find("input[name='rem']").prop("checked"); 
 
     var id_list = [];
-    $("#sub_board").find("input[type='checkbox']")
+    $("#sub_board_list").find("input[type='checkbox']")
         .each(function(){
             if($(this).prop("checked")){
                 id_list.push($(this).prop("value"));
@@ -626,6 +630,11 @@ function sub_board_action(){
     if(id_list.length>0){
         var id = id_list.join(',');
         url+='&subid=' + id;
+        if(rem){
+            var bid = $('#board_id').html();
+            lscache.set( 'rem_sub_board_' + bid, id);
+        }
+
     }
 
     $('#sub_board_url').attr('href' , url);
@@ -691,6 +700,10 @@ function board_save_title(info){
 }
 
 function board(para) {
+    if(! para.subid){
+        var rem_sub_board = lscache.get( 'rem_sub_board_' + para.board);
+        if(rem_sub_board) para.subid = rem_sub_board;
+    }
     thread_type(para);
     new_thread(para);
 
@@ -763,7 +776,6 @@ function view_img(){
         var c = f.find('.flcontent').eq(0).html();
         return  c.match(/\<img /i) ? 0 : 1;
     };
-
     filter_floor(is_to_filter, 'Ö»¿´Í¼');
 }
 
@@ -1124,17 +1136,10 @@ function thread_save_title(para, res){
             return false;
         });
 
-        $('#showmsg').on('touchstart', '#view_img', function(){ view_img(); return false; });
         $('#showmsg').on('touchstart', '#thread_save', function(){ thread_save(); return false; });
         $('#showmsg').on('touchstart', '#share_thread', function(){ share_thread(); return false; });
         $('#showmsg').on('touchstart', '#only_poster', function(){ only_poster(); return false; });
-
-        $('#showmsg_panel').delegate("a", 'touchstart', function ( e ) {
-            setTimeout(function(){  
-                $('#showmsg_panel').panel("close");return false; 
-            });
-        });
-
+        $('#showmsg').on('touchstart', '#view_img', function(){ view_img(); return false; });
 
         $('#showmsg').on('touchstart', '#min_wordnum_btn',function(){ 
             var min = $('#min_wordnum').val();
@@ -1316,6 +1321,9 @@ function thread_save_title(para, res){
         }
 
         //$( '#showmsg_panel' ).panel( "refresh" );
+        if(DEFAULT["showmsg_view_img"]==1) view_img();
+        if(DEFAULT["showmsg_only_poster"]==1) only_poster();
+        if(DEFAULT["showmsg_min_wordnum"]==1) min_wordnum();
     }
 
     function showmsg_header(para){
@@ -1532,6 +1540,19 @@ function slider_init(key, elem){
     });
 }
 
+function default_checkbox_init(){
+        $('[data-role="page"]').find(".default_checkbox").each(
+                function(){
+                    var k = $(this).attr('name');
+                    $(this).prop("checked",DEFAULT[k]==1 ? true : false); 
+                    $(this).on("change", function () {
+                        DEFAULT[k] = $(this).prop("checked") ? 1 : 0;
+                        lscache.set(k, DEFAULT[k]);
+                        if(k.match(/^showmsg_/)) $.mobile.changePage($('#thread_refresh').attr('href'));
+                    });
+                });
+}
+
 function change_font_size_html(){
     return '<div id="font_size_d" class="setting"> \
         ×ÖºÅ£º \
@@ -1744,7 +1765,11 @@ function main(){
 
     //°æ¿é
     $('#recent_history').click(function(){ recent_history(); });
-
+    $('#board').on('touchstart', '#not_rem_sub_board', function(){
+            var bid = $('#board_id').html();
+            lscache.remove( 'rem_sub_board_' + bid);
+            $.mobile.changePage( '#board?board=' + bid + '&page=1' );
+    });
     $('#board').on('touchstart', '#sub_board_btn', function(){ sub_board_action(); }); 
     $('#board').on('touchstart', '#board_save', function(){ board_save(); }); 
     $('#board').on('touchstart', '.sub_board_check_all', function() { 
@@ -1772,7 +1797,7 @@ function main(){
     showmsg_click(); //Ìù×Ó
 
     input_init('#showmsg', 'mail');
-
+    default_checkbox_init();
 }
 
 
