@@ -1548,7 +1548,7 @@ function default_checkbox_init(){
                     $(this).on("change", function () {
                         DEFAULT[k] = $(this).prop("checked") ? 1 : 0;
                         lscache.set(k, DEFAULT[k]);
-                        if(k.match(/^showmsg_/)) $.mobile.changePage($('#thread_refresh').attr('href'));
+        //if(k.match(/^showmsg_/)) $.mobile.changePage($('#thread_refresh').attr('href'));
                     });
                 });
 }
