@@ -1174,7 +1174,7 @@ function thread_save_title(para, res){
             //e.preventDefault();
             var z = get_event_zone(e);
             showmsg_scroll_screen(z); //tap to prev/next page
-            showmsg_toggle_footer(z); //tap to show/hide footer
+            //showmsg_toggle_footer(z); //tap to show/hide footer
             return false;
         });
 
@@ -1281,9 +1281,16 @@ function thread_save_title(para, res){
             if(! href.match(/http:\/\/bbs.jjwxc.net\/showmsg.php\?/)) return;
             href = href.replace(/http:\/\/bbs.jjwxc.net\/showmsg.php\?/g, '#showmsg?')
             $(this).attr('href', href);
-        $(this).removeAttr('target');
-        $(this).removeAttr('rel');
+            $(this).removeAttr('target');
+            $(this).removeAttr('rel');
         });
+
+        $("#thread_floor_list").find('img').each(function(){     
+            var img_url = $(this).attr('href');
+            $(this).attr('data-echo', img_url);
+            $(this).attr('href', 'icons/blank.png');
+            new Echo($(this)).init();
+        });     
 
         var min =0;
         var max = 0;
@@ -1324,6 +1331,7 @@ function thread_save_title(para, res){
         if(DEFAULT["showmsg_view_img"]==1) view_img();
         if(DEFAULT["showmsg_only_poster"]==1) only_poster();
         if(DEFAULT["showmsg_min_wordnum"]==1) min_wordnum();
+        
     }
 
     function showmsg_header(para){
@@ -1798,6 +1806,7 @@ function main(){
 
     input_init('#showmsg', 'mail');
     default_checkbox_init();
+
 }
 
 
