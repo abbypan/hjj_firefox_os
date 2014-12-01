@@ -3,9 +3,23 @@ hjj_firefox_os
 
 红晋江 http://bbs.jjwxc.net 看贴
 
-firefox 版本：[HJJ-firefoxos](https://marketplace.firefox.com/app/hjj/)
+## 安装
 
-android 版本（基于phonegap打包）：[HJJ-phonegap](https://build.phonegap.com/apps/1033213/share)
+### firefoxos
+
+在firefox market直接安装 [HJJ-firefoxos](https://marketplace.firefox.com/app/hjj/) 
+
+### android
+
+注意：phonegap打包的版本会比从firefox market安装的版本慢
+
+法一：
+
+安装firefox，打开firefox，访问firefox market安装：[HJJ-firefoxos](https://marketplace.firefox.com/app/hjj/)
+
+法二：
+
+安装phonegap打包的 android 版本：[HJJ-phonegap](https://build.phonegap.com/apps/1033213/share)
 
 ## 主页
 
