@@ -1276,6 +1276,14 @@ function thread_save_title(para, res){
         $('#thread_pager_bottom').html( res["pager"]);
         $('#thread_floor_list').html(res["floor_list"]);
 
+        $("#thread_floor_list").find('img').each(function(){     
+            var img_url = $(this).attr('src');
+            $(this).attr('src', 'icons/hjj128.png');
+            $(this).attr('data-src', img_url);
+        });
+
+        $("img").unveil();
+
         $('#thread_floor_list').find('a').each(function(){
             var href = $(this).attr('href');
             if(! href.match(/http:\/\/bbs.jjwxc.net\/showmsg.php\?/)) return;
@@ -1285,12 +1293,6 @@ function thread_save_title(para, res){
             $(this).removeAttr('rel');
         });
 
-        $("#thread_floor_list").find('img').each(function(){     
-            var img_url = $(this).attr('href');
-            $(this).attr('data-echo', img_url);
-            $(this).attr('href', 'icons/blank.png');
-            new Echo($(this)).init();
-        });     
 
         var min =0;
         var max = 0;
