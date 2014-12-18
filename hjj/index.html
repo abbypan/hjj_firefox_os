@@ -5,22 +5,24 @@
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0" />
 
 <title>HJJ</title>
+
 <script src="js/jquery-2.1.1.min.js" type="text/javascript"></script>
 <script src="js/fastclick.js" type="text/javascript"></script>
+<script src="js/sprintf.js" type="text/javascript"></script>
+<script src="js/lscache.min.js" type="text/javascript"></script>
+
 <script src="js/app_init.js" type="text/javascript" charset="gbk"></script>
 
-<script src="js/jquery.mobile-1.4.4.min.js" type="text/javascript"></script>
-<!--<script src="js/jquery.mobile-event.js" type="text/javascript"></script>-->
+<script src="js/jquery.mobile-1.4.5.min.js" type="text/javascript"></script>
+<link type="text/css" rel="stylesheet" href="css/jquery.mobile-1.4.5.min.css" />
+<script src="js/jquery.mobile-event.js" type="text/javascript"></script>
 <script src="js/jquery.mobile.paramsHandler-1.4.2.js" type="text/javascript"></script>
-<script src="js/lscache.min.js" type="text/javascript"></script>
+<link type="text/css" rel="stylesheet" href="css/jqm-survival-kit.css" />
 <script src="js/jquery.tagsinput.min.js" type="text/javascript"></script>
-<script src="js/sprintf.js" type="text/javascript"></script>
+<link type="text/css" rel="stylesheet" href="css/jquery.tagsinput.css" />
 
 <script src="js/jquery.lazyload-any.min.js" type="text/javascript"></script>
 <script src="js/app.js" type="text/javascript" charset="gbk"></script>
-
-<link type="text/css" rel="stylesheet" href="css/jquery.tagsinput.css" />
-<link type="text/css" rel="stylesheet" href="css/jquery.mobile-1.4.4.min.css" />
 <link type="text/css" rel="stylesheet" href="css/app.css" />
 
 <style>
@@ -28,12 +30,10 @@
 
 </head>
 <body>
-<div id="container" >
 <div data-role="page" id="home">
     <div data-role="panel" id="home_panel" data-position="left">
         <div class="paneldiv">
-            <a href="#home">主页</a><br>
-            <a href="#manual_jump">快速跳转</a><br>
+            <a href="#recent_history">历史记录</a><br>
             <br>
             <a href="#board_menu">版块列表</a><br>
             <a href="#setting" >设置</a><br>
@@ -61,7 +61,7 @@
                 <li><a href="#home_panel">...</a></li>
                 <li><a href="#fav_board">&#9733;</a></li>
                 <li><a href="#fav_thread">&#9829;</a></li>
-                <li><a href="#recent_history">&#167;</a></li>
+                <li><a href="#manual_jump">&#8869;</a></li>
             </ul>
         </div>
     </div>
@@ -71,9 +71,6 @@
 <div id="board" data-role="page">
     <div data-role="panel" id="board_panel" data-position="left">
         <div class="paneldiv">
-            <a href="#home">主页</a><br>
-            <a href="#manual_jump">快速跳转</a><br>
-            <br>
             <a href="#sub_board" data-rel="popup">子版块</a><br>
             <a href="#new_thread" data-rel="popup">发贴</a><br>
             <br>
@@ -95,7 +92,8 @@
     <div data-role="content" id="board_content">
         <div id="board_info">
             <span id="board_title"></span>, 
-            <span id="board_id"></span>
+            <span id="board_id"></span>,
+            <span id="board_page"></span>
         </div>
 
         <div id="board_pager_top" class="pager"></div>
@@ -110,7 +108,7 @@
                 <li><a href="#board_panel">...</a></li>
                 <li><a href="#fav_board">&#9733;</a></li>
                 <li><a href="#fav_thread">&#9829;</a></li>
-                <li><a href="#recent_history">&#167;</a></li>
+                <li><a href="#manual_jump">&#8869;</a></li>
             </ul>
         </div>
     </div>
@@ -253,6 +251,7 @@
             <br>
             <a href="#home">主页</a><br>
             <a href="#manual_jump">快速跳转</a><br>
+            <a href="#recent_history">历史记录</a><br>
             <a id="thread_save" href="#">收藏</a>，<a id="thread_cache" href="#">缓存</a><br>
             <br>
             <a href="#" id="thread_refresh">刷新</a>，<a href="#" id="reverse_floor">倒序</a><br>
@@ -396,16 +395,25 @@
 
 <div id="manual_jump" data-role="page">
     <div data-role="navbar">  
-        <a data-rel="back" href="#">&larr;</a>
+        <ul>
+            <li><a data-rel="back" href="#">&larr;</a></li>
+            <li><a href="#home">&Lambda;</a></li>
+            <li><a href="#recent_history">&#167;</a></li>
+        </ul>
     </div>
     <div data-role="content" id="manual_jump_content">
         <input placeholder="大院" type="text" name="board" > 
         <input type="text" name="id" placeholder="门牌"> 
         <input type="text" name="fid" placeholder="楼层"> 
+        <input type="text" name="page" placeholder="页码"> 
         <input id="manual_jump_btn" type="submit" value="跳转">
     </div>
     <div data-role="navbar">  
-        <a data-rel="back" href="#">&larr;</a>
+        <ul>
+            <li><a data-rel="back" href="#">&larr;</a></li>
+            <li><a href="#home">&Lambda;</a></li>
+            <li><a href="#recent_history">&#167;</a></li>
+        </ul>
     </div>
 </div>
 
@@ -422,6 +430,5 @@
 <!-- 收藏帖子 分类/标签/标签共享 -->
 <!-- 浏览器同步书签，阅读进度 -->
 <!--发言记录 查找-->
-</div>
 </body>
 </html>

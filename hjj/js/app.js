@@ -225,7 +225,7 @@ function upload_img_init(){
         return false;
     });
 
-    $('#reply_thread').on('touchstart', '.insert_img', function(){
+    $('#reply_thread').on('vclick', '.insert_img', function(){
         var place=$(this).attr('place');
         var img = $(this).attr('url');
 
@@ -444,6 +444,14 @@ function fav_thread() {
     $('#fav_thread').find('#fav_thread_ul').trigger('create');
 }
 
+function get_showmsg_local_url(x){
+    return "#showmsg?" + showmsg_para_string(x); 
+}
+
+function get_showmsg_remote_url(x){
+    return HJJ + "/showmsg.php?" + showmsg_para_string(x); 
+}
+
 function get_showmsg_info(){
     var x = {
         board : $('#thread_bid').text(),
@@ -451,12 +459,11 @@ function get_showmsg_info(){
         page : $('#thread_pid').text(),
         title : $('#thread_title').text()
     };
-    x["local_url"] = "#showmsg?" + showmsg_para_string(x); 
-    x["remote_url"] = HJJ + "/showmsg.php?" + showmsg_para_string(x); 
-
     var poster = get_showmsg_poster();
     if(poster) x["poster"] = poster;
 
+    x["local_url"] = get_showmsg_local_url(x); 
+    x["remote_url"] = get_showmsg_remote_url(x);
     return x;
 }
 
@@ -642,7 +649,8 @@ function sub_board_action(){
     }
 
     $('#sub_board_url').attr('href' , url);
-    $('#sub_board_url').click();
+    $.mobile.pageContainer.pagecontainer('change', url);
+    //$('#sub_board_url').click();
 }
 
 function sub_board(para, html){
@@ -669,6 +677,7 @@ function board_title(para, h){
     var t = $(h).find('font[color="red"]').eq(0).text().trim();
     $('#board_title').html(t);
     $('#board_id').html(para.board);
+    $('#board_page').html(para.page || 1);
     $('#remote_url_title').html(t);
     check_fav_board();
 }
@@ -704,6 +713,7 @@ function board_save_title(info){
 }
 
 function board(para) {
+    $.mobile.silentScroll(0);
     if(! para.subid){
         var rem_sub_board = lscache.get( 'rem_sub_board_' + para.board);
         if(rem_sub_board) para.subid = rem_sub_board;
@@ -747,6 +757,16 @@ function board(para) {
 
 // -- }}
 //  {{{ showmsg
+function thread_jump_page(x){
+    var act = parseInt(x.attr('action'));
+    var info = get_showmsg_info();
+    info.page = parseInt(info.page) + act;
+    if(info.page<0) info.page=0;
+
+    var u = get_showmsg_local_url(info);
+    $.mobile.pageContainer.pagecontainer('change', u);
+}
+
 function extract_floor_info(info) {
     var c = info.html()
         .replace(/<(table|tr|td|font)[^>]*>/ig, "<$1>")
@@ -907,12 +927,12 @@ function thread_save_title(para, res){
     }
 
     function showmsg_cache(para) {
-        var u = HJJ+'/showmsg.php?' + showmsg_para_string(para); 
+        var u = get_showmsg_remote_url(para);
 
         var showmsg_cb = function(d){
             var res = extract_showmsg_content(d);
 
-            var local_url = "#showmsg?" + showmsg_para_string(para); 
+            var local_url = get_showmsg_local_url(para);
             lscache.set(local_url, res);
 
             $('#thread_action_temp').html('已缓存'+para.page);
@@ -923,7 +943,7 @@ function thread_save_title(para, res){
             }else{
                 var k = format_cache_key('thread_cache', para, ["board", "id"]);
                 para.page = 0;
-                local_url = "#showmsg?" + showmsg_para_string(para); 
+                local_url = get_showmsg_local_url(para);
 
                 toggle_action(k, '#thread_cache', 'thread_cache', {
                     title : thread_save_title(para, res),
@@ -951,7 +971,7 @@ function thread_save_title(para, res){
         if(act && act=='del'){
             for(var i=0; i<p["page_num"]; i++){
                 p.page = i;
-                var local_url = "#showmsg?" + showmsg_para_string(p); 
+                var local_url = get_showmsg_local_url(p);
                 lscache.remove(local_url);
                 $('#thread_action_temp').html('已移除缓存'+p.page);
             }
@@ -1101,43 +1121,46 @@ function thread_save_title(para, res){
     }
 
     function showmsg_click() {
+        $('#showmsg').on('vclick', '.thread_jump_page', function(){
+            thread_jump_page($(this)); return false;
+        });
 
-        $('#showmsg').on('touchstart', '#thread_cache', function(){ 
+        $('#showmsg').on('vclick', '#thread_cache', function(){ 
             thread_cache(); return false;
         });
 
-        $('#showmsg').on('touchstart', '#thread_mark_floor', function(){ 
+        $('#showmsg').on('vclick', '#thread_mark_floor', function(){ 
             thread_mark_floor();return false;
         });
 
-        $('#showmsg').on('touchstart', '.mark_floor', function(){ 
+        $('#showmsg').on('vclick', '.mark_floor', function(){ 
             $('#showmsg').find('.temp_floor').html('');
             mark_floor($(this));
             $(this).next().html('记住第' + $(this).parent().attr('fid') + '楼'); 
             return false;
         });
 
-        $('#showmsg').on('touchstart', '#thread_save', function(){ thread_save(); return false; });
-        $('#showmsg').on('touchstart', '#share_thread', function(){ share_thread(); return false; });
-        $('#showmsg').on('touchstart', '#only_poster', function(){ only_poster(); return false; });
-        $('#showmsg').on('touchstart', '#view_img', function(){ view_img(); return false; });
+        $('#showmsg').on('vclick', '#thread_save', function(){ thread_save(); return false; });
+        $('#showmsg').on('vclick', '#share_thread', function(){ share_thread(); return false; });
+        $('#showmsg').on('vclick', '#only_poster', function(){ only_poster(); return false; });
+        $('#showmsg').on('vclick', '#view_img', function(){ view_img(); return false; });
 
-        $('#showmsg').on('touchstart', '#min_wordnum_btn',function(){ 
+        $('#showmsg').on('vclick', '#min_wordnum_btn',function(){ 
             var min = $('#min_wordnum').val();
             min_wordnum(min);return false; 
         });
-        $('#showmsg').on('touchstart', '#thread_dewater', function(){ 
+        $('#showmsg').on('vclick', '#thread_dewater', function(){ 
             var min = $('#showmsg_dewater_wordnum').val();
             min_wordnum(min);return false; 
         });
-        $('#showmsg').on('touchstart', '#floor_grep',function(){ 
+        $('#showmsg').on('vclick', '#floor_grep',function(){ 
             floor_grep();return false; });
-        $('#showmsg').on('touchstart', '#floor_filter',function(){ 
+        $('#showmsg').on('vclick', '#floor_filter',function(){ 
             floor_filter();return false;  });
-        $('#showmsg').on('touchstart', '#view_all_floor', function(){ view_all_floor();return false; });
-        $('#showmsg').on('touchstart', '#reverse_floor', function(){ reverse_floor();return false; });
+        $('#showmsg').on('vclick', '#view_all_floor', function(){ view_all_floor();return false; });
+        $('#showmsg').on('vclick', '#reverse_floor', function(){ reverse_floor();return false; });
 
-        $('#showmsg').on('touchstart', '.reply_thread_floor', function(){
+        $('#showmsg').on('vclick', '.reply_thread_floor', function(){
             reply_thread($(this).parent(), $(this).attr('action'));return false; 
         });
 
@@ -1150,11 +1173,11 @@ function thread_save_title(para, res){
         //reply_thread($(this), 'reply');
         //});
 
-        $('#showmsg').on('touchstart', '#thread_floor_list', function(e){ 
+        $('#showmsg').on('vclick', '#thread_floor_list', function(e){ 
             //e.preventDefault();
             var z = get_event_zone(e);
-            showmsg_scroll_screen(z); //tap to prev/next page
-            //showmsg_toggle_footer(z); //tap to show/hide footer
+            showmsg_scroll_screen(z); //vclick to prev/next page
+            //showmsg_toggle_footer(z); //vclick to show/hide footer
             return false;
         });
 
@@ -1170,12 +1193,12 @@ function thread_save_title(para, res){
         //$.mobile.silentScroll(pos);
         //});
 
-        $('#showmsg').on('touchstart', '#jump_to_bottom', function(){
+        $('#showmsg').on('vclick', '#jump_to_bottom', function(){
             //$('#showmsg_floor_slider').val($('#showmsg_floor_slider').attr('max'));
             $(document).scrollTop($(document).height());return false; 
         });
 
-        $('#showmsg').on('touchstart', '#jump_to_top', function(){
+        $('#showmsg').on('vclick', '#jump_to_top', function(){
             //$('#showmsg_floor_slider').val(0);
             $.mobile.silentScroll(0);return false; 
         });
@@ -1189,7 +1212,7 @@ function thread_save_title(para, res){
             //return false; 
         });
 
-        $('#showmsg').on('touchstart', '#thread_to_kindle_btn', function(){ thread_to_kindle();return false; });
+        $('#showmsg').on('vclick', '#thread_to_kindle_btn', function(){ thread_to_kindle();return false; });
         //$( document ).on( "pageinit", "#showmsg", function() {
 
         //$( document ).on( "swipeleft swiperight", "#showmsg", function( e ) {
@@ -1212,6 +1235,10 @@ function thread_save_title(para, res){
 
         var pm = d.match(/\>(共\d+页:.+?)<\/div>/);
         res["pager"] = pm ? pm[1].replace(/href=(.+?)>/g, "href=\"#showmsg$1\">").replace(/<\/a>/g, '</a>&nbsp;') : '';
+        if(res["pager"].match(/共/)){
+            res["pager"] += "<a action='-1' class='thread_jump_page'>&lt;</a>&nbsp;&nbsp;" + 
+                "<a action='1' class='thread_jump_page'>&gt;</a>";
+        }
 
         var h = $.parseHTML(d.replace(/<font color='gray' size='-1'>本帖尚未审核,若发布24小时后仍未审核通过会被屏蔽<\/font><br\/>/g,''));
 
@@ -1238,7 +1265,7 @@ function thread_save_title(para, res){
     }
 
     function showmsg_refresh(para) {
-        var u = HJJ+'/showmsg.php?' + showmsg_para_string(para); 
+        var u = get_showmsg_remote_url(para);
 
         if(para.refresh) $('#thread_action_temp').html('刷新');
 
@@ -1246,7 +1273,7 @@ function thread_save_title(para, res){
             var res = extract_showmsg_content(d);
             showmsg_tail(para, res);
 
-            var local_url = "#showmsg?" + showmsg_para_string(para); 
+            var local_url = get_showmsg_local_url(para);
             lscache.set(local_url, res, DEFAULT["thread_cache_minute"]);
         }
         get_hjj_url(u, showmsg_f5_cb);
@@ -1255,6 +1282,7 @@ function thread_save_title(para, res){
     function showmsg_tail(para, res){
         $('#remote_url_title').html(res["title"]);
         $('#thread_title').html( res["title"] );
+
         $('#thread_pager_top').html( res["pager"] );
         $('#thread_pager_bottom').html( res["pager"]);
         $('#thread_floor_list').html(res["floor_list"]);
@@ -1298,7 +1326,7 @@ function thread_save_title(para, res){
         check_save_thread();
         check_cache_thread();
 
-        var local_url = "#showmsg?" + showmsg_para_string(para); 
+        var local_url = get_showmsg_local_url(para);
         $('#thread_refresh').attr('href', local_url + '&refresh=1');
 
         add_history({
@@ -1333,7 +1361,7 @@ function thread_save_title(para, res){
         $('#thread_to_board').attr('href', "#board?board=" + para.board + '&page=1');
         $('#manual_jump').find('input').eq(0).val(para.board);
 
-        $('#remote_url').html(HJJ + "/showmsg.php?" + showmsg_para_string(para)); 
+        $('#remote_url').html(get_showmsg_remote_url(para)); 
     }
 
     function thread_to_kindle(){
@@ -1361,8 +1389,8 @@ function thread_save_title(para, res){
     }
 
     function showmsg_banner(para){
-        var local_url = "#showmsg?" + showmsg_para_string(para); 
-        var u = HJJ+'/showmsg.php?' + showmsg_para_string(para); 
+        var local_url = get_showmsg_local_url(para);
+        var u = get_showmsg_remote_url(para);
         $('#thread_title').attr('href', u);
 
         $('#thread_bid').html(para.board);
@@ -1375,7 +1403,7 @@ function thread_save_title(para, res){
                 '<input type="button" value="返回" id="thread_tag_close">'
                 );
         tags_input_init(tag_key);
-        $( "#thread_tag_close" ).on('touchstart', function(){ 
+        $( "#thread_tag_close" ).on('vclick', function(){ 
             $('#thread_tag_popup').popup( "close" ); 
             return false;
         });
@@ -1387,8 +1415,7 @@ function thread_save_title(para, res){
 
 
     function showmsg(para){
-        //$("#thread_action_temp").html("jump to " + para.board + ',' + para.id + ',' + para.page + ',' + para.fid);
-        var local_url = "#showmsg?" + showmsg_para_string(para); 
+        var local_url = get_showmsg_local_url(para);
         showmsg_header(para);
         showmsg_banner(para);
 
@@ -1415,7 +1442,7 @@ function showmsg_jump_floor(dst_f){
         board : $('#thread_bid').text(),
         id : $('#thread_tid').text(), 
     };
-    var u = '#showmsg?' + showmsg_para_string(x) + '&fid=' + dst_f;
+    var u = get_showmsg_local_url(x) + '&fid=' + dst_f;
     $.mobile.pageContainer.pagecontainer('change', u);
     return false;
 }
@@ -1683,7 +1710,7 @@ function setting_init(){
             input_init('#setting', 'qq_access_token');
             input_init('#setting', 'qq_openid');
 
-            $('#setting').on('touchstart', '#suggest', function(){
+            $('#setting').on('vclick', '#suggest', function(){
                 var st = encodeURIComponent(SHARE_WEIBO + ' ');
                 var wu = SHARE_WEIBO_URL + '?title=' + st;
                 window.open(wu, '_blank');
@@ -1692,22 +1719,22 @@ function setting_init(){
 // }}
 // {{ manual_jump
 function manual_jump_init(){
-    $('#manual_jump').on('touchstart', '#manual_jump_btn', function(){
-        var bid = $('#manual_jump').find('input').eq(0).val();
-        $('#manual_jump').find('input').eq(0).val('');
-        var tid = $('#manual_jump').find('input').eq(1).val();
-        $('#manual_jump').find('input').eq(1).val('');
-        var fid = $('#manual_jump').find('input').eq(2).val();
-        $('#manual_jump').find('input').eq(2).val('');
+    $('#manual_jump').on('vclick', '#manual_jump_btn', function(){
+        var bid = $('#manual_jump').find('input[name="board"]').val();
+        var tid = $('#manual_jump').find('input[name="id"]').val();
+        var page = $('#manual_jump').find('input[name="page"]').val();
+        var fid = $('#manual_jump').find('input[name="fid"]').val();
+        $('#manual_jump').find('input').val('');
 
-        if(fid && ! tid ){
+        if( fid && ! tid ){
             showmsg_jump_floor(fid);
             return;
         }
 
         if(! bid) return;
-        var u = (tid && tid.match(/^\d+$/)) ? ("#showmsg?board=" + bid + '&id=' + tid)  : 
-        ("#board?board=" + bid + '&page=0');
+        if(! page) page=0;
+        var u = (tid && tid.match(/^\d+$/)) ? ("#showmsg?board=" + bid + '&id=' + tid + '&page=' + page)  : 
+        ("#board?board=" + bid + '&page=' + page);
 
     $.mobile.pageContainer.pagecontainer('change', u);
     });
@@ -1771,11 +1798,16 @@ function main(){
     upload_img_init();
 
     home(); //首页
+    $('#home').on('tap', '#home_content', function(e){ 
+        var z = get_event_zone(e);
+        showmsg_scroll_screen(z); 
+        return false;
+    });
     board_menu(); //版块列表
 
     //查询
-    $('#search_form').on('touchstart', '#search_form_btn', function() { search_form(); return false; });
-    $('#search').on('touchstart', '.board_url', function(){
+    $('#search_form').on('vclick', '#search_form_btn', function() { search_form(); return false; });
+    $('#search').on('vclick', '.board_url', function(){
         var id = $('#board_id').val();
         var u = '#board?' + 'board=' + id;
     $.mobile.pageContainer.pagecontainer('change', u);
@@ -1786,31 +1818,31 @@ function main(){
     manual_jump_init(); //手动跳转
 
     fav_board(); //收藏版块
-    $('#fav_board').on('touchstart', '.refresh_fav_board', function() { fav_board(); return false; });
+    $('#fav_board').on('vclick', '.refresh_fav_board', function() { fav_board(); return false; });
 
     fav_thread(); //收藏贴子
-    $('#fav_thread').on('touchstart', '.refresh_fav_thread', function() { fav_thread(); return false; });
+    $('#fav_thread').on('vclick', '.refresh_fav_thread', function() { fav_thread(); return false; });
 
     recent_history(); //近期访问
-    $('#recent_history').on('touchstart', '.refresh_recent_history', function() { recent_history(); return false; });
+    $('#recent_history').on('vclick', '.refresh_recent_history', function() { recent_history(); return false; });
 
     //版块
-    $('#recent_history').click(function(){ recent_history(); return false;});
-    $('#board').on('touchstart', '#not_rem_sub_board', function(){
+    //$('#recent_history').click(function(){ recent_history(); return false;});
+    $('#board').on('vclick', '#not_rem_sub_board', function(){
         var bid = $('#board_id').html();
         lscache.remove( 'rem_sub_board_' + bid);
         $.mobile.pageContainer.pagecontainer('change', '#board?board=' + bid + '&page=1');
         return false;
     });
-    $('#board').on('touchstart', '#sub_board_btn', function(){ sub_board_action(); return false;}); 
-    $('#board').on('touchstart', '#board_save', function(){ board_save();return false; }); 
-    $('#board').on('touchstart', '.sub_board_check_all', function() { 
+    $('#board').on('vclick', '#sub_board_btn', function(){ sub_board_action(); return false;}); 
+    $('#board').on('vclick', '#board_save', function(){ board_save();return false; }); 
+    $('#board').on('vclick', '.sub_board_check_all', function() { 
         var act = $(this).attr('action');
         sub_board_check_all(act); 
         return false;
     });
-    $('#board').on('touchstart', '#toggle_recent_thread', function() { toggle_recent_thread(); return false;});
-    $('#board').on('touchstart', '#thread_list', function(e){ 
+    $('#board').on('vclick', '#toggle_recent_thread', function() { toggle_recent_thread(); return false;});
+    $('#board').on('tap', '#board_content', function(e){ 
         var z = get_event_zone(e);
         showmsg_scroll_screen(z); 
         return false;
@@ -1824,7 +1856,7 @@ function main(){
     //$('#new_thread_a').click();
     //});
 
-    $('body').on('touchstart', '.format_url_code', function(){
+    $('body').on('vclick', '.format_url_code', function(){
         var area = $(this).parent().find('textarea').eq(0);
         var f = area.val()
         .replace(/\s(http:\/\/.*?\.(jpg|gif|png|jpeg))\s/ig , "<img src='$1' />\n")
@@ -1842,10 +1874,10 @@ function main(){
 }
 
 $(document).bind('pageinit',function(e){
+    FastClick.attach(document.body);
     if(MOBILE_INIT>0) return;
     main(); 
     MOBILE_INIT=1;
-    
 });
 
 // }}

@@ -1,17 +1,14 @@
 $(document).one("mobileinit", function() 
 { 
-    $.mobile.pageContainer = $('#container');
-    $.mobile.defaultDialogTransition = 'none'; 
-    $.mobile.defaultPageTransition   = 'none'
+$.mobile.allowCrossDomainPages = true;
+$.mobile.buttonMarkup.hoverDelay = 0;
+$.mobile.defaultDialogTransition = 'none'; 
+$.mobile.defaultPageTransition = 'none';
+$.mobile.phonegapNavigationEnabled = true;
 
-    $.mobile.allowCrossDomainPages = true;
-    $.mobile.buttonMarkup.hoverDelay = "false";
-    $.mobile.buttonMarkup.hoverDelay = 0
-    $.mobile.defaultDialogTransition = 'none'
-    $.mobile.phonegapNavigationEnabled = true;
-    $.support.cors = true;  
-    //$.mobile.ajaxEnabled = true;
-    //$.mobile.hashListeningEnabled = true;
+$.support.cors = true;  
+//$.mobile.ajaxEnabled = true;
+//$.mobile.hashListeningEnabled = true;
 
 //$.event.special.swipe.durationThreshold = 4000;
 //$.event.special.swipe.horizontalDistanceThreshold = 3;
@@ -25,6 +22,3 @@ $.event.special.swipe.verticalDistanceThreshold = 75;
 
 });
 
-$(function() {
-    FastClick.attach(document.body);
-});
