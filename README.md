@@ -66,6 +66,10 @@ hjj_firefox_os
 
 ![manual_jump.png](manual_jump.png)
 
+## 设置
+
+![setting.png](setting.png)
+
 ## 绑定腾讯微博，支持贴图
 
 浏览器打开 http://test.open.t.qq.com ，选择授权方式为``oauth2.0``
@@ -91,6 +95,10 @@ hjj_firefox_os
 并在 amazon 设置允许  kindle@xxx.com 邮箱推送即可
 
 # changelog
+
+v0.8.4
+
+优化帖子打开速度，fastbutton
 
 v0.8 
 
