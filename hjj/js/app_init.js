@@ -1,10 +1,12 @@
-$(document).one("mobileinit", function() 
+
+$(document).on("mobileinit", function() 
 { 
 $.mobile.allowCrossDomainPages = true;
 $.mobile.buttonMarkup.hoverDelay = 0;
 $.mobile.defaultDialogTransition = 'none'; 
 $.mobile.defaultPageTransition = 'none';
 $.mobile.phonegapNavigationEnabled = true;
+$.mobile.zoom.enabled = false;
 
 $.support.cors = true;  
 //$.mobile.ajaxEnabled = true;
