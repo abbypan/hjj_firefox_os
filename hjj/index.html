@@ -5,23 +5,22 @@
 <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
 
 <title>HJJ</title>
-<script src="js/jquery-2.1.1.min.js" type="text/javascript"></script>
-
 <script src="js/sprintf.js" type="text/javascript"></script>
 <script src="js/lscache.min.js" type="text/javascript"></script>
 
+<script src="js/jquery-2.1.1.min.js" type="text/javascript"></script>
+<script src="js/jquery.tagsinput.min.js" type="text/javascript"></script>
+<script src="js/jquery.lazyload-any.min.js" type="text/javascript"></script>
+
 <script src="js/jquery.mobile-1.4.5.min.js" type="text/javascript"></script>
 <script src="js/jquery.mobile.fastButtons.js" type="text/javascript"></script>
+<script src="js/jquery.mobile.paramsHandler-1.4.2.js" type="text/javascript"></script>
 
 <script src="js/app_init.js" type="text/javascript" charset="gbk"></script>
+<script src="js/app.js" type="text/javascript" charset="gbk"></script>
 
 <link type="text/css" rel="stylesheet" href="css/jquery.mobile-1.4.5.min.css" />
-<script src="js/jquery.mobile.paramsHandler-1.4.2.js" type="text/javascript"></script>
-<script src="js/jquery.tagsinput.min.js" type="text/javascript"></script>
 <link type="text/css" rel="stylesheet" href="css/jquery.tagsinput.css" />
-
-<script src="js/jquery.lazyload-any.min.js" type="text/javascript"></script>
-<script src="js/app.js" type="text/javascript" charset="gbk"></script>
 <link type="text/css" rel="stylesheet" href="css/app.css" />
 
 <style>
@@ -29,19 +28,20 @@
 
 </head>
 <body>
+
 <div data-role="page" id="home">
     <div data-role="header" data-position="fixed">
-    <div data-role="navbar">  
-        <ul>
-            <li><a href="#" id="refresh_home">&#8635;</a></li>
-            <li><a href="#board_menu">&equiv;</a></li>
-            <li><a href="#setting">&lowast;</a></li>
-        </ul>
-    </div>
+        <div data-role="navbar">  
+            <ul>
+                <li><a href="#" id="refresh_home">&#8635;</a></li>
+                <li><a href="#board_menu">&equiv;</a></li>
+                <li><a href="#setting">&lowast;</a></li>
+            </ul>
+        </div>
     </div>
 
     <div data-role="content" id="home_content">
-        
+
         <div id="home_top" class="smallbox">
             <h1>置顶</h1>
         </div>
@@ -65,9 +65,7 @@
             </ul>
         </div>
     </div>
-    
 </div>
-
 
 <div id="board" data-role="page">
     <div data-role="header" data-position="fixed">
@@ -75,44 +73,23 @@
             <ul>
                 <li><a href="#sub_board" data-rel="popup">b</a></li>
                 <li><a href="#" id="toggle_recent_thread">H</a></li>
-                <li>           <a href="#new_thread" data-rel="popup">N</a></li>
-                <li>       <a href="#search_form" data-rel="popup">S</a></li>
+                <!--<li><a href="#new_thread" data-rel="popup">N</a></li>-->
+                <li><a href="#" id="new_thread_link" target="_blank">N</a></li>
+                <li><a href="#search_form" data-rel="popup">S</a></li>
             </ul>
         </div>
     </div>
 
-    <!--<div data-role="panel" id="board_panel" data-position="left">-->
-        <!--<div class="paneldiv">-->
-            <!--<a href="#sub_board" data-rel="popup">子版块</a><br>-->
-            <!--<a href="#new_thread" data-rel="popup">发贴</a><br>-->
-            <!--<br>-->
-            <!--<a href="#search_form" data-rel="popup">搜索</a><br>-->
-            <!--<a href="#" id="toggle_recent_thread">最近热贴</a><br>-->
-        <!--</div>-->
-        <!--<a data-rel="close" data-role="button" data-icon="delete" data-inline="true">返回</a>-->
-    <!--</div>-->
-
-    <div style="display:none">
-        <a href="#search_form" id="search_form_a" data-rel="popup" data-position-to="window">&#1060;</a>
-        <a href="#new_thread" id="new_thread_a" data-rel="popup" data-position-to="window">+</a>
-        <a href="#showmsg_floor_popup" id="showmsg_floor_popup_a" data-rel="popup" data-position-to="window">+</a>
-        <span id="only_recent_thread">no</span>
-        <a href="#" id="sub_board_url"></a>
-    </div>
-    
     <div data-role="content" id="board_content">
         <div id="board_info">
             <span id="board_title"></span>, 
             <span id="board_id"></span>,
             <span id="board_page"></span>, 
             <a id="board_save" href="#">收藏</a>, 
-            <!--<a href="#home">主页</a>-->
         </div>
-
         <div id="board_pager_top" class="pager"></div>
         <div id="thread_list"></div>
         <div id="board_pager_bottom" class="pager"></div>
-
     </div>
 
     <div data-role="footer" data-position="fixed">
@@ -127,57 +104,53 @@
         </div>
     </div>
 
-        <div data-role="popup" id="new_thread">
-        <form enctype="multipart/form-data" method="post"  
-        action="/postbypolice.php?board=" data-ajax="false"  
-        data-role="none" target="_newtab"> 
-        <input type="hidden" value="→发布新贴子" name="msg"> 
-        <input placeholder="名字" type="text" name="username" >
-        <select id="new_thread_subid" name="subid"> 
-        </select> 
-        <input type="text" name="subject" placeholder="主题"> 
-        <input type="file" place="#new_thread" class="upload_img_btn" data-role="none" > 
-        <div class="uploaded_img">
-        </div>
-        <textarea rows=12 placeholder="内容" name="body" ></textarea> 
-        <a href="#" class="format_url_code">图片/网址 代码转换</a>
-        <input type="submit" value="发贴"> 
-        </form>
-        <div class="upload_img_status">...</div> 
-        </div>
+    <!--<div data-role="popup" id="new_thread">-->
+        <!--<form enctype="multipart/form-data" method="post"  -->
+            <!--action="/postbypolice.php?board=" data-ajax="false"  -->
+            <!--data-role="none" target="_newtab"> -->
+            <!--<input type="hidden" value="→发布新贴子" name="msg"> -->
+            <!--<input placeholder="名字" type="text" name="username" >-->
+            <!--<select id="new_thread_subid" name="subid"> -->
+            <!--</select> -->
+            <!--<input type="text" name="subject" placeholder="主题"> -->
+            <!--<input type="file" place="#new_thread" class="upload_img_btn" data-role="none" > -->
+            <!--<div class="uploaded_img">-->
+            <!--</div>-->
+            <!--<textarea rows=12 placeholder="内容" name="body" ></textarea> -->
+            <!--<a href="#" class="format_url_code">图片/网址 代码转换</a>-->
+            <!--<input type="submit" value="发贴"> -->
+        <!--</form>-->
+        <!--<div class="upload_img_status">...</div> -->
+    <!--</div>-->
 
     <div data-role="popup" id="sub_board" data-position-to="window">
-
         <div id="thread_type">
         </div>
-
-            <input type="button" data-role="none" value="取消默认子版块" id="not_rem_sub_board">
-            <input type="button" data-role="none" value="全选" action="all" class="sub_board_check_all">
-            <input type="button" data-role="none" value="反选" action="none" class="sub_board_check_all">
-
-            <input name="url" type="hidden">
-            <div data-role="fieldcontain" id="sub_board_list">
-                <fieldset data-role="controlgroup"> 
-                </fieldset>
-            </div>
-            <input type="checkbox" name="rem" data-role="none">设置为默认子版块<br>
-            <input type="button" value="确定" id="sub_board_btn">
+        <input type="button" data-role="none" value="取消默认子版块" id="not_rem_sub_board">
+        <input type="button" data-role="none" value="全选" action="all" class="sub_board_check_all">
+        <input type="button" data-role="none" value="反选" action="none" class="sub_board_check_all">
+        <input name="url" type="hidden">
+        <div data-role="fieldcontain" id="sub_board_list">
+            <fieldset data-role="controlgroup"> 
+            </fieldset>
+        </div>
+        <input type="checkbox" name="rem" data-role="none">设置为默认子版块<br>
+        <input type="button" value="确定" id="sub_board_btn">
     </div>
 
     <div data-role="popup" id="search_form" data-position-to="window">
         <input type="text" name="keyword" value=""> 
         <div data-role="fieldcontain"> 
-        <select data-role="none" name="topic" id="search_type"> 
-        <option value="3">贴子主题</option> 
-        <option value="1">主题贴内容</option> 
-        <option value="4">主题贴发贴人</option> 
-        <option value="2">跟贴内容</option> 
-        <option value="5">跟贴发贴人</option> 
-        </select> 
+            <select data-role="none" name="topic" id="search_type"> 
+                <option value="3">贴子主题</option> 
+                <option value="1">主题贴内容</option> 
+                <option value="4">主题贴发贴人</option> 
+                <option value="2">跟贴内容</option> 
+                <option value="5">跟贴发贴人</option> 
+            </select> 
         </div>
         <input id="search_form_btn" type="submit" value="查询">
     </div>
-
 </div>
 
 <div id="showmsg" data-role="page">
@@ -186,7 +159,7 @@
             <ul>
                 <li><a id="thread_mark_floor" href="#">M</a></li>
                 <li><a id="share_thread" href="#">S</a></li>
-               <li><a id="export_thread" href="#thread_to_kindle" data-rel="popup" data-position-to="window" data-transition="pop">K</a></li>
+                <li><a id="export_thread" href="#thread_to_kindle" data-rel="popup" data-position-to="window" data-transition="pop">K</a></li>
                 <li><a href="#manual_jump">&#8869;</a></li>
                 <li><a href="#showmsg_panel" data-rel="popup">...</a></li>
             </ul>
@@ -263,14 +236,13 @@
         <p style="font-size: small">说明：需要预先在 amazon 设置允许 推送站点的邮箱（例如 kindle@xxx.com）推送到 kindle</p>
     </div>
 
-    <!--<div data-role="panel" id="showmsg_panel" data-position="left">-->
     <div data-role="popup" id="showmsg_panel" data-position-to="window">
         <div class="paneldiv">
 
             <a id="thread_cache" href="#">缓存</a><br>
             <a href="#reply_thread" data-rel="popup" id="reply_thread_a" data-position-to="window">回帖</a>
         </div>
-            <br>
+        <br>
         <div class="paneldiv">
 
             <input data-role="none" type="text" name="wordnum" placeholder="字数" id="min_wordnum">
@@ -279,7 +251,7 @@
             <br>
             <a href="#" id="floor_grep">抽取</a>，<a href="#" id="floor_filter">过滤</a><br>
         </div>
-            <br>
+        <br>
         <div class="paneldiv">
             <select name="showmsg_view_img" data-role="slider" id="showmsg_view_img">
                 <option value="on">只看图</option>
@@ -293,9 +265,6 @@
                 <option value="on">自动脱水</option>
                 <option value="off">不脱水</option>
             </select><br>
-            <!--<input class="default_checkbox" type="checkbox" name="showmsg_view_img" data-role="none">只看图<br>-->
-            <!--<input class="default_checkbox" type="checkbox" name="showmsg_only_poster" data-role="none">只看楼主<br>-->
-            <!--<input class="default_checkbox" type="checkbox" name="showmsg_min_wordnum" data-role="none">自动脱水<br>-->
         </div>
     </div>
 </div>
@@ -316,7 +285,6 @@
         </ul>
     </div>
 </div>
-
 
 <div data-role="page" id="fav_thread">
     <div data-role="navbar">  
@@ -411,7 +379,7 @@
             </ul>
         </div>
     </div>
-    
+
     <div id="search_banner"></div>
 
     <div data-role="content" id="search_content">
@@ -455,17 +423,25 @@
     </div>
 </div>
 
-    <div style="display:none">
-        <span id="remote_url"></span>
-        <span id="remote_url_short"></span>
-        <span id="remote_url_title"></span>
-        <a href='#' id="local_board_url">local_board</a>
-    </div>
+<div style="display:none">
+    <span id="remote_url"></span>
+    <span id="remote_url_short"></span>
+    <span id="remote_url_title"></span>
+    <a href='#' id="local_board_url">local_board</a>
+    <a href="#search_form" id="search_form_a" data-rel="popup" data-position-to="window">&#1060;</a>
+    <!--<a href="#new_thread" id="new_thread_a" data-rel="popup" data-position-to="window">+</a>-->
+    <a href="#showmsg_floor_popup" id="showmsg_floor_popup_a" data-rel="popup" data-position-to="window">+</a>
+    <span id="only_recent_thread">no</span>
+    <a href="#" id="sub_board_url"></a>
+</div>
 
-<!-- todo -->
-<!-- 关键字提醒：新帖标题出现自己设置的关键词时进行提醒 -->
-<!-- 收藏帖子 分类/标签/标签共享 -->
-<!-- 浏览器同步书签，阅读进度 -->
-<!-- 发言记录 查找-->
+<!-- todo
+往前/往后　跳　Ｎ　楼
+回贴
+贴子单击翻页
+导出贴子存到本地
+导出cache，导入cache => 换手机时采用
+-->
+
 </body>
 </html>

@@ -279,13 +279,14 @@ function parse_home(data){
 }
 
 function home(refresh_flag) {
-    var rem = lscache.get('home');
-    if(rem && ! refresh_flag) $('#home_content').html(rem);
-
     $('#manual_jump').find('input').eq(0).val('');
-
-    var u = HJJ;
-    get_hjj_url(u, parse_home);
+    var rem = lscache.get('home');
+    if(rem && ! refresh_flag) {
+        $('#home_content').html(rem);
+    }else{
+        var u = HJJ;
+        get_hjj_url(u, parse_home);
+    }
 }
 // }}}
 //  {{{ board_menu
@@ -327,12 +328,14 @@ function board_menu(){
                 });
     }
 
-    $("#filter_board").on( "filterablefilter", function( event, ui ) {
-        ui.items.each(function( index ) {
-            $(this).collapsible("option", "collapsed", $(this).hasClass("ui-screen-hidden")).removeClass("ui-screen-hidden");
-        });
-        return false;
-    });
+    //$("#filter_board").trigger('create');
+
+    //$("#filter_board").on( "filterablefilter", function( event, ui ) {
+        //ui.items.each(function( index ) {
+            //$(this).collapsible("option", "collapsed", $(this).hasClass("ui-screen-hidden")).removeClass("ui-screen-hidden");
+        //});
+        //return false;
+    //});
 }
 // }}}
 // {{ fav_board
@@ -686,9 +689,11 @@ function board_title(para, h){
 }
 
 function new_thread(para){
-    var u = HJJ + "/postbypolice.php?board="+ para.board;
-    input_init('#new_thread', 'username');
-    $('#new_thread').find('form').attr("action", u);
+    //var u = HJJ + "/postbypolice.php?board="+ para.board;
+    //input_init('#new_thread', 'username');
+    //$('#new_thread').find('form').attr("action", u);
+    var u = HJJ + "/postbypolice.php?board="+ para.board + "&act=mainpage";
+    $('#new_thread_link').attr("href", u);
 }
 
 function thread_type(para){
@@ -729,7 +734,9 @@ function board(para) {
     var u = HJJ + "/board.php?" + board_para_string(para);
     $('#remote_url').html(u);
     $('#remote_url_short').html(['HJJ', para.board ].join(","));
-    $('#local_board_url').attr('href', '#board?' + board_para_string(para));
+
+    var local_url = '#board?' + board_para_string(para);
+    $('#local_board_url').attr('href', local_url);
 
     var thread_info = '';
 
@@ -1801,11 +1808,7 @@ function params_page(){
     $.mobile.paramsHandler.init();
 }
 function main(){
-
-    //$("[data-role=panel]").enhanceWithin().panel();
     //$('textarea').elastic(); 
-
-
     //$(document).bind('swiperight', function () { window.history.back(); });
     //$(document).bind('swipeleft', function () { window.history.forward(); });
 
@@ -1831,7 +1834,7 @@ function main(){
     $('#search').on('vclick', '.board_url', function(){
         var id = $('#board_id').val();
         var u = '#board?' + 'board=' + id;
-    $.mobile.pageContainer.pagecontainer('change', u);
+        $.mobile.pageContainer.pagecontainer('change', u);
         return false;
     });
 
@@ -1890,40 +1893,12 @@ function main(){
 
     input_init('#showmsg', 'mail');
     default_checkbox_init();
-
-
 }
-
-//addTouchEvents = function() {
-    //var isTouchDevice = (('ontouchstart' in window) || window.DocumentTouch && document instanceof DocumentTouch);
-
-    //if (isTouchDevice) {
-        ////replace link clicks with ontouchend events for more responsive UI
-        //$("a", "[onclick]").on("touchstart",function(e) {
-            //$(this).trigger("click");
-            //e.preventDefault();
-            //return false;
-        //});
-    //}
-//}
 
 //jQuery doc.ready
 $(document).bind('pageinit',function(e){
-    //addTouchEvents();   
-    //FastClick.attach(document.body);
-    //$("[data-role=panel]").enhanceWithin().panel();
-
     if(MOBILE_INIT>0) return;
     main(); 
     MOBILE_INIT=1;
 });
-
-//$( document ).on( "pageinit", "#home", function() {
-    //$( document ).on( "swipeleft", "#home_content", function( e ) {
-        //if ( $.mobile.activePage.jqmData( "panel" ) !== "open" ) {
-            //$( "#home_panel" ).panel( "open" );
-        //}
-    //});
-//});
-
 // }}

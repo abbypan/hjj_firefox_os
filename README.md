@@ -103,6 +103,10 @@ hjj_firefox_os
 
 v0.8.4
 
+android 5.1 , cm rom 下测试，开贴速度基本正常
+
+去掉回贴功能，反正基本不用
+
 优化帖子打开速度，fastbutton
 
 v0.8 

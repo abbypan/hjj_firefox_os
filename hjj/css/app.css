@@ -92,17 +92,17 @@ input,select {
 
 textarea.ui-input-text { height: inherit !important}
 
-/*panel start {{ */
-.paneldiv { border: 0.1em solid rgb(153, 204, 0); }
-.ui-panel { width: 70%; }
-.ui-panel-animate.ui-panel-page-content-position-left {
-        left: 0;
-        right: 0;
-        -webkit-transform: translate3d(70%,0,0);
-        -moz-transform: translate3d(70%,0,0);
-        transform: translate3d(70%,0,0);
-}
-[data-role="panel"] input { width: 70% ; }
+/*[>panel start {{ <]*/
+/*.paneldiv { border: 0.1em solid rgb(153, 204, 0); }*/
+/*.ui-panel { width: 70%; }*/
+/*.ui-panel-animate.ui-panel-page-content-position-left {*/
+        /*left: 0;*/
+        /*right: 0;*/
+        /*-webkit-transform: translate3d(70%,0,0);*/
+        /*-moz-transform: translate3d(70%,0,0);*/
+        /*transform: translate3d(70%,0,0);*/
+/*}*/
+/*[data-role="panel"] input { width: 70% ; }*/
 /*panel end }} */
 
 /*.in, .out {*/
