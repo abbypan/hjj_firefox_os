@@ -908,9 +908,9 @@ function format_floor_content(f) {
     var html = '<div class="floor" id="floor' + f.id + '" fid="'+ f.id +'">' +
         '<div class="flcontent" wordnum="' + f.wordnum + '">' + f.content + '</div>' +
         '<span class="chapter">¡í' + f.id + '<span class="star">¡î</span><span class="floor_poster">' + f.poster + '</span><span class="star">¡î</span>' + f.time + '<span class="star">¡î</span></span>' +
-        '<a  class="reply_thread_floor" action="cite" href="#">&#8811;</a>' + 
+        '<a class="reply_thread_floor" action="cite">&#8811;</a>' + 
         '&nbsp;&nbsp;&nbsp;' +
-        '<a  class="reply_thread_floor" action="default" href="#">&gt;</a>' + 
+        '<a class="reply_thread_floor" action="default">&gt;</a>' + 
         '&nbsp;&nbsp;&nbsp;' +
         '&nbsp;' +
         '<a class="mark_floor" href="#">M</a>' + 
@@ -1077,17 +1077,17 @@ function showmsg_cache(para) {
         return $(k);
     }
 
-    function reply_thread(f, reply_type){
-        $('#reply_thread').find('textarea').val('');
-        var c = f.find('.chapter').text().replace(/\n/g, ' ');
-        if(reply_type=="cite") 
-            c = "" + 
-                f.children('.flcontent').text().replace(/(\s*\n)+/g, "\n").trim().substr(0, 100) + 
-                "......\n\n" + c ;
-        $('#reply_thread').find('textarea').val(c.trim()+"\n");
+function reply_thread(f, reply_type){
+    var c = f.find('.chapter').text().replace(/\n/g, ' ');
+    if(reply_type=="cite") 
+        c = "" + 
+            f.children('.flcontent').text().replace(/(\s*\n)+/g, "\n").trim().substr(0, 100) + 
+            "......\n\n" + c ;
+    var reply_text = c.trim() + "\n";
+    return reply_text;
+}
 
-        $('#reply_thread_a').click();
-    }
+
 
 
     function showmsg_toggle_footer(ee){
@@ -1165,8 +1165,14 @@ function showmsg_cache(para) {
         $('#showmsg').on('vclick', '#view_all_floor', function(){ view_all_floor();return false; });
         $('#showmsg').on('vclick', '#reverse_floor', function(){ reverse_floor();return false; });
 
-        $('#showmsg').on('vclick', '.reply_thread_floor', function(){
-            reply_thread($(this).parent(), $(this).attr('action'));return false; 
+        $('#showmsg').on('vclick', '.reply_thread_floor', function(e){
+            var res = reply_thread($(this).parent(), $(this).attr('action'));
+            e.preventDefault();
+            e.target.dispatchEvent(new ClipboardEvent("copy"));
+            e.clipboardData.setData("text/plain", res);
+            //alert(e.clipboardData.getData());
+            window.open($('#reply_thread_link').attr('href'), '_blank');
+            return false; 
         });
 
         //$('#showmsg').on('swiperight',  '.floor', function(e){ 
@@ -1290,6 +1296,7 @@ function showmsg_cache(para) {
         $('#thread_pager_bottom').html( res["pager"]);
         $('#thread_floor_list').html(res["floor_list"]);
 
+        $('#reply_thread_link').attr('href', HJJ + "/reply.php?board="+ para.board + '&id=' + para.id);
         //$('#thread_floor_list').find('img').lazyload();
 
         //$("#thread_floor_list").find('img').each(function(){     
@@ -1360,8 +1367,8 @@ function showmsg_cache(para) {
     function showmsg_header(para){
         $('#remote_url_short').html([ 'HJJ', para.board, para.id ].join(","));
 
-        input_init('#reply_thread', 'username');
-        $('#reply_thread').find('form').attr('action', HJJ + "/reply.php?board="+ para.board + '&id=' + para.id);
+        //input_init('#reply_thread', 'username');
+        //$('#reply_thread').find('form').attr('action', HJJ + "/reply.php?board="+ para.board + '&id=' + para.id);
 
         var up_url = "#board?board=" + para.board + '&page=1';
         if($('#board_id').html()==para.board){

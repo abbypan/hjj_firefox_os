@@ -204,18 +204,18 @@
         </div>
     </div>
 
-    <div data-role="popup" id="reply_thread">
-        <form enctype="multipart/form-data" method="post" action="reply.php?board=&id=" data-role="none" data-ajax="false" target="_newtab"> 
-            <input placeholder="名字" type="text" name="username" >
-            <input type="file" place="#reply_thread" class="upload_img_btn" data-role="none" > 
-            <div class="uploaded_img">
-            </div>
-            <textarea rows=12 placeholder="内容" name="body"></textarea> 
-            <a href="#" class="format_url_code">图片/网址 代码转换</a> 
-            <input type="submit" value="发贴"> 
-        </form>
-        <div class="upload_img_status">...</div> 
-    </div>
+    <!--<div data-role="popup" id="reply_thread">-->
+        <!--<form enctype="multipart/form-data" method="post" action="reply.php?board=&id=" data-role="none" data-ajax="false" target="_newtab"> -->
+            <!--<input placeholder="名字" type="text" name="username" >-->
+            <!--<input type="file" place="#reply_thread" class="upload_img_btn" data-role="none" > -->
+            <!--<div class="uploaded_img">-->
+            <!--</div>-->
+            <!--<textarea rows=12 placeholder="内容" name="body"></textarea> -->
+            <!--<a href="#" class="format_url_code">图片/网址 代码转换</a> -->
+            <!--<input type="submit" value="发贴"> -->
+        <!--</form>-->
+        <!--<div class="upload_img_status">...</div> -->
+    <!--</div>-->
 
     <div data-role="popup" id="thread_tag_popup" class="popup_textarea">
     </div>
@@ -240,7 +240,8 @@
         <div class="paneldiv">
 
             <a id="thread_cache" href="#">缓存</a><br>
-            <a href="#reply_thread" data-rel="popup" id="reply_thread_a" data-position-to="window">回帖</a>
+            <!--<a href="#reply_thread" data-rel="popup" id="reply_thread_a" data-position-to="window">回帖</a>-->
+            <li><a href="#" id="reply_thread_link" target="_blank">回贴</a></li>
         </div>
         <br>
         <div class="paneldiv">
