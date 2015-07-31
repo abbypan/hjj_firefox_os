@@ -11,15 +11,15 @@ hjj_firefox_os
 
 ### android
 
-注意：phonegap打包的版本会比从firefox market安装的版本慢
-
 法一：
 
-安装firefox，打开firefox，访问firefox market安装：[HJJ-firefoxos](https://marketplace.firefox.com/app/hjj/)
+先安装firefox，打开firefox，访问firefox market安装：[HJJ-firefoxos](https://marketplace.firefox.com/app/hjj/)
 
 法二：
 
-安装phonegap打包的 android 版本：[HJJ-phonegap](https://build.phonegap.com/apps/1033213/share)
+注意：android 5, cm 12 rom 测试速度正常。其他版本未测试。
+
+安装phonegap打包的 android 版本：[HJJ-phonegap](https://build.phonegap.com/apps/1033213/share)，[apk文件](https://build.phonegap.com/apps/1033213/download/android/)
 
 ## 主页
 

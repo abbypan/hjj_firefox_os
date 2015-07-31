@@ -26,15 +26,12 @@ var DEFAULT = {
     mail : 'xxx@kindle.cn', 
     thread_to_kindle_dom : 'xxx.com', 
     night_color : 'off', 
-    showmsg_jump_height : 0.6,
+    tap_jump_height : 0.6,
     showmsg_jump_floor : 50,
     showmsg_dewater_wordnum : 50, 
     showmsg_view_img : 'off', 
     showmsg_only_poster : 'off', 
     showmsg_min_wordnum : 'off' 
-    //showmsg_view_img : 0, 
-    //showmsg_only_poster : 0, 
-    //showmsg_min_wordnum : 0 
 };
 for(var k in DEFAULT){
     var v = lscache.get(k);
@@ -142,6 +139,32 @@ function get_url(u, succ_cb, charset){
     xhr.send();
 }
 
+function get_event_zone(ee){
+    var w = screen.width;
+    ee.xzone = (ee.clientX < 0.3*w) ? 'left' : 
+        (ee.clientX > 0.7*w) ? 'right' : 
+        'middle';
+
+    var h = screen.height;
+    ee.yzone = (ee.clientY < 0.3*h) ? 'top' : 
+        (ee.clientY > 0.7*h) ? 'bottom' : 
+        'middle';
+    return ee;
+}
+
+function tap_to_scroll_screen(e) {
+    var ee = get_event_zone(e);
+    var jh = (ee.yzone=='bottom' && ee.xzone=='left') ? -1 : 
+        (ee.yzone=='bottom' && ee.xzone=='right') ? 1 : 
+        0;
+    if(jh==0) return;
+    jh = jh * screen.height*DEFAULT["tap_jump_height"];
+    if(jh>0) {
+        $.mobile.silentScroll(e.pageY-0.1*screen.height);
+    }else{
+        $.mobile.silentScroll(e.pageY+2*jh);
+    }
+}
 //}}
 // {{ img
 function get_latest_img(filename, place){
@@ -240,12 +263,9 @@ function upload_img_init(){
 
 
 }
-
-
 // }}
+
 // {{{ home
-
-
 function get_hjj_url(u, succ_cb, charset){
     get_url(u, succ_cb, 'gbk');
 }
@@ -289,6 +309,7 @@ function home(refresh_flag) {
     }
 }
 // }}}
+
 //  {{{ board_menu
 function board_menu_zone(zone_li) {
     var id = zone_li.attr("zid");
@@ -322,22 +343,19 @@ function board_menu(){
     if(rem){
         $('#board_menu_content').html(rem);
     }else{
-        $('#board_menu').find("div").each(
-                function(){
-                    board_menu_zone($(this));
-                });
+        $('#board_menu').find("div").each( 
+                function(){ board_menu_zone($(this)); });
     }
 
-    //$("#filter_board").trigger('create');
-
-    //$("#filter_board").on( "filterablefilter", function( event, ui ) {
-        //ui.items.each(function( index ) {
-            //$(this).collapsible("option", "collapsed", $(this).hasClass("ui-screen-hidden")).removeClass("ui-screen-hidden");
-        //});
-        //return false;
-    //});
+    $("#filter_board").children(":first").trigger("expand");
+    $("#filter_board").on( "filterablefilter", function( event, ui ) {
+        ui.items.each(function( index ) {
+              $(this).collapsible("option", "collapsed", $(this).hasClass("ui-screen-hidden")).removeClass("ui-screen-hidden");
+        });
+    });
 }
 // }}}
+
 // {{ fav_board
 function fav_board() {
     var s= '';
@@ -422,7 +440,7 @@ function sub_board_check_all(act){
             $(this).prop("checked",true);
         }
     });     
-        return false;
+    return false;
 }
 // }}
 // {{ fav_thread
@@ -500,6 +518,7 @@ function thread_save(){
     fav_thread();
 }
 // }}
+
 // {{ recent_history
 function add_history(x){
     DEFAULT["history_cnt"]= ( DEFAULT["history_cnt"] + 1 ) % DEFAULT["max_history_cnt"];
@@ -561,6 +580,7 @@ function recent_history() {
     $('#recent_history').find('#recent_history_ul').trigger('create');
 }
 // }}
+
 // {{ board
 function board_para_string(para, other){
     var x = merge_hash(para, other);
@@ -766,6 +786,7 @@ function board(para) {
 }
 
 // -- }}
+
 //  {{{ showmsg
 function thread_jump_page(x){
     var act = parseInt(x.attr('action'));
@@ -936,38 +957,38 @@ function thread_save_title(para, res){
         return s;
     }
 
-    function showmsg_cache(para) {
-        var u = get_showmsg_remote_url(para);
+function showmsg_cache(para) {
+    var u = get_showmsg_remote_url(para);
 
-        var showmsg_cb = function(d){
-            var res = extract_showmsg_content(d);
+    var showmsg_cb = function(d){
+        var res = extract_showmsg_content(d);
 
-            var local_url = get_showmsg_local_url(para);
-            lscache.set(local_url, res);
+        var local_url = get_showmsg_local_url(para);
+        lscache.set(local_url, res);
 
-            $('#thread_action_temp').html('已缓存'+para.page);
+        $('#thread_action_temp').html('已缓存'+para.page);
 
-            para.page  = para.page + 1;
-            if(para.page<para.page_num) {
-                showmsg_cache(para);
-            }else{
-                var k = format_cache_key('thread_cache', para, ["board", "id"]);
-                para.page = 0;
-                local_url = get_showmsg_local_url(para);
+        para.page  = para.page + 1;
+        if(para.page<para.page_num) {
+            showmsg_cache(para);
+        }else{
+            var k = format_cache_key('thread_cache', para, ["board", "id"]);
+            para.page = 0;
+            local_url = get_showmsg_local_url(para);
 
-                toggle_action(k, '#thread_cache', 'thread_cache', {
-                    title : thread_save_title(para, res),
-                    url : local_url,
-                    board : para.board,
-                    id : para.id
-                });
+            toggle_action(k, '#thread_cache', 'thread_cache', {
+                title : thread_save_title(para, res),
+                url : local_url,
+                board : para.board,
+                id : para.id
+            });
 
-                toggle_action_html(k, '#thread_cache', '缓存贴子', '取消缓存');
-                fav_thread();
-            }
-        };
-        get_hjj_url(u, showmsg_cb);
-    }
+            toggle_action_html(k, '#thread_cache', '缓存贴子', '取消缓存');
+            fav_thread();
+        }
+    };
+    get_hjj_url(u, showmsg_cb);
+}
 
     function thread_cache() {
         var p = {};
@@ -1014,16 +1035,12 @@ function thread_save_title(para, res){
         lscache.set(k, fid, DEFAULT["thread_mark_minute"]);
     }
 
-    function get_current_position(e){
-        if(! e.originalEvent) return e;
-        return e.originalEvent.touches[0] || e.originalEvent.changedTouches[0] || e;
-    }
 
     function get_current_floor(e, delta_height){
         var sh = screen.height;
-        var ee = get_current_position(e);
 
-        var eh = ee.pageY;
+        var eh = $(window).scrollTop();
+
         if(delta_height) eh=eh+delta_height;
 
         var i=0; 
@@ -1039,8 +1056,11 @@ function thread_save_title(para, res){
         return $(k);
     }
 
+    function get_current_position(e){
+        if(! e.originalEvent) return e;
+        return e.originalEvent.touches[0] || e.originalEvent.changedTouches[0] || e;
+    }
     function get_screen_top_floor(e) {
-
         var sh = screen.height;
         var ee = get_current_position(e);
         var eh = ee.pageY;
@@ -1069,19 +1089,6 @@ function thread_save_title(para, res){
         $('#reply_thread_a').click();
     }
 
-    function get_event_zone(e){
-        var ee = get_current_position(e);
-        var w = screen.width;
-        ee.xzone = (ee.clientX < 0.3*w) ? 'left' : 
-            (ee.clientX > 0.7*w) ? 'right' : 
-            'middle';
-
-        var h = screen.height;
-        ee.yzone = (ee.clientY < 0.3*h) ? 'top' : 
-            (ee.clientY > 0.7*h) ? 'bottom' : 
-            'middle';
-        return ee;
-    }
 
     function showmsg_toggle_footer(ee){
         var jh = (ee.yzone=='middle' && ee.xzone=='middle') ? 1 : 0;
@@ -1089,18 +1096,6 @@ function thread_save_title(para, res){
         $("#showmsg_footer").toggle();
     }
 
-    function showmsg_scroll_screen(ee) {
-        var jh = (ee.yzone=='bottom' && ee.xzone=='left') ? -1 : 
-            (ee.yzone=='bottom' && ee.xzone=='right') ? 1 : 
-            0;
-        if(jh==0) return;
-        jh = jh * screen.height*DEFAULT["showmsg_jump_height"];
-        if(jh>0) {
-            $.mobile.silentScroll(ee.pageY-0.1*screen.height);
-        }else{
-            $.mobile.silentScroll(ee.pageY+2*jh);
-        }
-    }
 
     function jump_floor(f, arrow, step){
         var x = arrow=='prev' ? f.prevAll() : f.nextAll();
@@ -1183,13 +1178,7 @@ function thread_save_title(para, res){
         //reply_thread($(this), 'reply');
         //});
 
-        $('#showmsg').on('vclick', '#thread_floor_list', function(e){ 
-            //e.preventDefault();
-            var z = get_event_zone(e);
-            showmsg_scroll_screen(z); //click to prev/next page
-            //showmsg_toggle_footer(z); //click to show/hide footer
-            return false;
-        });
+        $('#showmsg').on('vclick', '.floor', function(e){ tap_to_scroll_screen(e); return false; });
 
         //$('#showmsg').on("change", '#showmsg_floor_slider', function () {
         //var all = parseInt($(this).attr('max')) - parseInt($(this).attr('min')) + 1;
@@ -1214,12 +1203,16 @@ function thread_save_title(para, res){
         });
 
         $('#showmsg').on('vclick', '#jump_to_prev', function(e){
-            jump_to_prev(get_current_floor(e), -screen.height*2);
-            //return false; 
+            //jump_to_prev(get_current_floor(e), -screen.height*2);
+            jump_to_prev(get_current_floor(e, -screen.height*2));
+            //jump_to_prev(get_current_floor(e));
+            return false; 
         });
         $('#showmsg').on('vclick', '#jump_to_next', function(e){
-            jump_to_next(get_current_floor(e), -screen.height*2);
-            //return false; 
+            //jump_to_next(get_current_floor(e), -screen.height*2);
+            jump_to_next(get_current_floor(e, -screen.height*2));
+            //jump_to_next(get_current_floor(e));
+            return false; 
         });
 
         $('#showmsg').on('vclick', '#thread_to_kindle_btn', function(){ thread_to_kindle();return false; });
@@ -1296,15 +1289,15 @@ function thread_save_title(para, res){
         $('#thread_pager_top').html( res["pager"] );
         $('#thread_pager_bottom').html( res["pager"]);
         $('#thread_floor_list').html(res["floor_list"]);
-        
+
         //$('#thread_floor_list').find('img').lazyload();
 
         //$("#thread_floor_list").find('img').each(function(){     
-            //var img_url = $(this).attr('src');
-            ////$(this).attr('src', 'icons/hjj128.png');
-            //$(this).attr('data-original', img_url);
-            //$(this).removeAttribute('src');
-            //$(this).attr('width', '100%');
+        //var img_url = $(this).attr('src');
+        ////$(this).attr('src', 'icons/hjj128.png');
+        //$(this).attr('data-original', img_url);
+        //$(this).removeAttribute('src');
+        //$(this).attr('width', '100%');
         //});
 
         //$("#thread_floor_list").find('img').lazyload();
@@ -1315,9 +1308,9 @@ function thread_save_title(para, res){
             var href = $(this).attr('href');
             if(href.match(/http:\/\/bbs.jjwxc.net\/showmsg.php\?/)){ 
                 href = href.replace(/http:\/\/bbs.jjwxc.net\/showmsg.php\?/g, '#showmsg?')
-                $(this).attr('href', href);
-                $(this).removeAttr('target');
-                $(this).removeAttr('rel');
+            $(this).attr('href', href);
+        $(this).removeAttr('target');
+        $(this).removeAttr('rel');
             }
         });
 
@@ -1325,13 +1318,13 @@ function thread_save_title(para, res){
         //var min =0;
         //var max = 0;
         //$('#thread_floor_list').find('.floor').each(function(){
-            //var id = parseInt($(this).attr('fid'));
-            //if(! min) min = id;
-            //max++;
+        //var id = parseInt($(this).attr('fid'));
+        //if(! min) min = id;
+        //max++;
         //}).promise().done(function(){
-            //$('#showmsg_floor_slider').attr('min', min);
-            //$('#showmsg_floor_slider').attr('max', max+min-1);
-            //$('#showmsg_floor_slider').val(min);
+        //$('#showmsg_floor_slider').attr('min', min);
+        //$('#showmsg_floor_slider').attr('max', max+min-1);
+        //$('#showmsg_floor_slider').val(min);
         //});
 
         check_save_thread();
@@ -1445,28 +1438,28 @@ function thread_save_title(para, res){
         }
     }
 
-function showmsg_jump_floor(dst_f){
-    var page = parseInt((parseInt(dst_f)-1) / 300);
-    var now_page = parseInt($('#thread_pid').html());
+    function showmsg_jump_floor(dst_f){
+        var page = parseInt((parseInt(dst_f)-1) / 300);
+        var now_page = parseInt($('#thread_pid').html());
 
-    if(page==now_page){
-        showmsg_jump_floor_simple(dst_f);
+        if(page==now_page){
+            showmsg_jump_floor_simple(dst_f);
+            return false;
+        }
+
+        var x = {
+            fid : dst_f.toString(), 
+            page : page.toString(),
+            board : $('#thread_bid').text(),
+            id : $('#thread_tid').text(), 
+        };
+        var u = get_showmsg_local_url(x) + '&fid=' + dst_f;
+        $.mobile.pageContainer.pagecontainer('change', u);
         return false;
     }
-
-    var x = {
-        fid : dst_f.toString(), 
-        page : page.toString(),
-        board : $('#thread_bid').text(),
-        id : $('#thread_tid').text(), 
-    };
-    var u = get_showmsg_local_url(x) + '&fid=' + dst_f;
-    $.mobile.pageContainer.pagecontainer('change', u);
-    return false;
-}
     // -- }}}
-    // {{{ search
 
+    // {{{ search
 function search_para_string(para, other){
     var x = merge_hash(para, other);
     x.act = x.act || 'search';
@@ -1542,6 +1535,7 @@ function search_form(){
     $.mobile.pageContainer.pagecontainer('change', url);
 }
 // }}}
+
 // {{ setting 
 function font_click(ce, e){
     $(ce).click(function(){
@@ -1696,13 +1690,13 @@ function setting_init(){
             slider_div_html('night_color', '', '黑夜', '白天') +
             slider_div_html('loadimg', '', '看图', '不看图') + 
             input_div_html('filter_thread_keyword', '贴子标题过滤')  +
+            input_div_html('tap_jump_height', '每次触屏单击翻页高度') + 
             change_font_size_html() +
             '<br>' + 
             suggest_html() +
             '<br>' + 
             slider_div_html('auto_jump_mark_floor', '贴子上次阅读的位置', '自动跳转', '不自动跳转') + 
             slider_div_html('share_tz', '分享时是否 @hjjtz', '@', '不@') + 
-            input_div_html('showmsg_jump_height', '贴子页每次触屏单击翻页高度') + 
             input_div_html('showmsg_jump_floor', '贴子页每次触屏双击跳转N楼') + 
             input_div_html('showmsg_dewater_wordnum', '贴子页脱水的最小字数') + 
             input_div_html('thread_to_kindle_dom', 'kindle推送站点域名') + 
@@ -1719,7 +1713,7 @@ function setting_init(){
             slider_init('loadimg','#loadimg');
             slider_init('auto_jump_mark_floor', '#auto_jump_mark_floor');
             input_init('#setting', 'showmsg_jump_floor');
-            input_init('#setting', 'showmsg_jump_height');
+            input_init('#setting', 'tap_jump_height');
             input_init('#setting', 'showmsg_dewater_wordnum');
             input_init('#setting', 'thread_to_kindle_dom');
             slider_init('share_tz','#share_tz');
@@ -1739,6 +1733,7 @@ function setting_init(){
             });
 }
 // }}
+
 // {{ manual_jump
 function manual_jump_init(){
     $('#manual_jump').on('vclick', '#manual_jump_btn', function(){
@@ -1761,73 +1756,41 @@ function manual_jump_init(){
     $.mobile.pageContainer.pagecontainer('change', u);
     });
 }
-
-
 // }}
+
 // {{ main
 function params_page(){
-
-    //$(document).bind("popupcreate", function (e) { 
-    //var $widget = $(e.target);
-
-    //$widget.delegate(".ui-btn", 'vclick', function ( e ) {
-    //setTimeout(function(){  
-    //$widget.popup("close");
-    //});
-    //});
-    //});
-
-
-    $.mobile.paramsHandler.addPage(
-            "board",                      
+    $.mobile.paramsHandler.addPage( "board",                      
             ["board", "page"],       
             ["type", "subid"],                     
-            function (para) {
-                board(para);
-            }
-            );
+            function (para) { board(para); });
 
-    $.mobile.paramsHandler.addPage(
-            "showmsg",                      
+    $.mobile.paramsHandler.addPage( "showmsg",                      
             ["board", "id"],       
             ["page", "boardpagemsg", "keyword", "refresh", "fid"],                     
-            function (para) {
-                showmsg(para);
-            }
-            );
+            function (para) { showmsg(para); });
 
-    $.mobile.paramsHandler.addPage(
-            "search",                      
+    $.mobile.paramsHandler.addPage( "search",                      
             ["board", "keyword"],       
             ["topic", "page", "act"],                     
-            function (para) {
-                search(para);
-            }
-            );
+            function (para) { search(para); });
 
     $.mobile.paramsHandler.init();
 }
+
 function main(){
-    //$('textarea').elastic(); 
     //$(document).bind('swiperight', function () { window.history.back(); });
     //$(document).bind('swipeleft', function () { window.history.forward(); });
 
     params_page();
     upload_img_init();
 
-    home(0); //首页
-    $('#home').on('vclick', '#home_content', function(e){ 
-        var z = get_event_zone(e);
-        showmsg_scroll_screen(z); 
-        return false;
-    });
+    //首页
+    home(0); 
+    $('#home').on('vclick', '#refresh_home', function(){ home(1); return false; });
 
-    $('#home').on('vclick', '#refresh_home', function(){
-        home(1);
-        return false;
-    });
-    
-    board_menu(); //版块列表
+    //版块列表
+    board_menu(); 
 
     //查询
     $('#search_form').on('vclick', '#search_form_btn', function() { search_form(); return false; });
@@ -1838,16 +1801,22 @@ function main(){
         return false;
     });
 
-    setting_init(); //设置
-    manual_jump_init(); //手动跳转
+    //设置
+    setting_init(); 
 
-    fav_board(); //收藏版块
+    //手动跳转
+    manual_jump_init(); 
+
+    //收藏版块
+    fav_board(); 
     $('#fav_board').on('vclick', '.refresh_fav_board', function() { fav_board(); return false; });
 
-    fav_thread(); //收藏贴子
+    //收藏贴子
+    fav_thread(); 
     $('#fav_thread').on('vclick', '.refresh_fav_thread', function() { fav_thread(); return false; });
 
-    recent_history(); //近期访问
+    //近期访问
+    recent_history(); 
     $('#recent_history').on('vclick', '.refresh_recent_history', function() { recent_history(); return false; });
 
     //版块
@@ -1866,19 +1835,10 @@ function main(){
         return false;
     });
     $('#board').on('vclick', '#toggle_recent_thread', function() { toggle_recent_thread(); return false;});
-    $('#board').on('vclick', '#board_content', function(e){ 
-        var z = get_event_zone(e);
-        showmsg_scroll_screen(z); 
-        return false;
-    });
+    //$('#board').on('vclick', '.onethread', function(e){ tap_to_scroll_screen(e); return false; });
 
-    //$('#board').on('swipeleft', function(e){ 
-    //$('#search_form_a').click();
-    //});
-
-    //$('#board').on('swiperight', function(e){ 
-    //$('#new_thread_a').click();
-    //});
+    //$('#board').on('swipeleft', function(e){ $('#search_form_a').click();});
+    //$('#board').on('swiperight', function(e){ $('#new_thread_a').click(); });
 
     $('body').on('vclick', '.format_url_code', function(){
         var area = $(this).parent().find('textarea').eq(0);
