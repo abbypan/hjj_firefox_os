@@ -2,7 +2,7 @@
 var HJJ='http://bbs.jjwxc.net';
 var SHARE_WEIBO = '@hjjtz';
 var SHARE_WEIBO_URL = 'http://v.t.sina.com.cn/share/share.php';
-var README_URL='https://github.com/abbypan/hjj_firefox_os/blob/master/README.md';
+var FAQ_URL='https://github.com/abbypan/hjj_firefox_os/blob/master/README.md';
 var MOBILE_INIT = 0;
 var FILTER_THREAD_KEYWORD_LIST;
 var DEFAULT = {
@@ -26,6 +26,7 @@ var DEFAULT = {
     auto_jump_mark_floor : 'off',
     mail : 'xxx@kindle.cn', 
     thread_to_kindle_dom : 'xxx.com', 
+    thread_to_kindle_pwd : '', 
     night_color : 'off', 
     tap_jump_height : 0.6,
     showmsg_jump_floor : 50,
@@ -1161,7 +1162,7 @@ function reply_thread(f, reply_type){
         });
         $('#showmsg').on('vclick', '#thread_dewater', function(){ 
             var min = $('#showmsg_dewater_wordnum').val();
-            min_wordnum(min);$('#showmsg_panel').close();return false; 
+            min_wordnum(min);return false; 
         });
         $('#showmsg').on('vclick', '#floor_grep',function(){ 
             floor_grep();return false; });
@@ -1226,7 +1227,9 @@ function reply_thread(f, reply_type){
             return false; 
         });
 
-        $('#showmsg').on('vclick', '#thread_to_kindle_btn', function(){ thread_to_kindle();return false; });
+        $('#showmsg').on('vclick', '#thread_to_kindle_btn', function(){ thread_to_kindle();
+            $('#showmsg_panel').close();
+            return false; });
         //$( document ).on( "pageinit", "#showmsg", function() {
 
         //$( document ).on( "swipeleft swiperight", "#showmsg", function( e ) {
@@ -1389,6 +1392,7 @@ function reply_thread(f, reply_type){
         $('#export_thread').html('kindle');
 
         var formData = new FormData();
+        formData.append('pwd', DEFAULT["thread_to_kindle_pwd"]);
         $('#thread_to_kindle').find('input').each(function(){
             var k = $(this).attr('name');
             if(k) {
@@ -1406,7 +1410,6 @@ function reply_thread(f, reply_type){
             }
         };
         xhr.send(formData);
-
     }
 
     function showmsg_banner(para){
@@ -1420,8 +1423,10 @@ function reply_thread(f, reply_type){
 
 
         var tag_key = format_cache_key('thread_tag', para, ["board", "id"]);
-        $('#thread_tag_popup').html( input_div_html(tag_key, '标签') + 
-                '<input type="button" value="返回" id="thread_tag_close">'
+        $('#thread_tag_popup').html( '<div class="setting"> \
+                <label>标签</label> \
+                <input name="' + tag_key + '" id="' + tag_key + '"> \
+                <input type="button" value="返回" id="thread_tag_close"></div>'
                 );
         tags_input_init(tag_key);
         $( "#thread_tag_close" ).on('vclick', function(){ 
@@ -1561,44 +1566,6 @@ function font_click(ce, e){
     });
 }
 
-function slider_div_html(key, label, on_s, off_s){
-    return '<div id="'+ key + '_d" class="setting">' +
-        '<label for="' + key + '">' + label + '</label>' +
-        '<select name="' + key + 
-        '" data-role="slider" id="' + key + '">' + 
-        '<option value="on">' + on_s + '</option>' +
-        '<option value="off">' + off_s + '</option>' +
-        '</select></div>';
-}
-
-function suggest_html(){
-    return '<div id="suggest_d" class="setting"> \
-        <a href="' + README_URL + 
-        '" data-role="button" target="_blank">使用说明</a> \
-        <a href="#" data-role="button" id="suggest">反馈意见</a> \
-        </div>';
-}
-
-function input_list_html(key, input_list){
-    var s = [];
-    for(var i in input_list){
-        var x = input_list[i];
-        s.push('<label>'+ i + '</label>' + 
-                '<input id="' + x + '" name="' + x + 
-                '" placeholder="' + x + '">');
-    }
-    return '<div id="' + key + '" class="setting">' + 
-        '<label><b>' + key + '</b></label>' + 
-        s.join("\n") + '</div>';
-}
-
-function input_div_html(key, label){
-    return  '<div id="' + key + '_d" class="setting"> \
-        <label for="' + key + '">' + label + '</label> \
-        <input id="' + key + '" name="' + key + '" > \
-        </div>';
-}
-
 function slider_init(key, elem){
     $(elem).find('option[value="'+DEFAULT[key]+'"]').attr('selected', 'selected');
     $(elem).on("change", function () {
@@ -1705,51 +1672,33 @@ function change_font_size_init() {
 }
 
 function setting_init(){
-    $('#setting_content').html(
-            '<div class="containing-element">' + 
-            slider_div_html('night_color', '', '黑夜', '白天') +
-            input_div_html('filter_thread_keyword', '贴子标题过滤')  +
-            input_div_html('tap_jump_height', '每次触屏单击翻页高度') + 
-            change_font_size_html() +
-            '<br>' + 
-            suggest_html() +
-            '<br>' + 
-            slider_div_html('auto_jump_mark_floor', '贴子上次阅读的位置', '自动跳转', '不自动跳转') + 
-            slider_div_html('share_tz', '分享时是否 @hjjtz', '@', '不@') + 
-            input_div_html('showmsg_jump_floor', '贴子页每次触屏双击跳转N楼') + 
-            input_div_html('showmsg_dewater_wordnum', '贴子页脱水的最小字数') + 
-            input_div_html('thread_to_kindle_dom', 'kindle推送站点域名') + 
-            input_list_html('图片上传（腾讯微博oauth2授权）', {
-                openid : 'qq_openid', 
-            access_token : 'qq_access_token', 
-            appkey : 'qq_appkey' 
-            }) +
-            '</div>'  
-                );
-
+            //setting
             night_color_init();
             change_font_size_init();
-            slider_init('auto_jump_mark_floor', '#auto_jump_mark_floor');
-            input_init('#setting', 'showmsg_jump_floor');
             input_init('#setting', 'tap_jump_height');
-            input_init('#setting', 'showmsg_dewater_wordnum');
-            input_init('#setting', 'thread_to_kindle_dom');
-            slider_init('share_tz','#share_tz');
-            tags_input_init('filter_thread_keyword');
-            input_init('#setting', 'qq_appkey');
-            input_init('#setting', 'qq_access_token');
-            input_init('#setting', 'qq_openid');
-
-            slider_init('loadimg','#loadimg');
-            slider_init('showmsg_view_img','#showmsg_view_img');
-            slider_init('showmsg_only_poster','#showmsg_only_poster');
-            slider_init('showmsg_min_wordnum','#showmsg_min_wordnum');
-
+            $('#faq_url').attr('href', FAQ_URL);
             $('#setting').on('vclick', '#suggest', function(){
                 var st = encodeURIComponent(SHARE_WEIBO + ' ');
                 var wu = SHARE_WEIBO_URL + '?title=' + st;
                 window.open(wu, '_blank');
             });
+            
+            //showmsg
+            tags_input_init('filter_thread_keyword');
+            input_init('#showmsg_panel', 'qq_appkey');
+            input_init('#showmsg_panel', 'qq_access_token');
+            input_init('#showmsg_panel', 'qq_openid');
+            input_init('#showmsg_panel', 'thread_to_kindle_dom');
+            input_init('#showmsg_panel', 'thread_to_kindle_pwd');
+            input_init('#showmsg_panel', 'showmsg_dewater_wordnum');
+            input_init('#showmsg_panel', 'showmsg_jump_floor');
+            slider_init('share_tz','#share_tz');
+            slider_init('auto_jump_mark_floor', '#auto_jump_mark_floor');
+            slider_init('loadimg','#loadimg');
+            slider_init('showmsg_view_img','#showmsg_view_img');
+            slider_init('showmsg_only_poster','#showmsg_only_poster');
+            slider_init('showmsg_min_wordnum','#showmsg_min_wordnum');
+
 }
 // }}
 

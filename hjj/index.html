@@ -231,29 +231,27 @@
         页码 <input name="min_tiezi_page" data-role="none" class="small_input">-<input name="max_tiezi_page" data-role="none" class="small_input"></p>
         <p>前<input name="max_tiezi_floor_num" data-role="none" class="small_input">楼 </p>
         <p>每楼最少<input name="min_floor_word_num" data-role="none" class="small_input">字 </p>
+        <p>提取<input name="grep_content" data-role="none" class="small_input"></p>
+        <p>过滤<input name="filter_content" data-role="none" class="small_input"></p>
         <p><input type="submit" id="thread_to_kindle_btn" value="推送"></p>
         <p style="font-size: small">说明：需要预先在 amazon 设置允许 推送站点的邮箱（例如 kindle@xxx.com）推送到 kindle</p>
     </div>
 
     <div data-role="popup" id="showmsg_panel" data-position-to="window">
-        <div class="paneldiv">
-
+        <div class="setting">
             <a id="thread_cache" href="#">缓存</a><br>
             <!--<a href="#reply_thread" data-rel="popup" id="reply_thread_a" data-position-to="window">回帖</a>-->
             <a href="#" id="reply_thread_link" target="_blank">回贴</a><br>
             <a href="#" id="thread_refresh">刷新</a>
         </div>
-        <br>
-        <div class="paneldiv">
-
+        <div class="setting">
             <input data-role="none" type="text" name="wordnum" placeholder="字数" id="min_wordnum">
             <a href='#' id="min_wordnum_btn">过滤</a><br>
             <input data-role="none" type="text" name="floor_keyword" id="floor_keyword" class="panel_input" placeholder="关键字">
             <br>
             <a href="#" id="floor_grep">抽取</a>，<a href="#" id="floor_filter">过滤</a><br>
         </div>
-        <br>
-        <div class="paneldiv">
+        <div class="setting">
             <select name="loadimg" data-role="slider" id="loadimg">
                 <option value="on">看图</option>
                 <option value="off">不看图</option>
@@ -269,9 +267,46 @@
             <select name="showmsg_min_wordnum" data-role="slider" id="showmsg_min_wordnum">
                 <option value="on">自动脱水</option>
                 <option value="off">不脱水</option>
-            </select><br>
+            </select>
         </div>
-    </div>
+            <div class="setting">
+                <label>贴子页脱水的最小字数</label>
+                <input name="showmsg_dewater_wordnum" id="showmsg_dewater_wordnum">
+            </div>
+            <div class="setting">
+                <label>贴子标题过滤</label>
+                <input name="filter_thread_keyword" id="filter_thread_keyword">
+            </div>
+            <div class="setting">
+                <label>贴子页每次触屏双击跳转N楼</label>
+                <input name="showmsg_jump_floor" id="showmsg_jump_floor">
+            </div>
+            <div class="setting">
+                <label>kindle推送</label>
+                域名 <input name="thread_to_kindle_dom" id="thread_to_kindle_dom">
+                密码 <input name="thread_to_kindle_pwd" id="thread_to_kindle_pwd">
+            </div>
+            <div class="setting">
+                <label>贴子上次阅读的位置</label>
+                <select name="auto_jump_mark_floor" data-role="slider" id="auto_jump_mark_floor">
+                    <option value="on">自动跳转</option>
+                    <option value="off">不自动跳转</option>
+                </select>
+            </div>
+            <div class="setting">
+                <label>分享时是否 @hjjtz</label>
+                <select name="share_tz" data-role="slider" id="share_tz">
+                    <option value="on">@</option>
+                    <option value="off">不@</option>
+                </select>
+            </div>
+            <div class="setting">
+                <label>图片上传（腾讯微博oauth2授权）</label>
+                openid <input name="qq_openid" id="qq_openid">
+                access_token <input name="qq_access_token" id="qq_access_token">
+                appkey <input name="qq_appkey" id="qq_appkey">
+            </div>
+        </div>
 </div>
 
 <div data-role="page" id="recent_history">
@@ -365,7 +400,28 @@
         </div>
     </div>
     <div data-role="content" id="setting_content">
-
+        <div class="containing-element">
+            <div class="setting">
+                <select name="night_color" data-role="slider" id="night_color">
+                    <option value="on">黑夜</option>
+                    <option value="off">白天</option>
+                </select>
+            </div>
+            <div class="setting">
+                <label>每次触屏单击翻页高度</label>
+                <input name="tap_jump_height" id="tap_jump_height">
+            </div>
+            <div id="font_size_d" class="setting"> 
+                字号： 
+                <a class="change_font_size" type="bigger">放大</a> 
+                &nbsp; 
+                <a class="change_font_size" type="smaller">缩小</a> 
+            </div>
+            <div id="suggest_d" class="setting"> 
+                <a href="#" id="faq_url" data-role="button" target="_blank">使用说明</a> 
+                <a href="#" data-role="button" id="suggest">反馈意见</a> 
+            </div>
+        </div>
     </div>
     <div data-role="footer" data-position="fixed">
         <div data-role="navbar">  
