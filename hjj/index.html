@@ -59,7 +59,6 @@
             <ul>
                 <li><a href="#manual_jump">&#8869;</a></li>
                 <li><a href="#fav_board">&#9829;</a></li>
-                <li><a href="#home">&Lambda;</a></li>
                 <li><a href="#fav_thread">&#9733;</a></li>
                 <li><a href="#recent_history">&#167;</a></li>
             </ul>
@@ -171,7 +170,7 @@
             <span id="thread_bid"></span>, 
             <span id="thread_tid"></span>, 
             <span id="thread_pid"></span>,
-            <a id="thread_save" href="#">收藏</a>,<a href="#" id="thread_refresh">刷新</a>
+            <a id="thread_save" href="#">收藏</a>
             &nbsp; 
             <span id="thread_action_temp"></span> 
         </div>
@@ -241,7 +240,8 @@
 
             <a id="thread_cache" href="#">缓存</a><br>
             <!--<a href="#reply_thread" data-rel="popup" id="reply_thread_a" data-position-to="window">回帖</a>-->
-            <li><a href="#" id="reply_thread_link" target="_blank">回贴</a></li>
+            <a href="#" id="reply_thread_link" target="_blank">回贴</a><br>
+            <a href="#" id="thread_refresh">刷新</a>
         </div>
         <br>
         <div class="paneldiv">
@@ -254,6 +254,10 @@
         </div>
         <br>
         <div class="paneldiv">
+            <select name="loadimg" data-role="slider" id="loadimg">
+                <option value="on">看图</option>
+                <option value="off">不看图</option>
+            </select><br>
             <select name="showmsg_view_img" data-role="slider" id="showmsg_view_img">
                 <option value="on">只看图</option>
                 <option value="off">不限图</option>
