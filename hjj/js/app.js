@@ -6,12 +6,6 @@ var FAQ_URL='https://github.com/abbypan/hjj_firefox_os/blob/master/README.md';
 var MOBILE_INIT = 0;
 var FILTER_THREAD_KEYWORD_LIST;
 var DEFAULT = {
-    //qq_openid : "261C940CFAB529378377526B945F61EA", 
-    //qq_access_token : "86cb477f384ff56fadff73ff1bf3f637", 
-    //qq_appkey : "801058005", 
-    qq_openid : "", 
-    qq_access_token : "", 
-    qq_appkey : "", 
     history_cnt : -1, 
     font_size: '112%', 
     max_history_cnt : 300, //历史记录最多x条 
@@ -50,9 +44,9 @@ function is_key_match_list(k, list){
 }
 
 function is_recent(dt){
-    var t = dt.replace(/-/g,'/');
+    var t = dt.replace(/-/g,'/').replace(/^/,'20');
     var diff = new Date() - new Date(t);
-    return diff < DEFAULT["recent_hot_thread_second"] ? 1 : 0;
+    return parseInt(diff) < parseInt(DEFAULT["recent_hot_thread_second"]) ? 1 : 0;
 }
 
 function get_rem_key(x){
@@ -168,105 +162,6 @@ function tap_to_scroll_screen(e) {
     }
 }
 //}}
-// {{ img
-function get_latest_img(filename, place){
-    var param = {
-        "reqnum": "1",
-        "type": "3",
-        "contenttype": "4",
-        "format": "json",
-        "access_token": DEFAULT["qq_access_token"],
-        "oauth_consumer_key": DEFAULT["qq_appkey"],
-        "openid": DEFAULT["qq_openid"],
-        "oauth_version": "2.a",
-        "lastid": "0",
-        "scope": "all",
-        "appfrom": "php-sdk2.0beta"
-    };
-    var param_str = format_para_string(param);
-
-    var charset='utf-8';
-    var url = 'https://open.t.qq.com/api/statuses/broadcast_timeline?'+param_str;
-    get_url(url, function(c){
-        $('.upload_img_status').html(c);
-        var d = $.parseJSON(c);
-        var img = d["data"]["info"][0]["image"][0] + '/2000';
-
-        if(img.match(/^http/)){
-            $('.upload_img_status').html("上传成功" + filename);
-            var x = "<p><a data-role='button' href='#' place='" + place + "' url='" +
-        img + "' class='insert_img'>" + filename + "</a></p>";
-    $(place).find('.uploaded_img').eq(0).append(x);
-        }else{
-            $('.upload_img_status').html("上传失败: " + filename);
-        }
-    }, charset);
-}
-
-function upload_img_form(file, msg){
-    var fd = new FormData();
-    fd.append("openid",DEFAULT["qq_openid"]);
-    fd.append("access_token",DEFAULT["qq_access_token"]);
-    fd.append("oauth_consumer_key",DEFAULT["qq_appkey"]);
-
-    fd.append("appfrom","php-sdk2.0beta");
-    fd.append("oauth_version","2.a");
-    fd.append("scope","all");
-    fd.append("format","json");
-    fd.append('content', msg);
-    fd.append('pic', file);
-    return fd;
-}
-
-function upload_img(file, place) {
-    var msg = $('#remote_url_short').html();
-    $('.upload_img_status').html('uploading...' + msg);
-    var fd = upload_img_form(file,msg);
-    var xhr = new XMLHttpRequest();
-    xhr.open("POST", "https://open.t.qq.com/api/t/add_pic", true);
-    xhr.withCredentials = true;
-    xhr.onreadystatechange = function () {
-        if (xhr.readyState == 4) {
-            get_latest_img(file.name, place);
-        } else {
-            $('.upload_img_status').html("Error " + xhr.status + ',' + msg);
-        }
-    };
-
-    xhr.send(fd);
-}
-
-function upload_img_init(){
-    self = this;
-    $(document).on('change', '.upload_img_btn', function (e) {
-        var place = $(this).attr('place');
-        var files = e.target.files, file, p, t, i, len;
-        for (i = 0, len = files.length; i < len; i += 1) {
-            file = files[i];
-            $('.upload_img_status').html(file.name);
-            if (file.name.match(/(png|jpg|jpeg|gif)$/i)) {
-                upload_img(file, place);
-            } else {
-                $('.upload_img_status').html('err...');
-            }
-        }
-        return false;
-    });
-
-    $('#reply_thread').on('vclick', '.insert_img', function(){
-        var place=$(this).attr('place');
-        var img = $(this).attr('url');
-
-        var tr = $(place).find('textarea');
-        c = tr.val() + "\n<img src='" + img + "' />\n";
-        tr.val(c);
-        return false;
-    });
-
-
-}
-// }}
-
 // {{{ home
 function get_hjj_url(u, succ_cb, charset){
     get_url(u, succ_cb, 'gbk');
@@ -336,7 +231,7 @@ function board_menu_zone(zone_li) {
         lscache.set('board_menu', $('#board_menu_content').html(), DEFAULT["board_menu_minute"]);
     };
 
-    var u = HJJ +"/index"+id+".htm";
+    var u = HJJ +"/bindex.php?class=" + id;
     get_hjj_url(u, zone_cb);
 }
 
@@ -602,7 +497,7 @@ function format_onethread_div(info){
     info.recent_status = info.recent_status || 'no';
     info.href_list = info.href_list || '';
     info.recent_img = info.recent_img || '';
-    //var tag = info.tag ? ('<span class="left_string">[' + info.tag+ ']</span>') : '';
+
     var tag = info.tag ? ('[' + info.tag+ ']') : '';
 
     var s = '<div class="onethread" recent="' + info.recent_status + '">' + 
@@ -617,16 +512,16 @@ function format_onethread_div(info){
 }
 
 function toggle_recent_thread() {
-    var status = $('#only_recent_thread').text();
+    var ss = $('#only_recent_thread').text();
 
     $('.onethread').each(function() {
-        if(status=='no'){
+        if(ss=='no'){
             if($(this).attr('recent')=='no') $(this).hide();
         }else{
             $(this).show();
         }
     }).promise().done(function(){
-        var new_status = status=='no' ? 'yes' : 'no';
+        var new_status = ss=='no' ? 'yes' : 'no';
         $('#only_recent_thread').text(new_status);
     });
 }
@@ -659,7 +554,6 @@ function board_thread_info(tr) {
 
 
 function sub_board_action(){
-    //$('#sub_board').popup('close');
     var url =$("#sub_board").find("input[name='url']").attr("value"); 
     var rem =$("#sub_board").find("input[name='rem']").prop("checked"); 
 
@@ -683,7 +577,6 @@ function sub_board_action(){
 
     $('#sub_board_url').attr('href' , url);
     $.mobile.pageContainer.pagecontainer('change', url);
-    //$('#sub_board_url').click();
 }
 
 function sub_board(para, html){
@@ -715,9 +608,6 @@ function board_title(para, h){
 }
 
 function new_thread(para){
-    //var u = HJJ + "/postbypolice.php?board="+ para.board;
-    //input_init('#new_thread', 'username');
-    //$('#new_thread').find('form').attr("action", u);
     var u = HJJ + "/postbypolice.php?board="+ para.board + "&act=mainpage";
     $('#new_thread_link').attr("href", u);
 }
@@ -1113,11 +1003,7 @@ function reply_thread(f, reply_type){
     function jump_to_prev(f){
         var x = f.prevAll();
         var i = parseInt(DEFAULT["showmsg_jump_floor"])-1;
-
         var pos = x[i] ? $(x[i]).offset().top : 0;
-
-        //var fid = x[i] ? $(x[i]).attr('fid') : 0;
-        //$('#showmsg_floor_slider').val(fid);
         $.mobile.silentScroll(pos);
     }
 
@@ -1126,8 +1012,6 @@ function reply_thread(f, reply_type){
         var i = parseInt(DEFAULT["showmsg_jump_floor"]) -1;
 
         var pos = x[i] ? $(x[i]).offset().top : $(document).height();
-        //var fid = x[i] ? $(x[i]).attr('fid') : $('#showmsg_floor_slider').attr('max');
-        //$('#showmsg_floor_slider').val(fid);
         $.mobile.silentScroll(pos);
     }
 
@@ -1176,7 +1060,6 @@ function reply_thread(f, reply_type){
             e.preventDefault();
             e.target.dispatchEvent(new ClipboardEvent("copy"));
             e.clipboardData.setData("text/plain", res);
-            //alert(e.clipboardData.getData());
             window.open($('#reply_thread_link').attr('href'), '_blank');
             return false; 
         });
@@ -1215,34 +1098,17 @@ function reply_thread(f, reply_type){
         });
 
         $('#showmsg').on('vclick', '#jump_to_prev', function(e){
-            //jump_to_prev(get_current_floor(e), -screen.height*2);
             jump_to_prev(get_current_floor(e, -screen.height*2));
-            //jump_to_prev(get_current_floor(e));
             return false; 
         });
         $('#showmsg').on('vclick', '#jump_to_next', function(e){
-            //jump_to_next(get_current_floor(e), -screen.height*2);
             jump_to_next(get_current_floor(e, -screen.height*2));
-            //jump_to_next(get_current_floor(e));
             return false; 
         });
 
         $('#showmsg').on('vclick', '#thread_to_kindle_btn', function(){ thread_to_kindle();
             $('#showmsg_panel').close();
             return false; });
-        //$( document ).on( "pageinit", "#showmsg", function() {
-
-        //$( document ).on( "swipeleft swiperight", "#showmsg", function( e ) {
-        //if ( $.mobile.activePage.jqmData( "panel" ) !== "open" ) {
-        //if ( e.type === "swipeleft"  ) {
-        ////$( "#right-panel" ).panel( "open" );
-        //$('#showmsg_panel').panel('open');
-        //} else if ( e.type === "swiperight" ) {
-        ////$( "#left-panel" ).panel( "open" );
-        //}
-        //}
-        //});
-        //});
     }
 
     function extract_showmsg_content(d){
@@ -1305,19 +1171,6 @@ function reply_thread(f, reply_type){
         $('#thread_floor_list').html(res["floor_list"]);
 
         $('#reply_thread_link').attr('href', HJJ + "/reply.php?board="+ para.board + '&id=' + para.id);
-        //$('#thread_floor_list').find('img').lazyload();
-
-        //$("#thread_floor_list").find('img').each(function(){     
-        //var img_url = $(this).attr('src');
-        ////$(this).attr('src', 'icons/hjj128.png');
-        //$(this).attr('data-original', img_url);
-        //$(this).removeAttribute('src');
-        //$(this).attr('width', '100%');
-        //});
-
-        //$("#thread_floor_list").find('img').lazyload();
-
-        //$("img").trigger('unveil');
 
         $('#thread_floor_list').find('a').each(function(){
             var href = $(this).attr('href');
@@ -1354,8 +1207,6 @@ function reply_thread(f, reply_type){
             key : 'showmsg,' + para.board + ',' + para.id
         });
 
-        //$("#thread_floor_list").niceScroll();
-        //$("#thread_floor_list").getNiceScroll().resize();
 
         if(para.fid){
             showmsg_jump_floor_simple(para.fid);
@@ -1372,9 +1223,6 @@ function reply_thread(f, reply_type){
 
     function showmsg_header(para){
         $('#remote_url_short').html([ 'HJJ', para.board, para.id ].join(","));
-
-        //input_init('#reply_thread', 'username');
-        //$('#reply_thread').find('form').attr('action', HJJ + "/reply.php?board="+ para.board + '&id=' + para.id);
 
         var up_url = "#board?board=" + para.board + '&page=1';
         if($('#board_id').html()==para.board){
@@ -1751,7 +1599,7 @@ function main(){
     //$(document).bind('swipeleft', function () { window.history.forward(); });
 
     params_page();
-    upload_img_init();
+    //upload_img_init();
 
     //首页
     home(0); 

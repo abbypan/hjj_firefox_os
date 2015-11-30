@@ -157,7 +157,7 @@
         <div data-role="navbar">  
             <ul>
                 <li><a id="thread_mark_floor" href="#">M</a></li>
-                <li><a id="share_thread" href="#">S</a></li>
+                <li><a id="thread_refresh" href="#">S</a></li> 
                 <li><a id="export_thread" href="#thread_to_kindle" data-rel="popup" data-position-to="window" data-transition="pop">K</a></li>
                 <li><a href="#manual_jump">&#8869;</a></li>
                 <li><a href="#showmsg_panel" data-rel="popup">...</a></li>
@@ -242,7 +242,7 @@
             <a id="thread_cache" href="#">缓存</a><br>
             <!--<a href="#reply_thread" data-rel="popup" id="reply_thread_a" data-position-to="window">回帖</a>-->
             <a href="#" id="reply_thread_link" target="_blank">回贴</a><br>
-            <a href="#" id="thread_refresh">刷新</a>
+            <a href="#" id="share_thread">分享</a>
         </div>
         <div class="setting">
             <input data-role="none" type="text" name="wordnum" placeholder="字数" id="min_wordnum">
@@ -299,12 +299,6 @@
                     <option value="on">@</option>
                     <option value="off">不@</option>
                 </select>
-            </div>
-            <div class="setting">
-                <label>图片上传（腾讯微博oauth2授权）</label>
-                openid <input name="qq_openid" id="qq_openid">
-                access_token <input name="qq_access_token" id="qq_access_token">
-                appkey <input name="qq_appkey" id="qq_appkey">
             </div>
         </div>
 </div>
