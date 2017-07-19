@@ -70,11 +70,11 @@
     <div data-role="header" data-position="fixed">
         <div data-role="navbar">  
             <ul>
-                <li><a href="#sub_board" data-rel="popup">b</a></li>
                 <li><a href="#" id="toggle_recent_thread">H</a></li>
                 <!--<li><a href="#new_thread" data-rel="popup">N</a></li>-->
-                <li><a href="#" id="new_thread_link" target="_blank">N</a></li>
+                <!--<li><a href="#" id="new_thread_link" target="_blank">N</a></li>-->
                 <li><a href="#search_form" data-rel="popup">S</a></li>
+                <li><a href="#sub_board" data-rel="popup">b</a></li>
             </ul>
         </div>
     </div>
@@ -96,7 +96,7 @@
             <ul>
                 <li><a href="#manual_jump">&#8869;</a></li>
                 <li><a href="#fav_board">&#9829;</a></li>
-                <li><a href="#home">&Lambda;</a></li>
+                <!--<li><a href="#home">&Lambda;</a></li>-->
                 <li><a href="#fav_thread">&#9733;</a></li>
                 <li><a href="#recent_history">&#167;</a></li>
             </ul>
@@ -156,11 +156,9 @@
     <div data-role="header" data-position="fixed">
         <div data-role="navbar">  
             <ul>
-                <li><a id="thread_mark_floor" href="#">M</a></li>
-                <li><a id="thread_refresh" href="#">S</a></li> 
-                <li><a id="export_thread" href="#thread_to_kindle" data-rel="popup" data-position-to="window" data-transition="pop">K</a></li>
                 <li><a href="#manual_jump">&#8869;</a></li>
-                <li><a href="#showmsg_panel" data-rel="popup">...</a></li>
+                <li><a id="thread_mark_floor" href="#">M</a></li>
+                <li><a href="#showmsg_panel" data-rel="popup">&lowast;</a></li>
             </ul>
         </div>
     </div>
@@ -188,9 +186,9 @@
         <div data-role="navbar">  
             <ul>
                 <li><a href="#" id="reverse_floor">X</a></li>
-                <li><a href="#" id="only_poster">&real;</a></li> 
-                <li><a href="#" id="view_img">&#8465;</a></li>
-                <li><a href="#" id="thread_dewater">&race;</a></li>
+                <li><a href="#" id="only_poster">P</a></li> 
+                <li><a href="#" id="view_img">I</a></li>
+                <li><a href="#" id="thread_dewater">W</a></li>
                 <li><a href="#" id="view_all_floor">A</a></li>
             </ul>
             <ul>
@@ -219,29 +217,12 @@
     <div data-role="popup" id="thread_tag_popup" class="popup_textarea">
     </div>
 
-    <div data-role="popup"  id="thread_to_kindle"  data-theme="none" >
-        <input name="url" type="hidden" value="" > 
-        <input name="type" type="hidden" value="mobi" > 
-        <p>
-        <input type="checkbox" name="only_poster" data-role="none">只看楼主 
-        <input type="checkbox" name="with_toc"  value="1" checked data-role="none">生成目录 </p>
-        <p>
-        kindle邮箱<br><input name="mail" value="" id="kindle_mail" ></p>
-        <p>
-        页码 <input name="min_tiezi_page" data-role="none" class="small_input">-<input name="max_tiezi_page" data-role="none" class="small_input"></p>
-        <p>前<input name="max_tiezi_floor_num" data-role="none" class="small_input">楼 </p>
-        <p>每楼最少<input name="min_floor_word_num" data-role="none" class="small_input">字 </p>
-        <p>提取<input name="grep_content" data-role="none" class="small_input"></p>
-        <p>过滤<input name="filter_content" data-role="none" class="small_input"></p>
-        <p><input type="submit" id="thread_to_kindle_btn" value="推送"></p>
-        <p style="font-size: small">说明：需要预先在 amazon 设置允许 推送站点的邮箱（例如 kindle@xxx.com）推送到 kindle</p>
-    </div>
 
     <div data-role="popup" id="showmsg_panel" data-position-to="window">
         <div class="setting">
             <a id="thread_cache" href="#">缓存</a><br>
             <!--<a href="#reply_thread" data-rel="popup" id="reply_thread_a" data-position-to="window">回帖</a>-->
-            <a href="#" id="reply_thread_link" target="_blank">回贴</a><br>
+            <!--<a href="#" id="reply_thread_link" target="_blank">回贴</a><br>-->
             <a href="#" id="share_thread">分享</a>
         </div>
         <div class="setting">
@@ -280,11 +261,6 @@
             <div class="setting">
                 <label>贴子页每次触屏双击跳转N楼</label>
                 <input name="showmsg_jump_floor" id="showmsg_jump_floor">
-            </div>
-            <div class="setting">
-                <label>kindle推送</label>
-                域名 <input name="thread_to_kindle_dom" id="thread_to_kindle_dom">
-                密码 <input name="thread_to_kindle_pwd" id="thread_to_kindle_pwd">
             </div>
             <div class="setting">
                 <label>贴子上次阅读的位置</label>
