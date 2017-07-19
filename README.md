@@ -5,7 +5,7 @@ hjj_firefox_os
 
 ## 安装
 
-apk安装包：[hjj.0.8.7.apk](hjj.apk)
+apk安装包：[hjj.0.8.7.apk](../../raw/master/hjj.apk)
 
 测试环境：华为荣耀8
 
