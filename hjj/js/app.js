@@ -339,26 +339,16 @@ function sub_board_check_all(act){
 // }}
 // {{ fav_thread
 function fav_thread() {
-    var s = '';
-    var klist = [ "thread_save", "thread_cache" ];
-    for(var i in klist){
-        var k = klist[i];
-        var cnt = lscache.get(k+'_cnt') || 0;
-        if(cnt>0){
-            var x = [];
-            for(var i=1;i<=cnt;i++){
-                var d = lscache.get( k + '_' + i);
-                if(d) {
-                    var tag_key = format_cache_key('thread_tag', d, ["board", "id"]);
-                    var tag = lscache.get(tag_key);
-                    if(tag) d["title"] += '#' + tag + '#';
-                    x.push(d);
-                }
-            }
-            s += format_url_title(x);
+    var s= '';
+    var cnt = lscache.get('thread_save_cnt') || 0;
+    if(cnt>0){
+        var x = [];
+        for(var i=1;i<=cnt;i++){
+            var d = lscache.get( 'thread_save_' + i);
+            if(d) x.push(d);
         }
+        s += format_url_title(x);
     }
-
     $('#fav_thread').find('#fav_thread_ul').html(s);
     $('#fav_thread').find('#fav_thread_ul').trigger('create');
 }
@@ -395,7 +385,9 @@ function check_cache_thread(){
 function check_save_thread(){
     var info = get_showmsg_info();
     var k = format_cache_key('thread_save', info, ["board", "id"]);
-    toggle_action_html(k, '#thread_save',  '&star;', '&starf;');
+    $('#thread_title').html(k);
+    //toggle_action_html(k, '#thread_save',  '&star;', '&starf;');
+    toggle_action_html(k, '#thread_save',  '收藏', '取消收藏');
 }
 
 function thread_save(){
@@ -408,7 +400,8 @@ function thread_save(){
         board : info.board,
         id : info.id
     });
-    toggle_action_html(k, '#thread_save',  '&star;', '&starf;');
+    //toggle_action_html(k, '#thread_save',  '&star;', '&starf;');
+    toggle_action_html(k, '#thread_save',  '收藏', '取消收藏');
     fav_thread();
 }
 // }}
@@ -969,18 +962,6 @@ function showmsg_cache(para) {
         return $(k);
     }
 
-function reply_thread(f, reply_type){
-    var c = f.find('.chapter').text().replace(/\n/g, ' ');
-    if(reply_type=="cite") 
-        c = "" + 
-            f.children('.flcontent').text().replace(/(\s*\n)+/g, "\n").trim().substr(0, 100) + 
-            "......\n\n" + c ;
-    var reply_text = c.trim() + "\n";
-    return reply_text;
-}
-
-
-
 
     function showmsg_toggle_footer(ee){
         var jh = (ee.yzone=='middle' && ee.xzone=='middle') ? 1 : 0;
@@ -1051,37 +1032,7 @@ function reply_thread(f, reply_type){
         $('#showmsg').on('vclick', '#view_all_floor', function(){ view_all_floor();return false; });
         $('#showmsg').on('vclick', '#reverse_floor', function(){ reverse_floor();return false; });
 
-        $('#showmsg').on('vclick', '.reply_thread_floor', function(e){
-            var res = reply_thread($(this).parent(), $(this).attr('action'));
-            e.preventDefault();
-            e.target.dispatchEvent(new ClipboardEvent("copy"));
-            e.clipboardData.setData("text/plain", res);
-            window.open($('#reply_thread_link').attr('href'), '_blank');
-            return false; 
-        });
-
-        //$('#showmsg').on('swiperight',  '.floor', function(e){ 
-        ////e.preventDefault();
-        //reply_thread($(this), 'cite');
-        //});
-        //$('#showmsg').on('swipeleft', '.floor', function(e){ 
-        ////e.preventDefault();
-        //reply_thread($(this), 'reply');
-        //});
-
         $('#showmsg').on('vclick', '.floor', function(e){ tap_to_scroll_screen(e); return false; });
-
-        //$('#showmsg').on("change", '#showmsg_floor_slider', function () {
-        //var all = parseInt($(this).attr('max')) - parseInt($(this).attr('min')) + 1;
-        //var show = $('#showmsg').find('.floor:visible').length;
-
-        //var v = parseInt($(this).val()) - parseInt($(this).attr('min')) ;
-        //v = parseInt(v*show/all);
-
-        //var x = $('#showmsg').find('.floor:visible').eq(v);
-        //var pos = x ? x.offset().top : 0;
-        //$.mobile.silentScroll(pos);
-        //});
 
         $('#showmsg').on('vclick', '#jump_to_bottom', function(){
             //$('#showmsg_floor_slider').val($('#showmsg_floor_slider').attr('max'));
@@ -1157,14 +1108,15 @@ function reply_thread(f, reply_type){
     }
 
     function showmsg_tail(para, res){
+        check_save_thread();
+        check_cache_thread();
+
         $('#remote_url_title').html(res["title"]);
         $('#thread_title').html( res["title"] );
 
         $('#thread_pager_top').html( res["pager"] );
         $('#thread_pager_bottom').html( res["pager"]);
         $('#thread_floor_list').html(res["floor_list"]);
-
-        $('#reply_thread_link').attr('href', HJJ + "/reply.php?board="+ para.board + '&id=' + para.id);
 
         $('#thread_floor_list').find('a').each(function(){
             var href = $(this).attr('href');
@@ -1176,31 +1128,13 @@ function reply_thread(f, reply_type){
             }
         });
 
-
-        //var min =0;
-        //var max = 0;
-        //$('#thread_floor_list').find('.floor').each(function(){
-        //var id = parseInt($(this).attr('fid'));
-        //if(! min) min = id;
-        //max++;
-        //}).promise().done(function(){
-        //$('#showmsg_floor_slider').attr('min', min);
-        //$('#showmsg_floor_slider').attr('max', max+min-1);
-        //$('#showmsg_floor_slider').val(min);
-        //});
-
-        check_save_thread();
-        check_cache_thread();
-
         var local_url = get_showmsg_local_url(para);
-        //$('#thread_refresh').attr('href', local_url + '&refresh=1');
 
         add_history({
             url : local_url, 
             title : thread_save_title(para, res), 
             key : 'showmsg,' + para.board + ',' + para.id
         });
-
 
         if(para.fid){
             showmsg_jump_floor_simple(para.fid);
@@ -1228,6 +1162,8 @@ function reply_thread(f, reply_type){
 
 
         $('#remote_url').html(get_showmsg_remote_url(para)); 
+
+        check_save_thread();
     }
 
 
@@ -1259,13 +1195,19 @@ function reply_thread(f, reply_type){
 
     function showmsg(para){
         var local_url = get_showmsg_local_url(para);
+
         showmsg_header(para);
+
         showmsg_banner(para);
+
+        check_save_thread();
 
         var cache = lscache.get(local_url);
         if(cache && para.refresh==undefined){
+        check_save_thread();
             showmsg_tail(para, cache);
         }else{
+        check_save_thread();
             showmsg_refresh(para);
         }
     }
