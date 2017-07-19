@@ -5,43 +5,31 @@ hjj_firefox_os
 
 ## 安装
 
-### firefoxos
+apk安装包：[hjj.0.8.7.apk](hjj.apk)
 
-在firefox market直接安装 [HJJ-firefoxos](https://marketplace.firefox.com/app/hjj/) 
-
-### android
-
-法一：
-
-先安装firefox，打开firefox，访问firefox market安装：[HJJ-firefoxos](https://marketplace.firefox.com/app/hjj/)
-
-法二：
-
-注意：android 5, cm 12 rom 测试速度正常。其他版本未测试。
-
-安装phonegap打包的 android 版本：[HJJ-phonegap](https://build.phonegap.com/apps/1033213/share)，[apk文件](https://build.phonegap.com/apps/1033213/download/android/)
+测试环境：华为荣耀8
 
 ## 主页
 
-顶部按钮：刷新；版块列表；设置
+顶部按钮：刷新；版块列表（废）；设置
 
 ![home.png](home.png)
 
-底部按钮：跳转；收藏的版块；主页；收藏的帖子；访问历史
+底部按钮：跳转；收藏的版块；收藏的帖子；访问历史
 
 ## 版块
 
-顶部按钮：子版块；热贴；发帖；搜索
+顶部按钮：热贴；搜索；子版块
 
 ![board.png](board.png)
 
-底部按钮：跳转；收藏的版块；主页；收藏的帖子；访问历史
+底部按钮：跳转；收藏的版块；收藏的帖子；访问历史
 
 ## 贴子
 
-顶部按钮：上次标记的楼层；分享；推送到kindle；跳转；更多操作
+顶部按钮：跳转；上次标记的楼层；更多操作
 
-楼层按钮： 1) 引用此楼内容回帖; 2) 不引用内容直接回复此楼; 3) 标记当前楼层
+楼层按钮： 1) 引用此楼内容回帖（废）; 2) 不引用内容直接回复此楼（废）; 3) 标记当前楼层
 
 ![showmsg.png](showmsg.png)
 
@@ -63,7 +51,7 @@ hjj_firefox_os
 
 ![search.png](search.png)
 
-## 版块列表
+## 版块列表（废）
 
 ![board_menu.png](board_menu.png)
 
@@ -75,31 +63,15 @@ hjj_firefox_os
 
 ![setting.png](setting.png)
 
-## 绑定腾讯微博，支持贴图
-
-浏览器打开 http://test.open.t.qq.com ，选择授权方式为``oauth2.0``
-
-![qq_oauth2_1.png](qq_oauth2_1.png)
-
-把授权信息中的``openid``、``appkey``、``access_token``填入app设置页面
-
-![qq_oauth2_2.png](qq_oauth2_2.png)
-
-![qq_oauth2_3.png](qq_oauth2_3.png)
-
-## 推送当前帖子到kindle
-
-用于文库看文。。。
-
-需要搭建在线小说处理服务，参考：[loadxs](https://github.com/abbypan/loadxs)
-
-假设搭建的服务域名为 abc.xxx.com，服务邮箱为 kindle@xxx.com
-
-直接将该域名填入设置页面
-
-并在 amazon 设置允许  kindle@xxx.com 邮箱推送即可
-
 # changelog
+
+v0.8.7
+
+删除回贴、贴图功能
+
+删除推送到kindle功能
+
+firefox market 停用，只保留android版本
 
 v0.8.5
 
