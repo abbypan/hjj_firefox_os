@@ -9,11 +9,9 @@ var DEFAULT = {
     history_cnt : -1, 
     font_size: '112%', 
     max_history_cnt : 300, //历史记录最多x条 
-    board_menu_minute : 60*24*7, //版块列表缓存x天
     thread_cache_minute : 60*24*7, //默认缓存帖子x天
     thread_mark_minute : 60*24*7, //记住上回看到哪一楼x天
     recent_hot_thread_second : 1000*60*60*24*3, //最近x天热贴
-    username : '==',
     filter_thread_keyword : '',
     loadimg : 'on',
     share_tz : 'on', 
@@ -205,48 +203,22 @@ function home(refresh_flag) {
 // }}}
 
 //  {{{ board_menu
-function board_menu_zone(zone_li) {
-    var id = zone_li.attr("zid");
-    if(id==undefined) return;
-
-    var zone_cb = function(d) {
-        var tm = d.match(/<font color=red size=\+1>([^<]+)<\/font>/);
-        var t = tm[1].replace(/<[^>]+>/g,'');
-        var s ='<h3>' + 
-            t + '</h3><ul data-role="listview" data-inset="false">';
-
-        var m = d.match(/<center>[^<]+(<a href="board.php\?board=\d+&page=\d+">[^<]+<\/a>)[^<]+<\/center>/g);
-        $.each(m, function(i, v)
-                {
-                    var vm = v.replace(/center>/g, 'li>')
-            .replace(/board.php/, '#board')
-            ;
-        s+=vm;
-                });
-        s+="</ul>";
-        $('#board_menu').find('div[zid='+id+']').html(s);
-        lscache.set('board_menu', $('#board_menu_content').html(), DEFAULT["board_menu_minute"]);
-    };
-
-    var u = HJJ +"/bindex.php?class=" + id;
-    get_hjj_url(u, zone_cb);
-}
-
 function board_menu(){
-    var rem = lscache.get('board_menu');
-    if(rem){
-        $('#board_menu_content').html(rem);
-    }else{
-        $('#board_menu').find("div").each( 
-                function(){ board_menu_zone($(this)); });
+    var blist = [
+        ['2' , '网友留言区'], 
+        ['3' , '闲情'], 
+        ['7' , '连载文库'], 
+        ['17', '碧水江汀'], 
+        ['36', '同人文库'], 
+        ['44', '留声花园'], 
+        ['52', '优声由色'], 
+    ];
+    var s = '';
+    for(var i in blist){
+        var b = blist[i];
+        s += '<div class="smallbox"><a href="#board?board=' + b[0] + '&page=1">' + b[1] + "</a></div>\n";
     }
-
-    $("#filter_board").children(":first").trigger("expand");
-    $("#filter_board").on( "filterablefilter", function( event, ui ) {
-        ui.items.each(function( index ) {
-              $(this).collapsible("option", "collapsed", $(this).hasClass("ui-screen-hidden")).removeClass("ui-screen-hidden");
-        });
-    });
+    $('#board_menu_content').html(s); 
 }
 // }}}
 
@@ -366,7 +338,7 @@ function get_showmsg_info(){
 
 function check_cache_thread(){
     var info = get_showmsg_info();
-    var k = format_cache_key('thread_cache', info, ["board", "id"]);
+    var k = format_cache_key('fav_thread', info, ["board", "id"]);
     toggle_action_html(k, '#thread_cache', '缓存贴子', '取消缓存');
 }
 
@@ -533,6 +505,7 @@ function sub_board_action(){
     var url =$("#sub_board").find("input[name='url']").attr("value"); 
     var rem =$("#sub_board").find("input[name='rem']").prop("checked"); 
 
+
     var id_list = [];
     $("#sub_board_list").find("input[type='checkbox']")
         .each(function(){
@@ -560,10 +533,12 @@ function sub_board(para, html){
     $('#sub_board').find('input[name="url"]').attr("value", url);
     var sm = html.match(/本版所属子论坛[^<]+<\/font>([\s\S]*?)<\/span>/);
     var u = sm[1];
+    
     $('#sub_board').find('fieldset').html(u);
+    $("#sub_board").find("input[type='checkbox']").css("width", '50%'); 
 
-    var options = u.replace(/<input.+?value=(\S+)[^>]+>([^<]+)/g, "<option value='$1'>$2</option>")
-        .replace(/<option/, '<option selected="selected"');
+    //var options = u.replace(/<input.+?value=(\S+)[^>]+>([^<]+)/g, "<option value='$1'>$2</option>").replace(/<option/, '<option selected="selected"');
+    //$("#sub_board").find("input[type='checkbox']").prop("data-mini", true); 
     //$('#new_thread_subid').html(options);
 }
 
@@ -832,11 +807,11 @@ function showmsg_cache(para) {
         if(para.page<para.page_num) {
             showmsg_cache(para);
         }else{
-            var k = format_cache_key('thread_cache', para, ["board", "id"]);
+            var k = format_cache_key('fav_thread', para, ["board", "id"]);
             para.page = 0;
             local_url = get_showmsg_local_url(para);
 
-            toggle_action(k, '#thread_cache', 'thread_cache', {
+            toggle_action(k, '#thread_cache', 'fav_thread', {
                 title : thread_save_title(para, res),
                 url : local_url,
                 board : para.board,
@@ -867,8 +842,8 @@ function showmsg_cache(para) {
                 $('#thread_action_temp').html('已移除缓存'+p.page);
             }
 
-            var k = format_cache_key('thread_cache', p, ["board", "id"]);
-            toggle_action(k, '#thread_cache', 'thread_cache', {});
+            var k = format_cache_key('fav_thread', p, ["board", "id"]);
+            toggle_action(k, '#thread_cache', 'fav_thread', {});
             toggle_action_html(k, '#thread_cache', '缓存贴子', '取消缓存');
             fav_list('fav_thread');
         }else{
@@ -1149,18 +1124,6 @@ function showmsg_cache(para) {
         $('#thread_pid').html(para.page || 0);
 
 
-        var tag_key = format_cache_key('thread_tag', para, ["board", "id"]);
-        $('#thread_tag_popup').html( '<div class="setting"> \
-                <label>标签</label> \
-                <input name="' + tag_key + '" id="' + tag_key + '"> \
-                <input type="button" value="返回" id="thread_tag_close"></div>'
-                );
-        tags_input_init(tag_key);
-        $( "#thread_tag_close" ).on('vclick', function(){ 
-            $('#thread_tag_popup').popup( "close" ); 
-            return false;
-        });
-        $('#thread_tag_list').text( DEFAULT[tag_key] );
 
     }
 
@@ -1332,20 +1295,6 @@ function input_init(page,key){
     });
 }
 
-function tags_input_init(key){
-    if(! DEFAULT[key]) DEFAULT[key] = lscache.get(key);
-
-    if(DEFAULT[key]) $('#'+key).val(DEFAULT[key]);
-    $('#'+key).tagsInput({
-        'height':'100px',
-        'width':'92%',
-        'defaultText':'添加',
-        'onChange' : function(){
-            DEFAULT[key] = $(this).val();
-            lscache.set(key, DEFAULT[key]);
-        }
-    });
-}
 
 function night_color_css() {
     return '.ui-bar-f,.ui-body-f,.ui-page-theme-f, \
@@ -1412,7 +1361,6 @@ function setting_init(){
             });
             
             //showmsg
-            tags_input_init('filter_thread_keyword');
             input_init('#showmsg_panel', 'qq_appkey');
             input_init('#showmsg_panel', 'qq_access_token');
             input_init('#showmsg_panel', 'qq_openid');
@@ -1424,6 +1372,8 @@ function setting_init(){
             slider_init('showmsg_view_img','#showmsg_view_img');
             slider_init('showmsg_only_poster','#showmsg_only_poster');
             slider_init('showmsg_min_wordnum','#showmsg_min_wordnum');
+            $('#showmsg_panel').find('select').css('width', '50%');
+            $('#showmsg_panel').find('input').css('width', '50%');
 
 }
 // }}
