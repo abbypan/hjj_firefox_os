@@ -251,20 +251,22 @@ function board_menu(){
 // }}}
 
 // {{ fav_board
-function fav_board() {
+
+function fav_list(key) {
     var s= '';
-    var cnt = lscache.get('board_save_cnt') || 0;
+    var cnt = lscache.get(key+'_cnt') || 0;
     if(cnt>0){
         var x = [];
         for(var i=1;i<=cnt;i++){
-            var d = lscache.get( 'board_save_' + i);
+            var d = lscache.get( key+ '_' + i);
             if(d) x.push(d);
         }
         s += format_url_title(x);
     }
-    $('#fav_board').find('#fav_board_ul').html(s);
-    $('#fav_board').find('#fav_board_ul').trigger('create');
+    $('#' + key).find('#' + key + '_ul').html(s);
+    $('#' + key).find('#' + key +'_ul').trigger('create');
 }
+
 
 function toggle_action_html(key, elem, add_s, del_s){
     if(lscache.get(key)){
@@ -300,7 +302,7 @@ function toggle_action(k, elem, cache_k, data){
 
 function check_fav_board(){
     var info = get_board_info();
-    var k = format_cache_key('board_save', info, ["board"]);
+    var k = format_cache_key('fav_board', info, ["board"]);
     toggle_action_html(k, '#board_save',  '&#9825;', '&hearts;');
 }
 
@@ -315,15 +317,15 @@ function get_board_info(){
 
 function board_save(){
     var info = get_board_info();
-    var k = format_cache_key('board_save', info, ["board"]);
+    var k = format_cache_key('fav_board', info, ["board"]);
 
-    toggle_action(k, '#board_save', 'board_save', { 
+    toggle_action(k, '#board_save', 'fav_board', { 
         title : board_save_title(info), 
         url : info.local_url,
         board: info.board 
     });
     toggle_action_html(k, '#board_save',  '&#9825;', '&hearts;');
-    fav_board();
+    fav_list('fav_board');
 }
 
 function sub_board_check_all(act){
@@ -338,20 +340,6 @@ function sub_board_check_all(act){
 }
 // }}
 // {{ fav_thread
-function fav_thread() {
-    var s= '';
-    var cnt = lscache.get('thread_save_cnt') || 0;
-    if(cnt>0){
-        var x = [];
-        for(var i=1;i<=cnt;i++){
-            var d = lscache.get( 'thread_save_' + i);
-            if(d) x.push(d);
-        }
-        s += format_url_title(x);
-    }
-    $('#fav_thread').find('#fav_thread_ul').html(s);
-    $('#fav_thread').find('#fav_thread_ul').trigger('create');
-}
 
 function get_showmsg_local_url(x){
     return "#showmsg?" + showmsg_para_string(x); 
@@ -384,25 +372,23 @@ function check_cache_thread(){
 
 function check_save_thread(){
     var info = get_showmsg_info();
-    var k = format_cache_key('thread_save', info, ["board", "id"]);
+    var k = format_cache_key('fav_thread', info, ["board", "id"]);
     $('#thread_title').html(k);
-    //toggle_action_html(k, '#thread_save',  '&star;', '&starf;');
-    toggle_action_html(k, '#thread_save',  '收藏', '取消收藏');
+    toggle_action_html(k, '#thread_save',  '&star;', '&starf;');
 }
 
 function thread_save(){
     var info = get_showmsg_info();
-    var k = format_cache_key('thread_save', info, ["board", "id"]);
+    var k = format_cache_key('fav_thread', info, ["board", "id"]);
 
-    toggle_action(k, '#thread_save', 'thread_save', { 
+    toggle_action(k, '#thread_save', 'fav_thread', { 
         title : thread_save_title(info, info), 
         url : info.local_url, 
         board : info.board,
         id : info.id
     });
-    //toggle_action_html(k, '#thread_save',  '&star;', '&starf;');
-    toggle_action_html(k, '#thread_save',  '收藏', '取消收藏');
-    fav_thread();
+    toggle_action_html(k, '#thread_save',  '&star;', '&starf;');
+    fav_list('fav_thread');
 }
 // }}
 
@@ -597,11 +583,6 @@ function board_title(para, h){
     check_fav_board();
 }
 
-//function new_thread(para){
-    //var u = HJJ + "/postbypolice.php?board="+ para.board + "&act=mainpage";
-    //$('#new_thread_link').attr("href", u);
-//}
-
 function thread_type(para){
     var s = '<a href="#board?' + 
         board_para_string(para, { page : 1 }) + 
@@ -633,7 +614,6 @@ function board(para) {
         if(rem_sub_board) para.subid = rem_sub_board;
     }
     thread_type(para);
-    //new_thread(para);
 
     $('#manual_jump').find('input').eq(0).val(para.board);
 
@@ -655,7 +635,6 @@ function board(para) {
             });
 
         $('#thread_list').html(thread_info);
-        //$('#new_thread').find('textarea').val('');
 
         board_title(para, h);
 
@@ -795,11 +774,7 @@ function format_floor_content(f) {
     var html = '<div class="floor" id="floor' + f.id + '" fid="'+ f.id +'">' +
         '<div class="flcontent" wordnum="' + f.wordnum + '">' + f.content + '</div>' +
         '<span class="chapter">№' + f.id + '<span class="star">☆</span><span class="floor_poster">' + f.poster + '</span><span class="star">☆</span>' + f.time + '<span class="star">☆</span></span>' +
-        '<a class="reply_thread_floor" action="cite">&#8811;</a>' + 
         '&nbsp;&nbsp;&nbsp;' +
-        '<a class="reply_thread_floor" action="default">&gt;</a>' + 
-        '&nbsp;&nbsp;&nbsp;' +
-        '&nbsp;' +
         '<a class="mark_floor" href="#">M</a>' + 
         '&nbsp;&nbsp;&nbsp;' +
         '<span class="temp_floor"></span>' + 
@@ -869,7 +844,7 @@ function showmsg_cache(para) {
             });
 
             toggle_action_html(k, '#thread_cache', '缓存贴子', '取消缓存');
-            fav_thread();
+            fav_list('fav_thread');
         }
     };
     get_hjj_url(u, showmsg_cb);
@@ -895,7 +870,7 @@ function showmsg_cache(para) {
             var k = format_cache_key('thread_cache', p, ["board", "id"]);
             toggle_action(k, '#thread_cache', 'thread_cache', {});
             toggle_action_html(k, '#thread_cache', '缓存贴子', '取消缓存');
-            fav_thread();
+            fav_list('fav_thread');
         }else{
             showmsg_cache(p);
         }
@@ -1035,12 +1010,10 @@ function showmsg_cache(para) {
         $('#showmsg').on('vclick', '.floor', function(e){ tap_to_scroll_screen(e); return false; });
 
         $('#showmsg').on('vclick', '#jump_to_bottom', function(){
-            //$('#showmsg_floor_slider').val($('#showmsg_floor_slider').attr('max'));
             $(document).scrollTop($(document).height());return false; 
         });
 
         $('#showmsg').on('vclick', '#jump_to_top', function(){
-            //$('#showmsg_floor_slider').val(0);
             $.mobile.silentScroll(0);return false; 
         });
 
@@ -1163,7 +1136,6 @@ function showmsg_cache(para) {
 
         $('#remote_url').html(get_showmsg_remote_url(para)); 
 
-        check_save_thread();
     }
 
 
@@ -1200,14 +1172,11 @@ function showmsg_cache(para) {
 
         showmsg_banner(para);
 
-        check_save_thread();
 
         var cache = lscache.get(local_url);
         if(cache && para.refresh==undefined){
-        check_save_thread();
             showmsg_tail(para, cache);
         }else{
-        check_save_thread();
             showmsg_refresh(para);
         }
     }
@@ -1504,11 +1473,7 @@ function params_page(){
 }
 
 function main(){
-    //$(document).bind('swiperight', function () { window.history.back(); });
-    //$(document).bind('swipeleft', function () { window.history.forward(); });
-
     params_page();
-    //upload_img_init();
 
     //首页
     home(0); 
@@ -1533,12 +1498,12 @@ function main(){
     manual_jump_init(); 
 
     //收藏版块
-    fav_board(); 
-    $('#fav_board').on('vclick', '.refresh_fav_board', function() { fav_board(); return false; });
+    fav_list('fav_board'); 
+    $('#fav_board').on('vclick', '.refresh_fav_board', function() { fav_list('fav_board'); return false; });
 
     //收藏贴子
-    fav_thread(); 
-    $('#fav_thread').on('vclick', '.refresh_fav_thread', function() { fav_thread(); return false; });
+    fav_list('fav_thread'); 
+    $('#fav_thread').on('vclick', '.refresh_fav_thread', function() { fav_list('fav_thread'); return false; });
 
     //近期访问
     recent_history(); 

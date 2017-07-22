@@ -7,11 +7,11 @@
     <author email="abbypan@gmail.com" href="http://abbypan.github.io">
         Abby Pan
     </author>
-    <preference name="permissions" value="none" />
+    <preference name="fullscreen" value="false" />
     <preference name="phonegap-version" value="cli-6.4.0" />
+    <preference name="permissions" value="none" />
     <preference name="orientation" value="default" />
     <preference name="target-device" value="universal" />
-    <preference name="fullscreen" value="true" />
     <preference name="webviewbounce" value="true" />
     <preference name="stay-in-webview" value="false" />
     <preference name="ios-statusbarstyle" value="black-opaque" />
