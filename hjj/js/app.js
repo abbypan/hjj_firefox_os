@@ -12,18 +12,25 @@ var DEFAULT = {
     thread_cache_minute : 60*24*7, //默认缓存帖子x天
     thread_mark_minute : 60*24*7, //记住上回看到哪一楼x天
     recent_hot_thread_second : 1000*60*60*24*3, //最近x天热贴
-    filter_thread_keyword : '',
-    loadimg : 'on',
-    share_tz : 'on', 
+    filter_thread_keyword : '', //过滤版块贴子，标题含指定关键字
+    //loadimg : 0, //看图or不看图
+    share_tz : 'on',
     auto_jump_mark_floor : 'off',
-    night_color : 'off', 
+    night_color : 'off', //黑夜模式
     tap_jump_height : 0.6,
-    showmsg_jump_floor : 50,
-    showmsg_dewater_wordnum : 50, 
-    showmsg_view_img : 'off', 
-    showmsg_only_poster : 'off', 
-    showmsg_min_wordnum : 'off' 
+    showmsg_all_floor: 0, //不做任何处理，显示所有楼层
+    showmsg_dewater_wordnum : 50, //默认脱水字数
+    showmsg_dewater : 0, //自动脱水
+    showmsg_only_poster : 0, //只看楼主
+    showmsg_only_img : 0, //只看图
+    showmsg_grep_floor : 0, //提取楼层
+    showmsg_grep_floor_keyword : '', //提取楼层，含指定关键字
+    showmsg_filter_floor : 0, //过滤楼层
+    showmsg_filter_floor_keyword : '', //过滤楼层，含指定关键字
+    showmsg_reverse_floor: 0,  //是否倒序
+    showmsg_jump_floor : 50 //箭头跳转楼层数
 };
+
 for(var k in DEFAULT){
     var v = lscache.get(k);
     if(v) DEFAULT[k] = v;
@@ -48,24 +55,6 @@ function get_rem_key(x){
     var u = x.url;
     var k = x.key;
     return (k==undefined)? u : k;
-}
-
-function readFile(f)
-{
-    var files = $(f).files;
-    if (!files.length)
-    {
-        alert('Please select a file!');
-        return;
-    }
-
-    var file = files[0];
-    var reader = new FileReader();
-    reader.onload = function(event) {
-        var d = event.target.result;     
-    };
-
-    reader.readAsText(file);
 }
 
 function merge_hash(para, other){
@@ -240,7 +229,7 @@ function fav_list(key) {
 }
 
 
-function toggle_action_html(key, elem, add_s, del_s){
+function elem_toggle_html(key, elem, add_s, del_s){
     if(lscache.get(key)){
         $(elem).html(del_s);
         $(elem).attr('action', 'del');
@@ -250,7 +239,7 @@ function toggle_action_html(key, elem, add_s, del_s){
     }
 }
 
-function toggle_action(k, elem, cache_k, data){
+function elem_toggle(k, elem, cache_k, data, status_list){
     var save_i = lscache.get(k);
     var act_cnt = lscache.get(cache_k + '_cnt') || 0;
 
@@ -270,12 +259,13 @@ function toggle_action(k, elem, cache_k, data){
         lscache.set(cache_k + '_cnt', act_cnt);
         lscache.set( cache_k + '_' + act_cnt, data);
     }
+    elem_toggle_html(k, elem, status_list[0], status_list[1]);
 }
 
 function check_fav_board(){
     var info = get_board_info();
     var k = format_cache_key('fav_board', info, ["board"]);
-    toggle_action_html(k, '#board_save',  '&#9825;', '&hearts;');
+    elem_toggle_html(k, '#board_save',  '&#9825;', '&hearts;');
 }
 
 function get_board_info(){
@@ -291,12 +281,13 @@ function board_save(){
     var info = get_board_info();
     var k = format_cache_key('fav_board', info, ["board"]);
 
-    toggle_action(k, '#board_save', 'fav_board', { 
+    elem_toggle(k, '#board_save', 'fav_board', { 
         title : board_save_title(info), 
         url : info.local_url,
         board: info.board 
-    });
-    toggle_action_html(k, '#board_save',  '&#9825;', '&hearts;');
+    },
+        [ '&#9825;', '&hearts;' ]
+    );
     fav_list('fav_board');
 }
 
@@ -339,27 +330,27 @@ function get_showmsg_info(){
 function check_cache_thread(){
     var info = get_showmsg_info();
     var k = format_cache_key('fav_thread', info, ["board", "id"]);
-    toggle_action_html(k, '#thread_cache', '缓存贴子', '取消缓存');
+    elem_toggle_html(k, '#thread_cache', 'C', 'c');
 }
 
-function check_save_thread(){
+function check_fav_thread(){
     var info = get_showmsg_info();
     var k = format_cache_key('fav_thread', info, ["board", "id"]);
-    $('#thread_title').html(k);
-    toggle_action_html(k, '#thread_save',  '&star;', '&starf;');
+    elem_toggle_html(k, '#thread_save',  '&star;', '&starf;');
 }
 
 function thread_save(){
     var info = get_showmsg_info();
     var k = format_cache_key('fav_thread', info, ["board", "id"]);
 
-    toggle_action(k, '#thread_save', 'fav_thread', { 
+    elem_toggle(k, '#thread_save', 'fav_thread', { 
         title : thread_save_title(info, info), 
         url : info.local_url, 
         board : info.board,
         id : info.id
-    });
-    toggle_action_html(k, '#thread_save',  '&star;', '&starf;');
+    },
+        [ '&star;', '&starf;' ]
+    );
     fav_list('fav_thread');
 }
 // }}
@@ -536,10 +527,6 @@ function sub_board(para, html){
     
     $('#sub_board').find('fieldset').html(u);
     $("#sub_board").find("input[type='checkbox']").css("width", '50%'); 
-
-    //var options = u.replace(/<input.+?value=(\S+)[^>]+>([^<]+)/g, "<option value='$1'>$2</option>").replace(/<option/, '<option selected="selected"');
-    //$("#sub_board").find("input[type='checkbox']").prop("data-mini", true); 
-    //$('#new_thread_subid').html(options);
 }
 
 function board_pager(html){
@@ -559,21 +546,21 @@ function board_title(para, h){
 }
 
 function thread_type(para){
-    var s = '<a href="#board?' + 
-        board_para_string(para, { page : 1 }) + 
-        '">全部</a>' +
-        '&nbsp;&nbsp;' +
-        '<a href="#board?' + 
-        board_para_string(para, { page : 1 , type : 'wonderful' }) + 
-        '">加精</a>' +
-        '&nbsp;&nbsp;' +
-        '<a href="#board?' + 
-        board_para_string(para, { page : 1 , type : 'red' }) + 
-        '">套红</a>' +
-        '&nbsp;&nbsp;' +
-        '<a href="' + 
-        board_para_string(para, { page : 1 , type : 'star' }) + 
-        '">加☆</a>' ;
+    var typelist = [
+        [ '全部', {} ],
+        [ '加精', { type : 'wonderful' } ], 
+        [ '套红', { type : 'red' } ], 
+        [ '加☆', { type : 'star' } ]
+    ];
+
+    var s='';
+    for(var i in typelist){
+        var tr = typelist[i];
+        var r = tr[1];
+        r['page'] = 1;
+        s += '<a href="#board?' + board_para_string(para, r) + '">' + tr[0] + '</a>&nbsp;&nbsp;' ;
+    }
+
     $('#thread_type').html(s);
 }
 
@@ -668,16 +655,10 @@ function filter_floor(is_to_filter,msg) {
     if(msg) $('#thread_action_temp').html(msg);
 }
 
-function view_img(){
-    var is_to_filter = function(f){
-        var c = f.find('.flcontent').eq(0).html();
-        return  c.match(/\<img /i) ? 0 : 1;
-    };
-    filter_floor(is_to_filter, '只看图');
-}
 
-function floor_grep(){
-    var k = $('#floor_keyword').val();
+function showmsg_grep_floor(){
+    var k = $('#showmsg_grep_floor_keyword').val();
+    if(!k) return;
 
     var is_to_filter = function(f){
         var c = f.find('.flcontent').text().match(k);
@@ -688,8 +669,9 @@ function floor_grep(){
     filter_floor(is_to_filter, '抽取' + k);
 }
 
-function floor_filter(){
-    var k = $('#floor_keyword').val();
+function showmsg_filter_floor(){
+    var k = $('#showmsg_filter_floor_keyword').val();
+    if(!k) return;
 
     var is_to_filter = function(f){
         var c = f.find('.flcontent').text().match(k);
@@ -700,7 +682,11 @@ function floor_filter(){
     filter_floor(is_to_filter, '过滤' + k);
 }
 
-function min_wordnum(min){
+function showmsg_dewater(min){
+    if(! min){
+        min = $('#showmsg_dewater_wordnum').val();
+    }
+
     var is_to_filter = function(f){
         var c = f.find('.flcontent').attr('wordnum');
         return  parseInt(c)<parseInt(min);
@@ -710,7 +696,7 @@ function min_wordnum(min){
     filter_floor(is_to_filter, '最少' + min + '字');
 }
 
-function view_all_floor(){
+function showmsg_all_floor(){
     $('.floor').each(function() {
         $(this).show();
     });
@@ -724,7 +710,15 @@ function get_showmsg_poster(){
     return;
 }
 
-function only_poster(){
+function showmsg_only_img(){
+    var is_to_filter = function(f){
+        var c = f.find('.flcontent').eq(0).html();
+        return  c.match(/\<img /i) ? 0 : 1;
+    };
+    filter_floor(is_to_filter, '只看图');
+}
+
+function showmsg_only_poster(){
     var poster = get_showmsg_poster();
     var is_to_filter = function(f){
         var flposter = f.find('.floor_poster').text();
@@ -734,8 +728,14 @@ function only_poster(){
     filter_floor(is_to_filter, '只看楼主');
 }
 
-function reverse_floor(){
+function showmsg_reverse_floor(){
     $('#thread_action_temp').html('倒序');
+
+    var fst = $('.floor').eq(1);
+    var snd = $('.floor').eq(2);
+    if(! snd) return;
+    if(snd.prop('id')<fst.prop('id')) return;
+
     var s = [];
     $('.floor').each(function(){
         s.push($(this).prop('outerHTML'));
@@ -743,7 +743,6 @@ function reverse_floor(){
     var c = s.reverse().join("\n");
     $('#thread_floor_list').html(c);
 }
-
 
 function format_floor_content(f) {
     var html = '<div class="floor" id="floor' + f.id + '" fid="'+ f.id +'">' +
@@ -811,45 +810,44 @@ function showmsg_cache(para) {
             para.page = 0;
             local_url = get_showmsg_local_url(para);
 
-            toggle_action(k, '#thread_cache', 'fav_thread', {
+            elem_toggle(k, '#thread_cache', 'fav_thread', {
                 title : thread_save_title(para, res),
                 url : local_url,
                 board : para.board,
                 id : para.id
-            });
-
-            toggle_action_html(k, '#thread_cache', '缓存贴子', '取消缓存');
+            },
+           [  'C', 'c' ]
+            );
             fav_list('fav_thread');
         }
     };
     get_hjj_url(u, showmsg_cb);
 }
 
-    function thread_cache() {
-        var p = {};
-        p["board"] = $('#thread_bid').html();
-        p["id"] = $('#thread_tid').html();
-        var nm = $('#thread_pager_top').html().match(/共(\d+)页/);
-        p["page_num"] = nm ? nm[1] : 1;
-        p["page"] = 0;
+function thread_cache() {
+    var p = {};
+    p["board"] = $('#thread_bid').html();
+    p["id"] = $('#thread_tid').html();
+    var nm = $('#thread_pager_top').html().match(/共(\d+)页/);
+    p["page_num"] = nm ? nm[1] : 1;
+    p["page"] = 0;
 
-        var act = $('#thread_cache').attr('action');
-        if(act && act=='del'){
-            for(var i=0; i<p["page_num"]; i++){
-                p.page = i;
-                var local_url = get_showmsg_local_url(p);
-                lscache.remove(local_url);
-                $('#thread_action_temp').html('已移除缓存'+p.page);
-            }
-
-            var k = format_cache_key('fav_thread', p, ["board", "id"]);
-            toggle_action(k, '#thread_cache', 'fav_thread', {});
-            toggle_action_html(k, '#thread_cache', '缓存贴子', '取消缓存');
-            fav_list('fav_thread');
-        }else{
-            showmsg_cache(p);
+    var act = $('#thread_cache').attr('action');
+    if(act && act=='del'){
+        for(var i=0; i<p["page_num"]; i++){
+            p.page = i;
+            var local_url = get_showmsg_local_url(p);
+            lscache.remove(local_url);
+            $('#thread_action_temp').html('已移除缓存'+p.page);
         }
+
+        var k = format_cache_key('fav_thread', p, ["board", "id"]);
+        elem_toggle(k, '#thread_cache', 'fav_thread', {}, [ 'C', 'c' ]);
+        fav_list('fav_thread');
+    }else{
+        showmsg_cache(p);
     }
+}
 
     function thread_mark_floor(){
         var info = get_showmsg_info();
@@ -964,23 +962,6 @@ function showmsg_cache(para) {
 
         $('#showmsg').on('vclick', '#thread_save', function(){ thread_save(); return false; });
         $('#showmsg').on('vclick', '#share_thread', function(){ share_thread(); return false; });
-        $('#showmsg').on('vclick', '#only_poster', function(){ only_poster(); return false; });
-        $('#showmsg').on('vclick', '#view_img', function(){ view_img(); return false; });
-
-        $('#showmsg').on('vclick', '#min_wordnum_btn',function(){ 
-            var min = $('#min_wordnum').val();
-            min_wordnum(min);return false; 
-        });
-        $('#showmsg').on('vclick', '#thread_dewater', function(){ 
-            var min = $('#showmsg_dewater_wordnum').val();
-            min_wordnum(min);return false; 
-        });
-        $('#showmsg').on('vclick', '#floor_grep',function(){ 
-            floor_grep();return false; });
-        $('#showmsg').on('vclick', '#floor_filter',function(){ 
-            floor_filter(); return false;  });
-        $('#showmsg').on('vclick', '#view_all_floor', function(){ view_all_floor();return false; });
-        $('#showmsg').on('vclick', '#reverse_floor', function(){ reverse_floor();return false; });
 
         $('#showmsg').on('vclick', '.floor', function(e){ tap_to_scroll_screen(e); return false; });
 
@@ -1003,42 +984,42 @@ function showmsg_cache(para) {
 
     }
 
-    function extract_showmsg_content(d){
-        var res = {};
+function extract_showmsg_content(d){
+    var res = {};
 
-        var pm = d.match(/\>(共\d+页:.+?)<\/div>/);
-        res["pager"] = pm ? pm[1].replace(/href=(.+?)>/g, "href=\"#showmsg$1\">").replace(/<\/a>/g, '</a>&nbsp;') : '';
-        if(res["pager"].match(/共/)){
-            res["pager"] += "<a action='-1' class='thread_jump_page'>&lt;</a>&nbsp;&nbsp;" + 
-                "<a action='1' class='thread_jump_page'>&gt;</a>";
-        }
-
-        var h = $.parseHTML(d.replace(/<font color='gray' size='-1'>本帖尚未审核,若发布24小时后仍未审核通过会被屏蔽<\/font><br\/>/g,''));
-
-        res["title"] = $(h).find('div[id="msgsubject"]').html().replace(/\<font.*/,'').replace(/^\s+/,'').replace('主题：','');
-
-        var poster = '';
-
-        var floors_info = new Array();
-        $(h).find('td[class="read"]').each(function() {
-            var bot = $(this);
-            
-            var f_i =  extract_floor_info(bot);
-            if(!poster) poster = f_i.poster;
-
-            var html = format_floor_content(f_i);
-            floors_info.push(html);
-        }).promise().done(function(){
-            var all_floor = floors_info.join("\n");
-            if(DEFAULT["loadimg"]!="on"){ //不看图
-                all_floor = all_floor.replace(/<img [\s\S]*?>/ig, '');
-            }
-            res["floor_list"] = all_floor;
-            res["poster"] = poster;
-        });
-
-        return res;
+    var pm = d.match(/\>(共\d+页:.+?)<\/div>/);
+    res["pager"] = pm ? pm[1].replace(/href=(.+?)>/g, "href=\"#showmsg$1\">").replace(/<\/a>/g, '</a>&nbsp;') : '';
+    if(res["pager"].match(/共/)){
+        res["pager"] += "<a action='-1' class='thread_jump_page'>&lt;</a>&nbsp;&nbsp;" + 
+            "<a action='1' class='thread_jump_page'>&gt;</a>";
     }
+
+    var h = $.parseHTML(d.replace(/<font color='gray' size='-1'>本帖尚未审核,若发布24小时后仍未审核通过会被屏蔽<\/font><br\/>/g,''));
+
+    res["title"] = $(h).find('div[id="msgsubject"]').html().replace(/\<font.*/,'').replace(/^\s+/,'').replace('主题：','');
+
+    var poster = '';
+
+    var floors_info = new Array();
+    $(h).find('td[class="read"]').each(function() {
+        var bot = $(this);
+
+        var f_i =  extract_floor_info(bot);
+        if(!poster) poster = f_i.poster;
+
+        var html = format_floor_content(f_i);
+        floors_info.push(html);
+    }).promise().done(function(){
+        var all_floor = floors_info.join("\n");
+        if(DEFAULT["loadimg"]!="on"){ //不看图
+            all_floor = all_floor.replace(/<img [\s\S]*?>/ig, '');
+        }
+        res["floor_list"] = all_floor;
+        res["poster"] = poster;
+    });
+
+    return res;
+}
 
     function showmsg_refresh(para) {
         var u = get_showmsg_remote_url(para);
@@ -1056,7 +1037,7 @@ function showmsg_cache(para) {
     }
 
     function showmsg_tail(para, res){
-        check_save_thread();
+        check_fav_thread();
         check_cache_thread();
 
         $('#remote_url_title').html(res["title"]);
@@ -1070,9 +1051,9 @@ function showmsg_cache(para) {
             var href = $(this).attr('href');
             if(href.match(/http:\/\/bbs.jjwxc.net\/showmsg.php\?/)){ 
                 href = href.replace(/http:\/\/bbs.jjwxc.net\/showmsg.php\?/g, '#showmsg?')
-            $(this).attr('href', href);
-        $(this).removeAttr('target');
-        $(this).removeAttr('rel');
+                $(this).attr('href', href);
+                $(this).removeAttr('target');
+                $(this).removeAttr('rel');
             }
         });
 
@@ -1092,10 +1073,41 @@ function showmsg_cache(para) {
             $.mobile.silentScroll(0);
         }
 
-        if(DEFAULT["showmsg_view_img"]==1) view_img();
-        if(DEFAULT["showmsg_only_poster"]==1) only_poster();
-        if(DEFAULT["showmsg_min_wordnum"]==1) min_wordnum(DEFAULT["showmsg_dewater_wordnum"]);
+        showmsg_main_floor();
     }
+    
+function showmsg_main_floor(){
+    showmsg_all_floor();
+
+    if(DEFAULT["showmsg_all_floor"]==1){
+        return;
+    }
+
+    if(DEFAULT["showmsg_dewater"]==1){
+        showmsg_dewater();
+    }
+
+    if(DEFAULT["showmsg_only_poster"]==1){
+        showmsg_only_poster();
+    }
+
+    if(DEFAULT["showmsg_only_img"]==1){
+        showmsg_only_img();
+    }
+
+    if(DEFAULT["showmsg_grep_floor"]==1){
+        showmsg_grep_floor();
+    }
+
+    if(DEFAULT["showmsg_filter_floor"]==1){
+        showmsg_filter_floor();
+    }
+
+    if(DEFAULT["showmsg_reverse_floor"]==1){
+        showmsg_reverse_floor();
+    }
+}
+
 
     function showmsg_header(para){
         $('#remote_url_short').html([ 'HJJ', para.board, para.id ].join(","));
@@ -1107,8 +1119,6 @@ function showmsg_cache(para) {
         $('#thread_to_board').attr('href', up_url);
 
         $('#manual_jump').find('input').eq(0).val(para.board);
-
-
         $('#remote_url').html(get_showmsg_remote_url(para)); 
 
     }
@@ -1134,7 +1144,6 @@ function showmsg_cache(para) {
         showmsg_header(para);
 
         showmsg_banner(para);
-
 
         var cache = lscache.get(local_url);
         if(cache && para.refresh==undefined){
@@ -1257,25 +1266,32 @@ function font_click(ce, e){
     });
 }
 
-function slider_init(key, elem){
-    $(elem).find('option[value="'+DEFAULT[key]+'"]').attr('selected', 'selected');
-    $(elem).on("change", function () {
-        DEFAULT[key] = $(this).val();
-        lscache.set(key, DEFAULT[key]);
-        return false;
-    });
-}
-
 function default_checkbox_init(){
     $('[data-role="page"]').find(".default_checkbox").each(
-            function(){
-                var k = $(this).attr('name');
-                $(this).prop("checked",DEFAULT[k]==1 ? true : false); 
-                $(this).on("change", function () {
-                    DEFAULT[k] = $(this).prop("checked") ? 1 : 0;
-                    lscache.set(k, DEFAULT[k]);
-                });
+        function(){
+            var k = $(this).attr('id');
+            $(this).prop("checked",DEFAULT[k]==1 ? true : false); 
+            $(this).on("change", function () {
+                DEFAULT[k] = $(this).prop("checked") ? 1 : 0;
+                lscache.set(k, DEFAULT[k]);
+                showmsg_main_floor();
             });
+        });
+
+    $('[data-role="page"]').find(".default_checkbox_btn").each(
+        function(){
+            var k = $(this).attr('name');
+            var color = DEFAULT[k]==1 ? 'red' : 'black';
+            $(this).css('color', color);
+
+            $(this).on("vclick", function () {
+                var k = $(this).attr('name');
+                $('#' + k).click();
+                var color = DEFAULT[k]==1 ? 'red' : 'black';
+                $(this).css('color', color);
+                return false;
+            });
+        });
 }
 
 function change_font_size_html(){
@@ -1287,12 +1303,17 @@ function change_font_size_html(){
         </div>' ; 
 }
 
-function input_init(page,key){
-    $(page).find('input[name="'+key+'"]').val(DEFAULT[key]);
-    $(page).find('input[name="'+key+'"]').on('change', function(){
-        DEFAULT[key] = $(this).val();
-        lscache.set(key, DEFAULT[key]);
-    });
+function setting_text_init(){
+    $('[data-role="page"]').find(".setting_text").each(
+        function(){
+            var k = $(this).attr('id');
+            $(this).val(DEFAULT[k]);
+            $(this).on('change', function(){
+                DEFAULT[k] = $(this).val();
+                lscache.set(k, DEFAULT[k]);
+                showmsg_main_floor();
+            });
+        });
 }
 
 
@@ -1352,7 +1373,6 @@ function setting_init(){
             //setting
             night_color_init();
             change_font_size_init();
-            input_init('#setting', 'tap_jump_height');
             $('#faq_url').attr('href', FAQ_URL);
             $('#setting').on('vclick', '#suggest', function(){
                 var st = encodeURIComponent(SHARE_WEIBO + ' ');
@@ -1361,19 +1381,9 @@ function setting_init(){
             });
             
             //showmsg
-            input_init('#showmsg_panel', 'qq_appkey');
-            input_init('#showmsg_panel', 'qq_access_token');
-            input_init('#showmsg_panel', 'qq_openid');
-            input_init('#showmsg_panel', 'showmsg_dewater_wordnum');
-            input_init('#showmsg_panel', 'showmsg_jump_floor');
-            slider_init('share_tz','#share_tz');
-            slider_init('auto_jump_mark_floor', '#auto_jump_mark_floor');
-            slider_init('loadimg','#loadimg');
-            slider_init('showmsg_view_img','#showmsg_view_img');
-            slider_init('showmsg_only_poster','#showmsg_only_poster');
-            slider_init('showmsg_min_wordnum','#showmsg_min_wordnum');
             $('#showmsg_panel').find('select').css('width', '50%');
-            $('#showmsg_panel').find('input').css('width', '50%');
+            $('#showmsg_panel').find('input[type="text"]').css('width', '50%');
+            $(document).find('input[type="checkbox"]').css('style', 'float: left');
 
 }
 // }}
@@ -1477,22 +1487,18 @@ function main(){
     $('#board').on('vclick', '#toggle_recent_thread', function() { toggle_recent_thread(); return false;});
     //$('#board').on('vclick', '.onethread', function(e){ tap_to_scroll_screen(e); return false; });
 
-    //$('#board').on('swipeleft', function(e){ $('#search_form_a').click();});
-    //$('#board').on('swiperight', function(e){ $('#new_thread_a').click(); });
-
     $('body').on('vclick', '.format_url_code', function(){
         var area = $(this).parent().find('textarea').eq(0);
         var f = area.val()
-        .replace(/\s(http:\/\/.*?\.(jpg|gif|png|jpeg))\s/ig , "<img src='$1' />\n")
-        .replace(/\s(http:\/\/[^\s'"]+)\s/ig , "<a href='$1'>$1</a>\n");
-    area.val(f);
-    return false;
+            .replace(/\s(http:\/\/.*?\.(jpg|gif|png|jpeg))\s/ig , "<img src='$1' />\n")
+            .replace(/\s(http:\/\/[^\s'"]+)\s/ig , "<a href='$1'>$1</a>\n");
+        area.val(f);
+        return false;
     });
 
     showmsg_click(); //贴子
-
-    input_init('#showmsg', 'mail');
     default_checkbox_init();
+    setting_text_init();
 }
 
 //jQuery doc.ready

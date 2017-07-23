@@ -69,8 +69,6 @@
         <div data-role="navbar">  
             <ul>
                 <li><a href="#" id="toggle_recent_thread">H</a></li>
-                <!--<li><a href="#new_thread" data-rel="popup">N</a></li>-->
-                <!--<li><a href="#" id="new_thread_link" target="_blank">N</a></li>-->
                 <li><a href="#search_form" data-rel="popup">S</a></li>
                 <li><a href="#sub_board" data-rel="popup">b</a></li>
             </ul>
@@ -94,34 +92,18 @@
             <ul>
                 <li><a href="#manual_jump">&#8869;</a></li>
                 <li><a href="#fav_board">&#9829;</a></li>
-                <!--<li><a href="#home">&Lambda;</a></li>-->
                 <li><a href="#fav_thread">&#9733;</a></li>
                 <li><a href="#recent_history">&#167;</a></li>
             </ul>
         </div>
     </div>
 
-    <!--<div data-role="popup" id="new_thread">-->
-        <!--<form enctype="multipart/form-data" method="post"  -->
-            <!--action="/postbypolice.php?board=" data-ajax="false"  -->
-            <!--data-role="none" target="_newtab"> -->
-            <!--<input type="hidden" value="→发布新贴子" name="msg"> -->
-            <!--<input placeholder="名字" type="text" name="username" >-->
-            <!--<select id="new_thread_subid" name="subid"> -->
-            <!--</select> -->
-            <!--<input type="text" name="subject" placeholder="主题"> -->
-            <!--<input type="file" place="#new_thread" class="upload_img_btn" data-role="none" > -->
-            <!--<div class="uploaded_img">-->
-            <!--</div>-->
-            <!--<textarea rows=12 placeholder="内容" name="body" ></textarea> -->
-            <!--<a href="#" class="format_url_code">图片/网址 代码转换</a>-->
-            <!--<input type="submit" value="发贴"> -->
-        <!--</form>-->
-        <!--<div class="upload_img_status">...</div> -->
-    <!--</div>-->
-
     <div data-role="popup" id="sub_board" data-position-to="window">
         <div id="thread_type" class="smallbox">
+        </div>
+        <div class="setting">
+            <input type="checkbox" class="default_checkbox" id="board_filter_thread">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;过滤贴子标题，关键字
+            <input name="filter_thread_keyword" id="filter_thread_keyword">
         </div>
         <div class="smallbox">
         <input type="button" data-role="none" value="取消默认子版块" id="not_rem_sub_board">
@@ -160,6 +142,8 @@
             <ul>
                 <li><a href="#manual_jump">&#8869;</a></li>
                 <li><a id="thread_mark_floor" href="#">M</a></li>
+                <li><a id="thread_cache" href="#">C</a></li>
+                <li><a id="share_thread" href="#">S</a></li>
                 <li><a href="#showmsg_panel" data-rel="popup">&lowast;</a></li>
             </ul>
         </div>
@@ -183,11 +167,11 @@
     <div id="showmsg_footer" data-role="footer" data-position="fixed" data-tap-toggle="false">
         <div data-role="navbar">  
             <ul>
-                <li><a href="#" id="reverse_floor">X</a></li>
-                <li><a href="#" id="only_poster">P</a></li> 
-                <li><a href="#" id="view_img">I</a></li>
-                <li><a href="#" id="thread_dewater">W</a></li>
-                <li><a href="#" id="view_all_floor">A</a></li>
+                <li><a href="#" name="showmsg_reverse_floor" class="default_checkbox_btn">X</a></li>
+                <li><a href="#" name="showmsg_only_poster" class="default_checkbox_btn">P</a></li> 
+                <li><a href="#" name="showmsg_only_img" class="default_checkbox_btn">I</a></li>
+                <li><a href="#" name="showmsg_dewater" class="default_checkbox_btn">W</a></li>
+                <li><a href="#" name="showmsg_all_floor" class="default_checkbox_btn">A</a></li>
             </ul>
             <ul>
                 <li><a id="jump_to_top">&lArr;</a></li>
@@ -199,78 +183,25 @@
         </div>
     </div>
 
-    <!--<div data-role="popup" id="reply_thread">-->
-        <!--<form enctype="multipart/form-data" method="post" action="reply.php?board=&id=" data-role="none" data-ajax="false" target="_newtab"> -->
-            <!--<input placeholder="名字" type="text" name="username" >-->
-            <!--<input type="file" place="#reply_thread" class="upload_img_btn" data-role="none" > -->
-            <!--<div class="uploaded_img">-->
-            <!--</div>-->
-            <!--<textarea rows=12 placeholder="内容" name="body"></textarea> -->
-            <!--<a href="#" class="format_url_code">图片/网址 代码转换</a> -->
-            <!--<input type="submit" value="发贴"> -->
-        <!--</form>-->
-        <!--<div class="upload_img_status">...</div> -->
-    <!--</div>-->
-
-    <!--</div>-->
-
-
     <div data-role="popup" id="showmsg_panel" data-position-to="window">
         <div class="setting">
-            <a id="thread_cache" href="#">缓存</a><br>
-            <!--<a href="#reply_thread" data-rel="popup" id="reply_thread_a" data-position-to="window">回帖</a>-->
-            <!--<a href="#" id="reply_thread_link" target="_blank">回贴</a><br>-->
-            <a href="#" id="share_thread">分享</a>
-        </div>
-        <div class="setting">
-            <input data-role="none" type="text" name="wordnum" placeholder="字数" id="min_wordnum">
-            <a href='#' id="min_wordnum_btn">脱水</a><br>
-            <input data-role="none" type="text" name="floor_keyword" id="floor_keyword" class="panel_input" placeholder="关键字">
-            <a href="#" id="floor_grep">抽取</a>，<a href="#" id="floor_filter">过滤</a><br>
-        </div>
-        <div class="setting">
-            <select name="loadimg" data-role="slider" id="loadimg">
-                <option value="on">看图</option>
-                <option value="off">不看图</option>
-            </select>
-            <select name="showmsg_view_img" data-role="slider" id="showmsg_view_img">
-                <option value="on">只看图</option>
-                <option value="off">不限图</option>
-            </select>
-            <select name="showmsg_only_poster" data-role="slider" id="showmsg_only_poster">
-                <option value="on">只看楼主</option>
-                <option value="off">不限楼主</option>
-            </select>
-            <select name="showmsg_min_wordnum" data-role="slider" id="showmsg_min_wordnum">
-                <option value="on">自动脱水</option>
-                <option value="off">不脱水</option>
-            </select>
+            <input type="checkbox" class="default_checkbox" id="showmsg_only_img">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;只看图
+            <input type="checkbox" class="default_checkbox" id="showmsg_only_poster">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;只看楼主
+            <input type="checkbox" class="default_checkbox" id="showmsg_reverse_floor">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;倒序
+            <input type="checkbox" class="default_checkbox" id="showmsg_not_img">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;不看图
+            <input type="checkbox" class="default_checkbox" id="showmsg_all_floor">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;显示所有楼层
         </div>
             <div class="setting">
-                <label>贴子页脱水的最小字数</label>
-                <input name="showmsg_dewater_wordnum" id="showmsg_dewater_wordnum">
+                <input type="checkbox" class="default_checkbox" id="showmsg_dewater">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;楼层脱水，最少N字
+                <input class="setting_text" id="showmsg_dewater_wordnum">
             </div>
             <div class="setting">
-                <label>贴子标题过滤</label>
-                <input name="filter_thread_keyword" id="filter_thread_keyword">
+                <input type="checkbox" class="default_checkbox" id="showmsg_grep_floor">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;提取楼层，关键字
+                <input class="setting_text" id="showmsg_grep_floor_keyword">
             </div>
             <div class="setting">
-                <label>贴子页每次触屏双击跳转N楼</label>
-                <input name="showmsg_jump_floor" id="showmsg_jump_floor">
-            </div>
-            <div class="setting">
-                <label>贴子上次阅读的位置</label>
-                <select name="auto_jump_mark_floor" data-role="slider" id="auto_jump_mark_floor">
-                    <option value="on">自动跳转</option>
-                    <option value="off">不自动跳转</option>
-                </select>
-            </div>
-            <div class="setting">
-                <label>分享时是否 @hjjtz</label>
-                <select name="share_tz" data-role="slider" id="share_tz">
-                    <option value="on">@</option>
-                    <option value="off">不@</option>
-                </select>
+                <input type="checkbox" class="default_checkbox" id="showmsg_filter_floor">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;过滤楼层，关键字
+                <input class="setting_text" id="showmsg_filter_floor_keyword">
             </div>
         </div>
 </div>
@@ -365,10 +296,6 @@
                     <option value="off">白天</option>
                 </select>
             </div>
-            <div class="setting">
-                <label>每次触屏单击翻页高度</label>
-                <input name="tap_jump_height" id="tap_jump_height">
-            </div>
             <div id="font_size_d" class="setting"> 
                 字号： 
                 <a class="change_font_size" type="bigger">放大</a> 
@@ -378,6 +305,28 @@
             <div id="suggest_d" class="setting"> 
                 <a href="#" id="faq_url" data-role="button" target="_blank">使用说明</a> 
                 <a href="#" data-role="button" id="suggest">反馈意见</a> 
+            </div>
+            <div class="setting">
+                <label>每次触屏单击翻页高度</label>
+                <input class="setting_text" id="tap_jump_height">
+            </div>
+            <div class="setting">
+                <label>贴子页每次触屏双击跳转N楼</label>
+                <input class="setting_text" id="showmsg_jump_floor">
+            </div>
+            <div class="setting">
+                <label>贴子上次阅读的位置跳转</label>
+                <select class="setting_text" data-role="slider" id="auto_jump_mark_floor">
+                    <option value="on">自动跳转</option>
+                    <option value="off">不自动跳转</option>
+                </select>
+            </div>
+            <div class="setting">
+                <label>贴子分享时是否 @hjjtz</label>
+                <select data-role="slider" id="share_tz" class="setting_text">
+                    <option value="on">@</option>
+                    <option value="off">不@</option>
+                </select>
             </div>
         </div>
     </div>
@@ -448,17 +397,10 @@
     <span id="remote_url_title"></span>
     <a href='#' id="local_board_url">local_board</a>
     <a href="#search_form" id="search_form_a" data-rel="popup" data-position-to="window">&#1060;</a>
-    <!--<a href="#new_thread" id="new_thread_a" data-rel="popup" data-position-to="window">+</a>-->
     <a href="#showmsg_floor_popup" id="showmsg_floor_popup_a" data-rel="popup" data-position-to="window">+</a>
     <span id="only_recent_thread">no</span>
     <a href="#" id="sub_board_url"></a>
 </div>
-
-<!-- todo
-导出贴子存到本地
-导出cache，导入cache => 换手机时采用
-回贴
--->
 
 </body>
 </html>

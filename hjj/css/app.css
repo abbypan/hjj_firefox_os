@@ -55,12 +55,6 @@ img {
     font-weight: bold;
 }
 
-.reply {
-    text-align : right;
-    display : inline-block;
-    width : 13%;
-}
-
 .left_string {
     display : inline-block;
     width : 14%;
@@ -72,22 +66,32 @@ img {
     width : 18%;
 }
 
+/*input,select {*/
+    /*width: 100% ;*/
+    /*-webkit-box-sizing: border-box; */
+    /*-moz-box-sizing: border-box;   */
+    /*box-sizing: border-box;       */
+/*}*/
+
 input,select {
     width: 100% ;
     -webkit-box-sizing: border-box; 
     -moz-box-sizing: border-box;   
     box-sizing: border-box;       
+    /*border: none;*/
+    /*box-shadow: none;*/
+    /*padding-top: 0.15em !important;*/
+    /*padding-bottom: 0.05em !important;*/
 }
 
-.small_input { width: 15% ; }
+textarea.ui-input-text { height: inherit !important; }
 
-.smallnav {
-    text-align : left;
-    width: 15% !important;  
-    clear: none !important;  
-}
+/*.smallnav {*/
+    /*text-align : left;*/
+    /*width: 15% !important;  */
+    /*clear: none !important;  */
+/*}*/
 
-textarea.ui-input-text { height: inherit !important}
 
 /*[>panel start {{ <]*/
 /*.paneldiv { border: 0.1em solid rgb(153, 204, 0); }*/
@@ -120,10 +124,8 @@ textarea.ui-input-text { height: inherit !important}
   /*-webkit-user-select: none; */
 /*}*/
 
-// turn off webkit checkbox style, works for other inputs too
 /*input[type="checkbox"] { -webkit-appearance: none; }*/
 
-// placeholder text opacity
 /*input::-webkit-input-placeholder { opacity: .8; }*/
 
 /*ul.ui-listview *.ui-btn-up-e,*/
